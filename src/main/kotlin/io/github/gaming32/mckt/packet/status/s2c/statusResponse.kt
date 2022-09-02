@@ -31,6 +31,7 @@ class StatusResponse(
     class Players(
         val max: Int,
         val online: Int,
+        @EncodeDefault(EncodeDefault.Mode.ALWAYS)
         val sample: List<Sample> = listOf()
     ) {
         @Serializable
