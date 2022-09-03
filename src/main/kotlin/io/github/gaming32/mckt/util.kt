@@ -21,6 +21,9 @@ val SAVE_NBT = Nbt {
 
 val PRETTY_JSON = Json {
     prettyPrint = true
+    encodeDefaults = true
+    isLenient = true
+    coerceInputValues = true
 }
 
 val USERNAME_REGEX = Regex("^\\w{2,16}\$")

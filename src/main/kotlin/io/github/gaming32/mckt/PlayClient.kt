@@ -42,7 +42,9 @@ class PlayClient(
         val textFiltering: Boolean = false,
         val allowServerListings: Boolean = true
     ) {
-        constructor(client: PlayClient) : this()
+        constructor(client: PlayClient) : this(
+            viewDistance = client.server.config.viewDistance
+        )
     }
 
     override val primaryState = PacketState.PLAY
@@ -88,9 +90,9 @@ class PlayClient(
             dimensionType = Identifier("overworld"),
             dimensionName = Identifier("overworld"),
             hashedSeed = 0L,
-            maxPlayers = 20,
-            viewDistance = 10,
-            simulationDistance = 10,
+            maxPlayers = server.config.maxPlayers,
+            viewDistance = server.config.viewDistance,
+            simulationDistance = server.config.simulationDistance,
             reducedDebugInfo = false,
             enableRespawnScreen = false,
             isDebug = false,

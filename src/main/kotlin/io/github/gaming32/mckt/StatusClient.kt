@@ -1,14 +1,13 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.packet.PacketState
+import io.github.gaming32.mckt.packet.sendPacket
 import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponsePacket
-import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import net.kyori.adventure.text.Component
 
 class StatusClient(
     server: MinecraftServer,
@@ -27,7 +26,7 @@ class StatusClient(
                     protocol = 760
                 ),
                 players = StatusResponse.Players(
-                    max = 20,
+                    max = server.config.maxPlayers,
                     online = server.clients.size,
                     sample = server.clients.values.asSequence()
                         .filter { it.options.allowServerListings }
@@ -35,7 +34,7 @@ class StatusClient(
                         .map(StatusResponse.Players::Sample)
                         .toList()
                 ),
-                description = Component.text("mckt test server"),
+                description = server.config.motd,
                 previewsChat = false,
                 enforcesSecureChat = false
             )

@@ -2,3 +2,4 @@
 .idea/
 build/
 worlds/
+config.json

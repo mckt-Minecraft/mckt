@@ -9,9 +9,15 @@ import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.FileNotFoundException
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
@@ -22,6 +28,19 @@ class MinecraftServer {
     val clients = mutableMapOf<String, PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
+
+    val configFile = File("config.json")
+    @OptIn(ExperimentalSerializationApi::class)
+    val config = try {
+        configFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
+    } catch (e: Exception) {
+        if (e !is FileNotFoundException) {
+            LOGGER.warn("Couldn't read server config, creating anew", e)
+        }
+        ServerConfig()
+    }.also { config ->
+        configFile.outputStream().use { PRETTY_JSON.encodeToStream(config, it) }
+    }
 
     lateinit var world: World
         private set
@@ -137,7 +156,10 @@ class MinecraftServer {
                     val packetIdLength = (receiveChannel.totalBytesRead - bytesRead).toInt()
                     if (packetLength == 254 && packetId == 122) {
                         // Legacy ping packet
-                        val message = "\u00a71\u0000127\u0000$MINECRAFT_VERSION\u0000$DEFAULT_MOTD\u00000\u00001"
+                        val message =
+                            "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
+                            "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
+                            "\u00000\u00001"
                         val encoded = message.toByteArray(Charsets.UTF_16BE)
                         sendChannel.writeShort(encoded.size.toShort())
                         sendChannel.writeFully(encoded, 0, encoded.size)
