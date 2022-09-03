@@ -13,5 +13,8 @@ sealed class Client(
 ) {
     protected abstract val primaryState: PacketState
 
+    internal suspend fun readPacket() = primaryState.readPacket(receiveChannel)
+
+    @JvmName("readSpecificPacketWithTimeout")
     internal suspend inline fun <reified T : Packet> readPacket() = primaryState.readPacket<T>(receiveChannel)
 }

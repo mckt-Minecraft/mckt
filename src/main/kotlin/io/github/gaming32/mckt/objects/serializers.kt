@@ -15,14 +15,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.util.*
 
-object IdentifierSerializer : KSerializer<Identifier> {
-    override val descriptor = PrimitiveSerialDescriptor("Identifier", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Identifier) = encoder.encodeString(value.toString())
-
-    override fun deserialize(decoder: Decoder) = Identifier.parse(decoder.decodeString())
-}
-
 object UUIDSerializer : KSerializer<UUID> {
     override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 

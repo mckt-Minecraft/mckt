@@ -1,6 +1,6 @@
 package io.github.gaming32.mckt.packet
 
-import io.github.gaming32.mckt.NBT_FORMAT
+import io.github.gaming32.mckt.NETWORK_NBT
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
 import io.ktor.utils.io.*
@@ -59,7 +59,7 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
         }
     }
 
-    fun writeNbtTag(tag: NbtTag) = NBT_FORMAT.encodeToStream(tag, this)
+    fun writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(tag, this)
 
     fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
 
@@ -132,7 +132,7 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
         return value
     }
 
-    fun readNbtTag() = NBT_FORMAT.decodeFromStream<NbtTag>(this)
+    fun readNbtTag() = NETWORK_NBT.decodeFromStream<NbtTag>(this)
 
     fun readBlockPosition() = BlockPosition.decodeFromLong(readLong())
 

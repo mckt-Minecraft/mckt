@@ -3,6 +3,7 @@ package io.github.gaming32.mckt
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
+import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
 import io.github.gaming32.mckt.packet.readVarInt
 import io.github.gaming32.mckt.packet.writePacket
 import io.ktor.network.selector.*
@@ -16,26 +17,37 @@ import kotlin.time.Duration.Companion.nanoseconds
 private val LOGGER = getLogger()
 
 class MinecraftServer {
-    private var running = true
+    var running = true
     private val handshakeJobs = mutableSetOf<Job>()
     val clients = mutableMapOf<String, PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
+    lateinit var world: World
+        private set
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
+        world = World(this@MinecraftServer, "world")
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
         while (running) {
             val startTime = System.nanoTime()
-            // Use toList to capture a snapshot of the set, since we may modify it in this loop
+            world.meta.time++
+            if (world.meta.time % 6000 == 0L) {
+                world.save()
+            }
             val clientsIterator = clients.values.iterator()
             while (clientsIterator.hasNext()) {
                 val client = clientsIterator.next()
-                if (client.receiveChannel.isClosedForRead) {
+                if (client.receiveChannel.isClosedForRead || client.handlePacketsJob.isCompleted) {
+                    client.handlePacketsJob.cancelAndJoin()
                     LOGGER.info("{} left the game.", client.username)
                     clientsIterator.remove()
                     continue
+                }
+                if (world.meta.time % 20 == 0L) {
+                    client.sendChannel.writePacket(UpdateTimePacket(world.meta.time))
                 }
             }
             val endTime = System.nanoTime()
@@ -58,6 +70,7 @@ class MinecraftServer {
         handshakeJobs.forEach { it.cancel() }
         handshakeJobs.joinAll()
         handshakeJobs.clear()
+        world.close()
         joinAll(handleCommandsJob, acceptConnectionsJob)
     }
 
@@ -170,6 +183,7 @@ class MinecraftServer {
                             }
                             if (!client.receiveChannel.isClosedForRead) {
                                 LOGGER.info("{} joined the game.", client.username)
+                                client.handlePacketsJob = launch { client.handlePackets() }
                                 clients.put(client.username, client)?.also { oldClient ->
                                     if (oldClient.receiveChannel.isClosedForRead) return@also
                                     LOGGER.info("Another client with that username was already online")

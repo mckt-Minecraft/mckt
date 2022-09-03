@@ -1,3 +1,5 @@
+@file:UseSerializers(UUIDSerializer::class, TextSerializer::class)
+
 package io.github.gaming32.mckt.packet.status.s2c
 
 import io.github.gaming32.mckt.PlayClient
@@ -5,10 +7,7 @@ import io.github.gaming32.mckt.objects.TextSerializer
 import io.github.gaming32.mckt.objects.UUIDSerializer
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import net.kyori.adventure.text.Component
 import java.util.*
@@ -18,7 +17,6 @@ import java.util.*
 class StatusResponse(
     val version: Version,
     val players: Players,
-    @Serializable(with = TextSerializer::class)
     val description: Component,
     val favicon: String? = null,
     @EncodeDefault(EncodeDefault.Mode.ALWAYS)
@@ -38,7 +36,6 @@ class StatusResponse(
         @Serializable
         class Sample(
             val name: String,
-            @Serializable(with = UUIDSerializer::class)
             val id: UUID
         ) {
             constructor(client: PlayClient) : this(client.username, client.uuid)
