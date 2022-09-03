@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.packet.status.s2c
 
+import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.objects.TextSerializer
 import io.github.gaming32.mckt.objects.UUIDSerializer
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
@@ -39,7 +40,9 @@ class StatusResponse(
             val name: String,
             @Serializable(with = UUIDSerializer::class)
             val id: UUID
-        )
+        ) {
+            constructor(client: PlayClient) : this(client.username, client.uuid)
+        }
     }
 }
 

@@ -1,6 +1,5 @@
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
@@ -12,10 +11,13 @@ import io.ktor.utils.io.*
 import net.kyori.adventure.text.Component
 
 class StatusClient(
-    private val socket: Socket,
-    private val receiveChannel: ByteReadChannel,
-    private val sendChannel: ByteWriteChannel
-) {
+    server: MinecraftServer,
+    socket: Socket,
+    receiveChannel: ByteReadChannel,
+    sendChannel: ByteWriteChannel
+) : Client(server, socket, receiveChannel, sendChannel) {
+    override val primaryState = PacketState.STATUS
+
     suspend fun handle() = socket.use {
         readPacket<StatusRequestPacket>() ?: return
         sendChannel.writePacket(StatusResponsePacket(
@@ -25,9 +27,12 @@ class StatusClient(
                     protocol = 760
                 ),
                 players = StatusResponse.Players(
-                    max = 1,
-                    online = 0,
-                    sample = listOf()
+                    max = 20,
+                    online = server.clients.size,
+                    sample = server.clients.values.asSequence()
+                        .take(12)
+                        .map(StatusResponse.Players::Sample)
+                        .toList()
                 ),
                 description = Component.text("mckt test server"),
                 previewsChat = false,
@@ -36,6 +41,4 @@ class StatusClient(
         ))
         sendChannel.writePacket(readPacket<PingPacket>() ?: return)
     }
-
-    private suspend inline fun <reified T : Packet> readPacket() = PacketState.STATUS.readPacket<T>(receiveChannel)
 }

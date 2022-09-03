@@ -2,18 +2,23 @@ package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.PacketState
+import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.readVarInt
+import io.github.gaming32.mckt.packet.writePacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import kotlinx.coroutines.*
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.io.ByteArrayInputStream
+import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
 
 class MinecraftServer {
     private var running = true
-    private val statusJobs = mutableSetOf<Job>()
-    private val clients = mutableSetOf<PlayClient>()
+    private val handshakeJobs = mutableSetOf<Job>()
+    val clients = mutableMapOf<String, PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
@@ -22,25 +27,77 @@ class MinecraftServer {
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
         while (running) {
-            yield()
+            val startTime = System.nanoTime()
+            // Use toList to capture a snapshot of the set, since we may modify it in this loop
+            val clientsIterator = clients.values.iterator()
+            while (clientsIterator.hasNext()) {
+                val client = clientsIterator.next()
+                if (client.receiveChannel.isClosedForRead) {
+                    LOGGER.info("{} left the game.", client.username)
+                    clientsIterator.remove()
+                    continue
+                }
+            }
+            val endTime = System.nanoTime()
+            val sleepTime = 50 - (endTime - startTime).nanoseconds.inWholeMilliseconds
+            if (sleepTime <= 0) {
+                yield()
+            } else {
+                delay(sleepTime)
+            }
         }
         LOGGER.info("Stopping server...")
+        for (client in clients.values) {
+            client.sendChannel.writePacket(PlayDisconnectPacket(
+                Component.text("Server closed")
+            ))
+            client.socket.dispose()
+        }
+        clients.clear()
         acceptConnectionsJob.cancel()
+        handshakeJobs.forEach { it.cancel() }
+        handshakeJobs.joinAll()
+        handshakeJobs.clear()
         joinAll(handleCommandsJob, acceptConnectionsJob)
-        statusJobs.forEach { it.cancel() }
-        statusJobs.joinAll()
     }
 
     private suspend fun handleCommands() = coroutineScope {
         while (running) {
             val command = withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
-            when (command) {
+            val (baseCommand, rest) = if (' ' in command) {
+                command.split(' ', limit = 2)
+            } else {
+                listOf(command, "")
+            }
+            when (baseCommand) {
                 "help" -> for (line in """
                     List of commands:
                       + help -- Shows this help
+                      + kick -- Kicks a player
                       + stop -- Stops the server
                 """.trimIndent().lineSequence()) {
                     LOGGER.info(line)
+                }
+                "kick" -> try {
+                    val spaceIndex = rest.indexOf(' ')
+                    val (username, reason) = if (spaceIndex != -1) {
+                        Pair(
+                            rest.substring(0, spaceIndex),
+                            GsonComponentSerializer.gson().deserialize(rest.substring(spaceIndex + 1))
+                        )
+                    } else {
+                        Pair(rest, Component.text("Kicked by operator"))
+                    }
+                    val client = clients[username]
+                    if (client == null || client.receiveChannel.isClosedForRead) {
+                        LOGGER.warn("Player {} is not online.", username)
+                    } else {
+                        client.sendChannel.writePacket(PlayDisconnectPacket(reason))
+                        client.socket.dispose()
+                        LOGGER.info("Kicked {} for {}", username, reason.plainText())
+                    }
+                } catch (e: Exception) {
+                    LOGGER.warn("{}", e.localizedMessage)
                 }
                 "stop" -> running = false
                 else -> LOGGER.warn("Unknown command: {}", command)
@@ -97,12 +154,31 @@ class MinecraftServer {
                         return@initialConnection
                     }
                     when (nextState) {
-                        PacketState.STATUS -> statusJobs.add(launch {
-                            StatusClient(socket, receiveChannel, sendChannel).handle()
-                            statusJobs.remove(coroutineContext[Job])
+                        PacketState.STATUS -> handshakeJobs.add(launch {
+                            try {
+                                StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle()
+                            } finally {
+                                handshakeJobs.remove(coroutineContext[Job])
+                            }
                         })
-                        PacketState.LOGIN -> clients.add(PlayClient(socket, receiveChannel, sendChannel).apply {
-                            handshake()
+                        PacketState.LOGIN -> handshakeJobs.add(launch {
+                            val client = PlayClient(this@MinecraftServer, socket, receiveChannel, sendChannel)
+                            try {
+                                client.handshake()
+                            } finally {
+                                handshakeJobs.remove(coroutineContext[Job])
+                            }
+                            if (!client.receiveChannel.isClosedForRead) {
+                                LOGGER.info("{} joined the game.", client.username)
+                                clients.put(client.username, client)?.also { oldClient ->
+                                    if (oldClient.receiveChannel.isClosedForRead) return@also
+                                    LOGGER.info("Another client with that username was already online")
+                                    oldClient.sendChannel.writePacket(PlayDisconnectPacket(
+                                        Component.text("You logged in from another location")
+                                    ))
+                                    oldClient.socket.dispose()
+                                }
+                            }
                         })
                         else -> {
                             LOGGER.warn("Unexpected packet state: $nextState")
