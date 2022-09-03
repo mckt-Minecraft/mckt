@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class PlayPluginC2SPacket(val channel: Identifier, val data: ByteArray) : Packet(TYPE) {
+class ServerboundPlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x0D
     }

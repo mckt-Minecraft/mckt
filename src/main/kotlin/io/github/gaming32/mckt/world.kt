@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package io.github.gaming32.mckt
 
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -78,6 +76,7 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
     val worldDir = File("worlds", name).apply { mkdirs() }
     val metaFile = File(worldDir, "meta.json")
     val playersDir = File(worldDir, "players").apply { mkdirs() }
+    @OptIn(ExperimentalSerializationApi::class)
     val meta = try {
         metaFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
     } catch (e: Exception) {
@@ -87,6 +86,7 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
         WorldMeta()
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     fun save() {
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
     }
@@ -107,4 +107,5 @@ class PlayerData {
     var yaw = 0f
     var pitch = 0f
     var onGround = false
+    var flying = false
 }

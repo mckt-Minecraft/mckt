@@ -7,11 +7,8 @@ import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
-import io.github.gaming32.mckt.packet.play.c2s.ClientOptionsPacket
-import io.github.gaming32.mckt.packet.play.c2s.MovementPacket
-import io.github.gaming32.mckt.packet.play.c2s.PlayPluginC2SPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayLoginPacket
+import io.github.gaming32.mckt.packet.play.c2s.*
+import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -55,6 +52,7 @@ class PlayClient(
     lateinit var uuid: UUID
         private set
     lateinit var handlePacketsJob: Job
+    private var nextTeleportId = 0
 
     lateinit var dataFile: File
         private set
@@ -109,6 +107,15 @@ class PlayClient(
             }
             PlayerData()
         }
+        sendChannel.sendPacket(
+            ClientboundPlayerAbilitiesPacket(
+                invulnerable = true,
+                flying = data.flying,
+                allowFlying = true,
+                creativeMode = true
+            )
+        )
+        sendChannel.sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
     }
 
     suspend fun handlePackets() {
@@ -126,8 +133,27 @@ class PlayClient(
                 break
             }
             when (packet) {
+                is ConfirmTeleportationPacket -> if (packet.teleportId >= nextTeleportId) {
+                    LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
+                }
+                is CommandPacket -> sendChannel.sendPacket(SystemChatPacket(
+                    Component.text("Commands not implemented yet")
+                ))
+                is ServerboundChatPacket -> {
+                    val newPacket = SystemChatPacket(
+                        Component.translatable(
+                            "chat.type.text",
+                            Component.text(username),
+                            Component.text(packet.message)
+                        )
+                    )
+                    server.clients.values.forEach { client ->
+                        if (client.options.chatMode > 0) return@forEach
+                        client.sendChannel.sendPacket(newPacket)
+                    }
+                }
                 is ClientOptionsPacket -> options = packet.options
-                is PlayPluginC2SPacket -> LOGGER.info("Plugin packet {}", packet.channel)
+                is ServerboundPlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                 is MovementPacket -> {
                     packet.x?.let { data.x = it }
                     packet.y?.let { data.y = it }
@@ -136,6 +162,7 @@ class PlayClient(
                     packet.pitch?.let { data.pitch = it }
                     data.onGround = packet.onGround
                 }
+                is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
                 else -> LOGGER.warn("Unhandled packet {}", packet)
             }
         }
