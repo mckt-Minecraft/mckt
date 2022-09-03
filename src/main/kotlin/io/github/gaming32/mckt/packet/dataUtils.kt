@@ -1,8 +1,12 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.NBT_FORMAT
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
 import io.ktor.utils.io.*
+import net.benwoodworth.knbt.NbtTag
+import net.benwoodworth.knbt.decodeFromStream
+import net.benwoodworth.knbt.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.io.DataInputStream
@@ -10,6 +14,7 @@ import java.io.DataOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
+import kotlin.math.PI
 
 private const val VARINT_SEGMENT_BITS = 0x7f
 private const val VARINT_CONTINUE_BIT = 0x80
@@ -27,8 +32,6 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
     fun writeText(text: Component) = writeString(GsonComponentSerializer.gson().serialize(text), 262144)
 
     fun writeIdentifier(id: Identifier) = writeString(id.toString(), 32767)
-
-    fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
 
     fun writeVarInt(i: Int) {
         var value = i
@@ -56,6 +59,19 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
         }
     }
 
+    fun writeNbtTag(tag: NbtTag) = NBT_FORMAT.encodeToStream(tag, this)
+
+    fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
+
+    fun writeDegrees(degrees: Double) = write((degrees / 360.0 * 256.0).toInt())
+
+    fun writeRadians(radians: Double) = write((radians / 2.0 / PI * 256.0).toInt())
+
+    fun writeUuid(uuid: UUID) {
+        writeLong(uuid.mostSignificantBits)
+        writeLong(uuid.leastSignificantBits)
+    }
+
     fun writeBitSet(bits: BitSet) {
         val data = bits.toLongArray()
         writeVarInt(data.size)
@@ -79,8 +95,6 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
     fun readText() = GsonComponentSerializer.gson().deserialize(readString(262144))
 
     fun readIdentifier() = Identifier.parse(readString(32767))
-
-    fun readBlockPosition() = BlockPosition.decodeFromLong(readLong())
 
     fun readVarInt(): Int {
         var value = 0
@@ -117,6 +131,16 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
 
         return value
     }
+
+    fun readNbtTag() = NBT_FORMAT.decodeFromStream<NbtTag>(this)
+
+    fun readBlockPosition() = BlockPosition.decodeFromLong(readLong())
+
+    fun readDegrees() = readByte().toDouble() / 256.0 * 360.0
+
+    fun readRadians() = readByte().toDouble() / 256.0 * 2 * PI
+
+    fun readUuid() = UUID(readLong(), readLong())
 
     fun readBitSet(): BitSet {
         val result = LongArray(readVarInt())

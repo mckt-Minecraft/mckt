@@ -13,6 +13,7 @@ private val LOGGER = getLogger()
 class MinecraftServer {
     private var running = true
     private val statusJobs = mutableSetOf<Job>()
+    private val clients = mutableSetOf<PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
@@ -32,9 +33,17 @@ class MinecraftServer {
 
     private suspend fun handleCommands() = coroutineScope {
         while (running) {
-            val command = withContext(Dispatchers.IO) { readlnOrNull() }?.trim() ?: "stop"
-            if (command == "stop") {
-                running = false
+            val command = withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
+            when (command) {
+                "help" -> for (line in """
+                    List of commands:
+                      + help -- Shows this help
+                      + stop -- Stops the server
+                """.trimIndent().lineSequence()) {
+                    LOGGER.info(line)
+                }
+                "stop" -> running = false
+                else -> LOGGER.warn("Unknown command: {}", command)
             }
         }
     }
@@ -87,15 +96,18 @@ class MinecraftServer {
                         socket.dispose()
                         return@initialConnection
                     }
-                    if (nextState == PacketState.STATUS) {
-                        statusJobs.add(launch {
+                    when (nextState) {
+                        PacketState.STATUS -> statusJobs.add(launch {
                             StatusClient(socket, receiveChannel, sendChannel).handle()
                             statusJobs.remove(coroutineContext[Job])
                         })
-                    } else {
-                        LOGGER.warn("Unexpected packet state: $nextState")
-                        socket.dispose()
-                        return@initialConnection
+                        PacketState.LOGIN -> clients.add(PlayClient(socket, receiveChannel, sendChannel).apply {
+                            handshake()
+                        })
+                        else -> {
+                            LOGGER.warn("Unexpected packet state: $nextState")
+                            socket.dispose()
+                        }
                     }
                 }
             }

@@ -1,13 +1,14 @@
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponsePacket
+import io.github.gaming32.mckt.packet.writePacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.withTimeout
 import net.kyori.adventure.text.Component
 
 class StatusClient(
@@ -15,13 +16,9 @@ class StatusClient(
     private val receiveChannel: ByteReadChannel,
     private val sendChannel: ByteWriteChannel
 ) {
-    suspend fun handle() {
-        val requestPacket = withTimeout(5000L) { readPacket() }
-        if (requestPacket !is StatusRequestPacket) {
-            socket.dispose()
-            return
-        }
-        StatusResponsePacket(
+    suspend fun handle() = socket.use {
+        readPacket<StatusRequestPacket>() ?: return
+        sendChannel.writePacket(StatusResponsePacket(
             StatusResponse(
                 version = StatusResponse.Version(
                     name = "1.19.2",
@@ -36,19 +33,9 @@ class StatusClient(
                 previewsChat = false,
                 enforcesSecureChat = false
             )
-        ).writePacket(sendChannel)
-        val pingPacket = try {
-            withTimeout(5000L) { readPacket() }
-        } catch (e: CancellationException) {
-            socket.dispose()
-            return
-        }
-        if (pingPacket !is PingPacket) {
-            socket.dispose()
-            return
-        }
-        pingPacket.writePacket(sendChannel)
+        ))
+        sendChannel.writePacket(readPacket<PingPacket>() ?: return)
     }
 
-    private suspend fun readPacket() = PacketState.STATUS.readPacket(receiveChannel)
+    private suspend inline fun <reified T : Packet> readPacket() = PacketState.STATUS.readPacket<T>(receiveChannel)
 }

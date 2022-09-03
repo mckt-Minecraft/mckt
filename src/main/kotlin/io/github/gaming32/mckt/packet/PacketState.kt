@@ -1,8 +1,10 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.ktor.utils.io.*
+import kotlinx.coroutines.withTimeout
 import java.io.ByteArrayInputStream
 
 enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> Packet>) {
@@ -11,7 +13,9 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         StatusRequestPacket.TYPE to ::StatusRequestPacket,
         PingPacket.TYPE to ::PingPacket
     )),
-    LOGIN(mapOf()),
+    LOGIN(mapOf(
+        LoginStartPacket.TYPE to ::LoginStartPacket
+    )),
     PLAY(mapOf());
 
     suspend fun readPacket(channel: ByteReadChannel): Packet {
@@ -25,5 +29,11 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
             "Unknown packet ID for state $this: 0x${packetId.toString(16).padStart(2, '0')}"
         )
         return reader(MinecraftInputStream(ByteArrayInputStream(packetData)))
+    }
+
+    @JvmName("readSpecificPacketWithTimeout")
+    suspend inline fun <reified T : Packet> readPacket(channel: ByteReadChannel): T? {
+        val packet = withTimeout(5000) { readPacket(channel) }
+        return if (packet is T) packet else null
     }
 }

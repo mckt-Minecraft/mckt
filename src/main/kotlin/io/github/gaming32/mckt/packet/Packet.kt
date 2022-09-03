@@ -16,3 +16,5 @@ abstract class Packet(val type: Int) {
         channel.flush()
     }
 }
+
+suspend fun ByteWriteChannel.writePacket(packet: Packet) = packet.writePacket(this)
