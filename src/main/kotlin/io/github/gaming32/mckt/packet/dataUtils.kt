@@ -59,7 +59,7 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
         }
     }
 
-    fun writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(tag, this)
+    fun writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(NbtTag.serializer(), tag, this)
 
     fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
 

@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
 import io.github.gaming32.mckt.packet.readVarInt
-import io.github.gaming32.mckt.packet.writePacket
+import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import kotlinx.coroutines.*
@@ -36,6 +36,7 @@ class MinecraftServer {
             world.meta.time++
             if (world.meta.time % 6000 == 0L) {
                 world.save()
+                clients.values.forEach(PlayClient::save)
             }
             val clientsIterator = clients.values.iterator()
             while (clientsIterator.hasNext()) {
@@ -44,10 +45,11 @@ class MinecraftServer {
                     client.handlePacketsJob.cancelAndJoin()
                     LOGGER.info("{} left the game.", client.username)
                     clientsIterator.remove()
+                    client.close()
                     continue
                 }
                 if (world.meta.time % 20 == 0L) {
-                    client.sendChannel.writePacket(UpdateTimePacket(world.meta.time))
+                    client.sendChannel.sendPacket(UpdateTimePacket(world.meta.time))
                 }
             }
             val endTime = System.nanoTime()
@@ -60,10 +62,11 @@ class MinecraftServer {
         }
         LOGGER.info("Stopping server...")
         for (client in clients.values) {
-            client.sendChannel.writePacket(PlayDisconnectPacket(
+            client.sendChannel.sendPacket(PlayDisconnectPacket(
                 Component.text("Server closed")
             ))
             client.socket.dispose()
+            client.close()
         }
         clients.clear()
         acceptConnectionsJob.cancel()
@@ -105,7 +108,7 @@ class MinecraftServer {
                     if (client == null || client.receiveChannel.isClosedForRead) {
                         LOGGER.warn("Player {} is not online.", username)
                     } else {
-                        client.sendChannel.writePacket(PlayDisconnectPacket(reason))
+                        client.sendChannel.sendPacket(PlayDisconnectPacket(reason))
                         client.socket.dispose()
                         LOGGER.info("Kicked {} for {}", username, reason.plainText())
                     }
@@ -187,7 +190,7 @@ class MinecraftServer {
                                 clients.put(client.username, client)?.also { oldClient ->
                                     if (oldClient.receiveChannel.isClosedForRead) return@also
                                     LOGGER.info("Another client with that username was already online")
-                                    oldClient.sendChannel.writePacket(PlayDisconnectPacket(
+                                    oldClient.sendChannel.sendPacket(PlayDisconnectPacket(
                                         Component.text("You logged in from another location")
                                     ))
                                     oldClient.socket.dispose()

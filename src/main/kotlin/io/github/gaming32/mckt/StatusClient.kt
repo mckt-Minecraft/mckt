@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponsePacket
-import io.github.gaming32.mckt.packet.writePacket
+import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import net.kyori.adventure.text.Component
@@ -20,7 +20,7 @@ class StatusClient(
 
     suspend fun handle() = socket.use {
         readPacket<StatusRequestPacket>() ?: return
-        sendChannel.writePacket(StatusResponsePacket(
+        sendChannel.sendPacket(StatusResponsePacket(
             StatusResponse(
                 version = StatusResponse.Version(
                     name = "1.19.2",
@@ -30,6 +30,7 @@ class StatusClient(
                     max = 20,
                     online = server.clients.size,
                     sample = server.clients.values.asSequence()
+                        .filter { it.options.allowServerListings }
                         .take(12)
                         .map(StatusResponse.Players::Sample)
                         .toList()
@@ -39,6 +40,6 @@ class StatusClient(
                 enforcesSecureChat = false
             )
         ))
-        sendChannel.writePacket(readPacket<PingPacket>() ?: return)
+        sendChannel.sendPacket(readPacket<PingPacket>() ?: return)
     }
 }

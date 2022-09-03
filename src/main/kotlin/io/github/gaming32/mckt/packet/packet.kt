@@ -17,4 +17,4 @@ abstract class Packet(val type: Int) {
     }
 }
 
-suspend fun ByteWriteChannel.writePacket(packet: Packet) = packet.writePacket(this)
+suspend fun ByteWriteChannel.sendPacket(packet: Packet) = packet.writePacket(this)

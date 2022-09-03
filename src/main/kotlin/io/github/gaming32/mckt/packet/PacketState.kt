@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt.packet
 
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
+import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.status.PingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.ktor.utils.io.*
@@ -16,7 +17,14 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
     LOGIN(mapOf(
         LoginStartPacket.TYPE to ::LoginStartPacket
     )),
-    PLAY(mapOf());
+    PLAY(mapOf(
+        ClientOptionsPacket.TYPE to ::ClientOptionsPacket,
+        PlayPluginC2SPacket.TYPE to ::PlayPluginC2SPacket,
+        PlayerPositionPacket.TYPE to ::PlayerPositionPacket,
+        PlayerPositionAndRotationPacket.TYPE to ::PlayerPositionAndRotationPacket,
+        PlayerRotationPacket.TYPE to ::PlayerRotationPacket,
+        PlayerOnGroundPacket.TYPE to ::PlayerOnGroundPacket
+    ));
 
     suspend fun readPacket(channel: ByteReadChannel): Packet {
         val packetLength = channel.readVarInt()
