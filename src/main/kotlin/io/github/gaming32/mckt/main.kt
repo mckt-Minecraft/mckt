@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.packet.readVarInt
 import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
@@ -15,6 +16,7 @@ import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -150,23 +152,28 @@ class MinecraftServer {
                 launch initialConnection@ {
                     val receiveChannel = socket.openReadChannel()
                     val sendChannel = socket.openWriteChannel()
-                    val packetLength = receiveChannel.readVarInt()
-                    val bytesRead = receiveChannel.totalBytesRead
-                    val packetId = receiveChannel.readVarInt()
-                    val packetIdLength = (receiveChannel.totalBytesRead - bytesRead).toInt()
-                    if (packetLength == 254 && packetId == 122) {
-                        // Legacy ping packet
-                        val message =
+                    val packetLength = receiveChannel.readVarInt(specialFe = true)
+                    if (packetLength == 0xFE) {
+                        val encoded = if (receiveChannel.availableForRead == 0) {
+                            // Pre-1.4
+                            PlainTextComponentSerializer.plainText().serialize(config.motd) +
+                                "\u00a7${clients.size}\u00a7${config.maxPlayers}"
+                        } else {
+                            // 1.4 through 1.6
                             "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
-                            "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
-                            "\u00000\u00001"
-                        val encoded = message.toByteArray(Charsets.UTF_16BE)
-                        sendChannel.writeShort(encoded.size.toShort())
+                                "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
+                                "\u0000${clients.size}\u0000${config.maxPlayers}"
+                        }.toByteArray(Charsets.UTF_16BE)
+                        sendChannel.writeByte(0xff)
+                        sendChannel.writeShort(encoded.size / 2)
                         sendChannel.writeFully(encoded, 0, encoded.size)
                         sendChannel.flush()
                         socket.dispose()
                         return@initialConnection
                     }
+                    val bytesRead = receiveChannel.totalBytesRead
+                    val packetId = receiveChannel.readVarInt()
+                    val packetIdLength = (receiveChannel.totalBytesRead - bytesRead).toInt()
                     if (packetId != 0x00) {
                         socket.dispose()
                         return@initialConnection

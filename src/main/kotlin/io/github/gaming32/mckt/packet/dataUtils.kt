@@ -164,12 +164,13 @@ suspend fun ByteWriteChannel.writeVarInt(i: Int) {
     }
 }
 
-suspend fun ByteReadChannel.readVarInt(): Int {
+suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
     var value = 0
     var position = 0
 
     while (true) {
         val currentByte = readByte().toUByte().toInt()
+        if (specialFe && currentByte == 0xFE && position == 0) return 0xFE
         value = value or (currentByte and VARINT_SEGMENT_BITS shl position)
 
         if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
