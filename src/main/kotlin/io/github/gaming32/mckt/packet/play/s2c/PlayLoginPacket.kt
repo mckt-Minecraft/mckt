@@ -49,9 +49,9 @@ class PlayLoginPacket(
         out.writeBoolean(isDebug)
         out.writeBoolean(isFlat)
         out.writeBoolean(deathLocation != null)
-        if (deathLocation != null) {
-            out.writeIdentifier(deathLocation.first)
-            out.writeBlockPosition(deathLocation.second)
+        deathLocation?.let { (dimension, position) ->
+            out.writeIdentifier(dimension)
+            out.writeBlockPosition(position)
         }
     }
 }

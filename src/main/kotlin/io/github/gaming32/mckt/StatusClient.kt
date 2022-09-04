@@ -2,7 +2,7 @@ package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.sendPacket
-import io.github.gaming32.mckt.packet.status.PingPacket
+import io.github.gaming32.mckt.packet.status.StatusPingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponsePacket
@@ -39,6 +39,6 @@ class StatusClient(
                 enforcesSecureChat = false
             )
         ))
-        sendChannel.sendPacket(readPacket<PingPacket>() ?: return)
+        sendChannel.sendPacket(readPacket<StatusPingPacket>() ?: return)
     }
 }

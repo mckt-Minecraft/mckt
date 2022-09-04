@@ -1,11 +1,10 @@
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.PacketState
+import io.github.gaming32.mckt.packet.*
+import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
+import io.github.gaming32.mckt.packet.play.s2c.PlayerListUpdatePacket
 import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
-import io.github.gaming32.mckt.packet.readVarInt
-import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -67,10 +66,18 @@ class MinecraftServer {
                     LOGGER.info("{} left the game.", client.username)
                     clientsIterator.remove()
                     client.close()
+                    broadcast(PlayerListUpdatePacket(
+                        PlayerListUpdatePacket.RemovePlayer(client.uuid)
+                    ))
                     continue
                 }
                 if (world.meta.time % 20 == 0L) {
                     client.sendChannel.sendPacket(UpdateTimePacket(world.meta.time))
+                }
+                if (world.meta.time % 100 == 0L) {
+                    client.pingId = client.nextPingId++
+                    client.sendChannel.sendPacket(PlayPingPacket(client.pingId))
+                    client.pingStart = System.nanoTime()
                 }
             }
             val endTime = System.nanoTime()
@@ -224,6 +231,7 @@ class MinecraftServer {
                                     ))
                                     oldClient.socket.dispose()
                                 }
+                                client.postHandshake()
                             }
                         })
                         else -> {
@@ -235,6 +243,16 @@ class MinecraftServer {
             }
         }
     }
+
+    suspend fun broadcast(packet: Packet) = clients.values.forEach { it.sendChannel.sendPacket(packet) }
+
+    internal suspend inline fun broadcastIf(packet: Packet, condition: (PlayClient) -> Boolean) =
+        clients.values.forEach { client ->
+            if (!condition(client)) return@forEach
+            client.sendChannel.sendPacket(packet)
+        }
+
+    suspend fun broadcast(packet: Packet, condition: (PlayClient) -> Boolean) = broadcastIf(packet, condition)
 }
 
 fun main() = runBlocking { MinecraftServer().run() }

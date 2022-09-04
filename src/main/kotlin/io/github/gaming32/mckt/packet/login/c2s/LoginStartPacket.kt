@@ -29,16 +29,14 @@ class LoginStartPacket(
     override fun write(out: MinecraftOutputStream) {
         out.writeString(username, 16)
         out.writeBoolean(signatureInfo != null)
-        if (signatureInfo != null) {
-            out.writeLong(signatureInfo.timestamp)
-            out.writeVarInt(signatureInfo.publicKey.size)
-            out.write(signatureInfo.publicKey)
-            out.writeVarInt(signatureInfo.signature.size)
-            out.write(signatureInfo.signature)
+        signatureInfo?.let {
+            out.writeLong(it.timestamp)
+            out.writeVarInt(it.publicKey.size)
+            out.write(it.publicKey)
+            out.writeVarInt(it.signature.size)
+            out.write(it.signature)
         }
         out.writeBoolean(uuid != null)
-        if (uuid != null) {
-            out.writeUuid(uuid)
-        }
+        uuid?.let { out.writeUuid(it) }
     }
 }

@@ -1,8 +1,9 @@
 package io.github.gaming32.mckt.packet
 
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
+import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
-import io.github.gaming32.mckt.packet.status.PingPacket
+import io.github.gaming32.mckt.packet.status.StatusPingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.ktor.utils.io.*
 import kotlinx.coroutines.withTimeout
@@ -12,7 +13,7 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
     HANDSHAKE(mapOf()),
     STATUS(mapOf(
         /* 0x00 */ StatusRequestPacket.TYPE to ::StatusRequestPacket,
-        /* 0x01 */ PingPacket.TYPE to ::PingPacket
+        /* 0x01 */ StatusPingPacket.TYPE to ::StatusPingPacket
     )),
     LOGIN(mapOf(
         /* 0x00 */ LoginStartPacket.TYPE to ::LoginStartPacket
@@ -27,7 +28,8 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         /* 0x15 */ PlayerPositionAndRotationPacket.TYPE to ::PlayerPositionAndRotationPacket,
         /* 0x16 */ PlayerRotationPacket.TYPE to ::PlayerRotationPacket,
         /* 0x17 */ PlayerOnGroundPacket.TYPE to ::PlayerOnGroundPacket,
-        /* 0x1C */ ServerboundPlayerAbilitiesPacket.TYPE to ::ServerboundPlayerAbilitiesPacket
+        /* 0x1C */ ServerboundPlayerAbilitiesPacket.TYPE to ::ServerboundPlayerAbilitiesPacket,
+        /* 0x20 */ PlayPingPacket.C2S_TYPE to ::PlayPingPacket
     ));
 
     suspend fun readPacket(channel: ByteReadChannel): Packet {

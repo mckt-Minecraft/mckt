@@ -23,9 +23,7 @@ class LoginSuccessPacket(
             out.writeString(property.name)
             out.writeString(property.value)
             out.writeBoolean(property.signature != null)
-            if (property.signature != null) {
-                out.writeString(property.signature)
-            }
+            property.signature?.let { out.writeString(it) }
         }
     }
 }

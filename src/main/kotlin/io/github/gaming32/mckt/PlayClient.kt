@@ -7,6 +7,7 @@ import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
+import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
@@ -21,6 +22,7 @@ import net.kyori.adventure.text.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
+import kotlin.time.Duration.Companion.nanoseconds
 
 class PlayClient(
     server: MinecraftServer,
@@ -56,6 +58,10 @@ class PlayClient(
     lateinit var handlePacketsJob: Job
     private var nextTeleportId = 0
 
+    internal var nextPingId = 0
+    internal var pingId = -1
+    internal var pingStart = 0L
+
     lateinit var dataFile: File
         private set
     lateinit var data: PlayerData
@@ -80,6 +86,9 @@ class PlayClient(
         }
         uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".encodeToByteArray())
         sendChannel.sendPacket(LoginSuccessPacket(uuid, username))
+    }
+
+    suspend fun postHandshake() {
         sendChannel.sendPacket(PlayLoginPacket(
             entityId = 0,
             hardcore = false,
@@ -118,6 +127,17 @@ class PlayClient(
             )
         )
         sendChannel.sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
+        server.broadcast(PlayerListUpdatePacket(
+            PlayerListUpdatePacket.AddPlayer(
+                uuid = uuid,
+                name = username,
+                properties = mapOf(),
+                gamemode = Gamemode.CREATIVE,
+                ping = -1,
+                displayName = null,
+                signatureData = null
+            )
+        ))
     }
 
     suspend fun handlePackets() {
@@ -141,19 +161,13 @@ class PlayClient(
                 is CommandPacket -> sendChannel.sendPacket(SystemChatPacket(
                     Component.text("Commands not implemented yet")
                 ))
-                is ServerboundChatPacket -> {
-                    val newPacket = SystemChatPacket(
-                        Component.translatable(
-                            "chat.type.text",
-                            Component.text(username),
-                            Component.text(packet.message)
-                        )
+                is ServerboundChatPacket -> server.broadcastIf(SystemChatPacket(
+                    Component.translatable(
+                        "chat.type.text",
+                        Component.text(username),
+                        Component.text(packet.message)
                     )
-                    server.clients.values.forEach { client ->
-                        if (client.options.chatMode > 0) return@forEach
-                        client.sendChannel.sendPacket(newPacket)
-                    }
-                }
+                )) { it.options.chatMode == 0 }
                 is ClientOptionsPacket -> options = packet.options
                 is ServerboundPlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                 is MovementPacket -> {
@@ -165,6 +179,13 @@ class PlayClient(
                     data.onGround = packet.onGround
                 }
                 is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
+                is PlayPingPacket -> if (packet.id == pingId) {
+                    val pingTime = System.nanoTime() - pingStart
+                    pingId = -1
+                    server.broadcast(PlayerListUpdatePacket(
+                        PlayerListUpdatePacket.UpdatePing(uuid, pingTime.nanoseconds.inWholeMilliseconds.toInt())
+                    ))
+                }
                 else -> LOGGER.warn("Unhandled packet {}", packet)
             }
         }
