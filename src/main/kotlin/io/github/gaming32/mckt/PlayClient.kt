@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
+import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
@@ -108,6 +109,9 @@ class PlayClient(
             isFlat = true,
             deathLocation = null
         ))
+        sendChannel.sendPacket(PlayPluginPacket(Identifier("brand")) {
+            writeString("mckt")
+        })
 
         dataFile = File(server.world.playersDir, "$username.json")
         data = try {
@@ -169,7 +173,7 @@ class PlayClient(
                     )
                 )) { it.options.chatMode == 0 }
                 is ClientOptionsPacket -> options = packet.options
-                is ServerboundPlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
+                is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                 is MovementPacket -> {
                     packet.x?.let { data.x = it }
                     packet.y?.let { data.y = it }

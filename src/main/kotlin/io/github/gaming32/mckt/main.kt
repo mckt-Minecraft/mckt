@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.packet.*
+import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.play.s2c.PlayerListUpdatePacket
@@ -9,6 +10,7 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -19,6 +21,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
@@ -73,11 +76,11 @@ class MinecraftServer {
                 }
                 if (world.meta.time % 20 == 0L) {
                     client.sendChannel.sendPacket(UpdateTimePacket(world.meta.time))
-                }
-                if (world.meta.time % 100 == 0L) {
-                    client.pingId = client.nextPingId++
-                    client.sendChannel.sendPacket(PlayPingPacket(client.pingId))
-                    client.pingStart = System.nanoTime()
+                    if (client.pingId == -1) {
+                        client.pingId = client.nextPingId++
+                        client.sendChannel.sendPacket(PlayPingPacket(client.pingId))
+                        client.pingStart = System.nanoTime()
+                    }
                 }
             }
             val endTime = System.nanoTime()
@@ -189,11 +192,6 @@ class MinecraftServer {
                     receiveChannel.readFully(packet, 0, packet.size)
                     val packetInput = MinecraftInputStream(ByteArrayInputStream(packet))
                     val protocolVersion = packetInput.readVarInt()
-                    if (protocolVersion != PROTOCOL_VERSION) {
-                        LOGGER.warn("Unsupported protocol version $protocolVersion")
-                        socket.dispose()
-                        return@initialConnection
-                    }
                     packetInput.readString(255) // Server address
                     @Suppress("BlockingMethodInNonBlockingContext")
                     packetInput.readUnsignedShort() // Server port
@@ -209,11 +207,29 @@ class MinecraftServer {
                         PacketState.STATUS -> handshakeJobs.add(launch {
                             try {
                                 StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle()
+                            } catch (e: Exception) {
+                                if (e !is ClosedReceiveChannelException) {
+                                    LOGGER.error("Error sharing status with client", e)
+                                }
                             } finally {
                                 handshakeJobs.remove(coroutineContext[Job])
                             }
                         })
                         PacketState.LOGIN -> handshakeJobs.add(launch {
+                            if (protocolVersion != PROTOCOL_VERSION) {
+                                val message = "Unsupported game version: " +
+                                    GAME_VERSIONS_BY_PROTOCOL[protocolVersion].let { version ->
+                                        if (version != null) {
+                                            "${version.minecraftVersion} (protocol version $protocolVersion)"
+                                        } else {
+                                            "Protocol version $protocolVersion"
+                                        }
+                                    }
+                                LOGGER.warn(message)
+                                sendChannel.sendPacket(LoginDisconnectPacket(Component.text(message)))
+                                socket.dispose()
+                                return@launch
+                            }
                             val client = PlayClient(this@MinecraftServer, socket, receiveChannel, sendChannel)
                             try {
                                 client.handshake()
@@ -255,4 +271,11 @@ class MinecraftServer {
     suspend fun broadcast(packet: Packet, condition: (PlayClient) -> Boolean) = broadcastIf(packet, condition)
 }
 
-fun main() = runBlocking { MinecraftServer().run() }
+fun main() {
+    thread(isDaemon = true) {
+        while (true) {
+            Thread.sleep(Long.MAX_VALUE)
+        }
+    }
+    runBlocking { MinecraftServer().run() }
+}
