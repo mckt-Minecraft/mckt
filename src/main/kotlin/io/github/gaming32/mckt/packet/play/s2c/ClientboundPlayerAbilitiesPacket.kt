@@ -8,8 +8,8 @@ class ClientboundPlayerAbilitiesPacket(
     val flying: Boolean,
     val allowFlying: Boolean,
     val creativeMode: Boolean,
-    val flyingSpeed: Float = 0.05f,
-    val fovModifier: Float = 1f
+    val flySpeed: Float = 0.05f,
+    val walkSpeed: Float = 0.1f
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x31
@@ -22,7 +22,7 @@ class ClientboundPlayerAbilitiesPacket(
             (if (allowFlying) 0x04 else 0) or
             (if (creativeMode) 0x08 else 0)
         )
-        out.writeFloat(flyingSpeed)
-        out.writeFloat(fovModifier)
+        out.writeFloat(flySpeed)
+        out.writeFloat(walkSpeed)
     }
 }

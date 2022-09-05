@@ -33,5 +33,7 @@ val GLOBAL_PALETTE = MinecraftServer::class.java.getResourceAsStream("/blocks.js
     Json.decodeFromStream<JsonObject>(input)
 }?.asSequence()?.associate { (id, data) ->
 //    Identifier.parse(id) to ((((data as JsonObject)["states"] as JsonArray)[0] as JsonObject)["id"] as JsonPrimitive).int
-    Identifier.parse(id) to data.toGson().asJsonObject["states"].asJsonArray[0].asJsonObject["id"].asInt
+    Identifier.parse(id) to data.toGson().asJsonObject["states"].asJsonArray.first {
+        it.asJsonObject["default"]?.asBoolean ?: false
+    }.asJsonObject["id"].asInt
 } ?: mapOf()

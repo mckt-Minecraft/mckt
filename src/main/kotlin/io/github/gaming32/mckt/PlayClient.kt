@@ -59,6 +59,8 @@ class PlayClient(
         private set
     lateinit var uuid: UUID
         private set
+    val entityId = server.nextEntityId++
+
     lateinit var handlePacketsJob: Job
     private var nextTeleportId = 0
 
@@ -94,7 +96,7 @@ class PlayClient(
 
     suspend fun postHandshake() = coroutineScope {
         sendChannel.sendPacket(PlayLoginPacket(
-            entityId = 0,
+            entityId = entityId,
             hardcore = false,
             gamemode = Gamemode.CREATIVE,
             previousGamemode = null,
@@ -145,7 +147,7 @@ class PlayClient(
                 signatureData = null
             ) }.toTypedArray()
         ))
-        server.broadcastIf(PlayerListUpdatePacket(
+        server.broadcastExcept(this@PlayClient, PlayerListUpdatePacket(
             PlayerListUpdatePacket.AddPlayer(
                 uuid = uuid,
                 name = username,
@@ -155,7 +157,17 @@ class PlayClient(
                 displayName = null,
                 signatureData = null
             )
-        )) { it !== this@PlayClient }
+        ))
+        val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
+        for (client in server.clients.values) {
+            if (client === this@PlayClient) continue
+            client.sendChannel.sendPacket(spawnPlayerPacket)
+            sendChannel.sendPacket(SpawnPlayerPacket(
+                client.entityId, client.uuid,
+                client.data.x, client.data.y, client.data.z,
+                client.data.yaw, client.data.pitch
+            ))
+        }
 
         launch {
             delay(10)
@@ -204,12 +216,28 @@ class PlayClient(
                 is ClientOptionsPacket -> options = packet.options
                 is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                 is MovementPacket -> {
+//                    if (packet.x != null && packet.yaw != null) {
+//                        server.broadcastExcept(this@PlayClient, EntityPositionAndRotationPacket(
+//                            entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
+//                        ))
+//                    } else if (packet.x != null) {
+//                        server.broadcastExcept(this@PlayClient, EntityPositionPacket(
+//                            entityId, data.x, data.y, data.z, data.onGround
+//                        ))
+//                    } else if (packet.yaw != null) {
+//                        server.broadcastExcept(this@PlayClient, EntityRotationPacket(
+//                            entityId, data.yaw, data.pitch, data.onGround
+//                        ))
+//                    }
                     packet.x?.let { data.x = it }
                     packet.y?.let { data.y = it }
                     packet.z?.let { data.z = it }
                     packet.yaw?.let { data.yaw = it }
                     packet.pitch?.let { data.pitch = it }
                     data.onGround = packet.onGround
+                    server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
+                        entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
+                    ))
                 }
                 is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
                 is PlayPingPacket -> if (packet.id == pingId) {

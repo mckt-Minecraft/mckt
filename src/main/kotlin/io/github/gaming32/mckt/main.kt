@@ -48,6 +48,7 @@ class MinecraftServer {
 
     lateinit var world: World
         private set
+    internal var nextEntityId = 0
 
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
@@ -275,6 +276,8 @@ class MinecraftServer {
         }
 
     suspend fun broadcast(packet: Packet, condition: (PlayClient) -> Boolean) = broadcastIf(packet, condition)
+
+    suspend fun broadcastExcept(client: PlayClient, packet: Packet) = broadcastIf(packet) { it !== client }
 }
 
 fun main() {
