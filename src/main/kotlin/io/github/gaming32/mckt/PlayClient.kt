@@ -4,6 +4,7 @@ package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.PacketState
+import io.github.gaming32.mckt.packet.encodeData
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
@@ -14,15 +15,17 @@ import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
+import kotlin.math.floor
 import kotlin.time.Duration.Companion.nanoseconds
 
 class PlayClient(
@@ -89,7 +92,7 @@ class PlayClient(
         sendChannel.sendPacket(LoginSuccessPacket(uuid, username))
     }
 
-    suspend fun postHandshake() {
+    suspend fun postHandshake() = coroutineScope {
         sendChannel.sendPacket(PlayLoginPacket(
             entityId = 0,
             hardcore = false,
@@ -131,7 +134,18 @@ class PlayClient(
             )
         )
         sendChannel.sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
-        server.broadcast(PlayerListUpdatePacket(
+        sendChannel.sendPacket(PlayerListUpdatePacket(
+            *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
+                uuid = client.uuid,
+                name = client.username,
+                properties = mapOf(),
+                gamemode = Gamemode.CREATIVE,
+                ping = -1,
+                displayName = null,
+                signatureData = null
+            ) }.toTypedArray()
+        ))
+        server.broadcastIf(PlayerListUpdatePacket(
             PlayerListUpdatePacket.AddPlayer(
                 uuid = uuid,
                 name = username,
@@ -141,7 +155,24 @@ class PlayClient(
                 displayName = null,
                 signatureData = null
             )
-        ))
+        )) { it !== this@PlayClient }
+
+        launch {
+            delay(10)
+            val playerX = floor(data.x / 16).toInt()
+            val playerZ = floor(data.z / 16).toInt()
+            spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
+                val chunk = server.world.getChunkOrGenerate(
+                    playerX + x - server.config.viewDistance,
+                    playerZ + z - server.config.viewDistance
+                )
+                if (sendChannel.isClosedForWrite) return@launch
+                sendChannel.sendPacket(ChunkAndLightDataPacket(
+                    chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
+                ))
+                delay(10)
+            }
+        }
     }
 
     suspend fun handlePackets() {
@@ -149,21 +180,19 @@ class PlayClient(
             val packet = try {
                 readPacket()
             } catch (e: Exception) {
-                if (e !is ClosedReceiveChannelException) {
-                    sendChannel.sendPacket(PlayDisconnectPacket(
-                        Component.text(e.toString())
-                    ))
-                    socket.dispose()
-                    LOGGER.warn("Client connection had error", e)
-                }
-                break
+                if (e is ClosedReceiveChannelException) break
+                sendChannel.sendPacket(SystemChatPacket(
+                    Component.text(e.toString()).color(NamedTextColor.GOLD), true
+                ))
+                LOGGER.warn("Client connection had error", e)
+                continue
             }
             when (packet) {
                 is ConfirmTeleportationPacket -> if (packet.teleportId >= nextTeleportId) {
                     LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                 }
                 is CommandPacket -> sendChannel.sendPacket(SystemChatPacket(
-                    Component.text("Commands not implemented yet")
+                    Component.text("Commands not implemented yet").color(NamedTextColor.GOLD)
                 ))
                 is ServerboundChatPacket -> server.broadcastIf(SystemChatPacket(
                     Component.translatable(

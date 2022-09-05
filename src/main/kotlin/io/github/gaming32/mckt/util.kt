@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
+import kotlin.math.max
 
 val NETWORK_NBT = Nbt {
     variant = NbtVariant.Java
@@ -28,6 +29,27 @@ val PRETTY_JSON = Json {
 
 val USERNAME_REGEX = Regex("^\\w{2,16}\$")
 
-fun getLogger() = LoggerFactory.getLogger(Util.getCallingClass())
+fun getLogger() = LoggerFactory.getLogger(Util.getCallingClass())!!
 
 fun Component.plainText() = PlainTextComponentSerializer.plainText().serialize(this)
+
+fun Int.squared() = this * this
+
+inline fun spiralLoop(w: Int, h: Int, action: (x: Int, y: Int) -> Unit) {
+    var x = 0
+    var y = 0
+    var dx = 0
+    var dy = -1
+    repeat(max(w, h).squared()) {
+        if (-w / 2 < x && x <= w / 2 && -h / 2 < y && y <= h / 2) {
+            action(x, y)
+        }
+        if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y)) {
+            val temp = dx
+            dx = -dy
+            dy = temp
+        }
+        x += dx
+        y += dy
+    }
+}

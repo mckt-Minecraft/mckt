@@ -11,8 +11,10 @@ abstract class Packet(val type: Int) {
         val mcOut = MinecraftOutputStream(output)
         mcOut.writeVarInt(type)
         write(mcOut)
-        channel.writeVarInt(output.size())
-        channel.writeFully(output.toByteArray())
+        channel.writeFully(encodeData {
+            writeVarInt(output.size())
+            write(output.toByteArray())
+        })
         channel.flush()
     }
 }

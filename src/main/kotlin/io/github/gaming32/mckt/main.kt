@@ -121,6 +121,7 @@ class MinecraftServer {
                     List of commands:
                       + help -- Shows this help
                       + kick -- Kicks a player
+                      + save -- Saves the world
                       + stop -- Stops the server
                 """.trimIndent().lineSequence()) {
                     LOGGER.info(line)
@@ -145,6 +146,11 @@ class MinecraftServer {
                     }
                 } catch (e: Exception) {
                     LOGGER.warn("{}", e.localizedMessage)
+                }
+                "save" -> {
+                    world.save()
+                    clients.values.forEach(PlayClient::save)
+                    LOGGER.info("Saved world")
                 }
                 "stop" -> running = false
                 else -> LOGGER.warn("Unknown command: {}", command)

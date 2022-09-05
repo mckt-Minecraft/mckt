@@ -9,10 +9,7 @@ import net.benwoodworth.knbt.decodeFromStream
 import net.benwoodworth.knbt.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 import kotlin.math.PI
 
@@ -182,3 +179,6 @@ suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
 
     return value
 }
+
+inline fun encodeData(builder: MinecraftOutputStream.() -> Unit): ByteArray =
+    ByteArrayOutputStream().also { MinecraftOutputStream(it).builder() }.toByteArray()

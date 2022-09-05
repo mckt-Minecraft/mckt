@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import java.io.ByteArrayOutputStream
+import io.github.gaming32.mckt.packet.encodeData
 
 class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
     companion object {
@@ -23,7 +23,5 @@ class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2
     }
 }
 
-inline fun PlayPluginPacket(channel: Identifier, builder: MinecraftOutputStream.() -> Unit) = PlayPluginPacket(
-    channel,
-    ByteArrayOutputStream().also { MinecraftOutputStream(it).builder() }.toByteArray()
-)
+inline fun PlayPluginPacket(channel: Identifier, builder: MinecraftOutputStream.() -> Unit) =
+    PlayPluginPacket(channel, encodeData(builder))
