@@ -5,6 +5,7 @@ package io.github.gaming32.mckt
 import io.github.gaming32.mckt.objects.BitSetSerializer
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,6 +16,7 @@ import net.benwoodworth.knbt.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.BitSet
+import kotlin.random.Random
 import kotlin.reflect.typeOf
 
 private val LOGGER = getLogger()
@@ -95,18 +97,20 @@ object Blocks {
 }
 
 @Serializable
-enum class WorldGenerator(val generate: (WorldChunk) -> Unit) {
-    @SerialName("flat") FLAT({ chunk ->
-        repeat(16) { x ->
-            repeat(16) { z ->
-                chunk.setBlock(x, 0, z, Blocks.BEDROCK)
-                chunk.setBlock(x, 1, z, Blocks.DIRT)
-                chunk.setBlock(x, 2, z, Blocks.DIRT)
-                chunk.setBlock(x, 3, z, Blocks.GRASS_BLOCK)
+enum class WorldGenerator(val createGenerator: (seed: Long) -> (chunk: WorldChunk) -> Unit) {
+    @SerialName("flat") FLAT({
+        { chunk ->
+            repeat(16) { x ->
+                repeat(16) { z ->
+                    chunk.setBlock(x, 0, z, Blocks.BEDROCK)
+                    chunk.setBlock(x, 1, z, Blocks.DIRT)
+                    chunk.setBlock(x, 2, z, Blocks.DIRT)
+                    chunk.setBlock(x, 3, z, Blocks.GRASS_BLOCK)
+                }
             }
         }
     }),
-    @SerialName("normal") NORMAL({})
+    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed)::generateChunk })
 }
 
 class World(val server: MinecraftServer, val name: String) : AutoCloseable {
@@ -127,6 +131,8 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
         WorldMeta(server.config)
     }
 
+    val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
+
     fun getRegion(x: Int, z: Int) = openRegions.computeIfAbsent(x to z) { (x, z) -> WorldRegion(this, x, z) }
 
     fun getChunk(x: Int, z: Int): WorldChunk? =
@@ -135,7 +141,7 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
     fun getChunkOrElse(x: Int, z: Int, generate: (WorldChunk) -> Unit = {}) =
         getRegion(x / 16, z / 16).getChunkOrElse(Math.floorMod(x, 16), Math.floorMod(z, 16), generate)
 
-    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, meta.worldGenerator.generate)
+    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
 
     fun getBlock(x: Int, y: Int, z: Int) =
         getRegion(x / 512, z / 512).getBlock(Math.floorMod(x, 512), y, Math.floorMod(z, 512))
@@ -185,7 +191,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         return chunk
     }
 
-    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.meta.worldGenerator.generate)
+    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
     fun getBlock(x: Int, y: Int, z: Int) = chunks[x * 2 + z / 16]?.getBlock(x % 16, y, z % 16)
 
@@ -395,10 +401,12 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 @Serializable
 class WorldMeta() {
     var time = 0L
+    var seed = 0L
     var worldGenerator = WorldGenerator.NORMAL
     var saveFormat = SaveFormat.NBT
 
     constructor(config: ServerConfig) : this() {
+        seed = config.seed ?: Random.nextLong()
         worldGenerator = config.defaultWorldGenerator
         saveFormat = config.defaultSaveFormat
     }

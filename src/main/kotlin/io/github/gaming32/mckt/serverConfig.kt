@@ -44,6 +44,7 @@ class ServerConfig(
     var viewDistance: Int = 10,
     var simulationDistance: Int = 10,
     var maxPlayers: Int = 20,
+    var seed: Long? = null,
     var motd: Component = Component.text("My mckt server"),
     var defaultWorldGenerator: WorldGenerator = WorldGenerator.NORMAL,
     var defaultSaveFormat: SaveFormat = SaveFormat.NBT
