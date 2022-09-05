@@ -36,3 +36,17 @@ object TextSerializer : KSerializer<Component> {
     override fun deserialize(decoder: Decoder) =
         GsonComponentSerializer.gson().deserializeFromTree(decoder.decodeSerializableValue(delegateSerializer).toGson())
 }
+
+@OptIn(ExperimentalSerializationApi::class)
+object BitSetSerializer : KSerializer<BitSet> {
+    private val delegateSerializer = serializer<LongArray>()
+    override val descriptor = SerialDescriptor("BitSet", delegateSerializer.descriptor)
+
+    override fun serialize(encoder: Encoder, value: BitSet) = encoder.encodeSerializableValue(
+        delegateSerializer,
+        value.toLongArray()
+    )
+
+    override fun deserialize(decoder: Decoder): BitSet =
+        BitSet.valueOf(decoder.decodeSerializableValue(delegateSerializer))
+}

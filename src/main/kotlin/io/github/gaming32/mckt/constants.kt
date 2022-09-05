@@ -21,4 +21,7 @@ class GameVersion(
 val GAME_VERSIONS = GameVersion::class.java.getResourceAsStream("/protocolVersions.json")?.use { input ->
     Json.decodeFromStream<List<GameVersion>>(input)
 } ?: listOf()
-val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS.associateBy { it.version }
+val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS
+    .asSequence()
+    .filter(GameVersion::usesNetty)
+    .associateBy(GameVersion::version)
