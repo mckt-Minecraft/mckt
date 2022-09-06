@@ -89,9 +89,11 @@ object Blocks {
     val GRASS_BLOCK = Identifier("grass_block")
     val BEDROCK = Identifier("bedrock")
     val LAVA = Identifier("lava")
+    val WOOD = Identifier("oak_log")
+    val LEAVES = Identifier("oak_leaves")
 
     // These are used in memory only
-    internal val BLOCK_NUM_TO_ID = arrayOf(STONE, DIRT, GRASS_BLOCK, BEDROCK, LAVA)
+    internal val BLOCK_NUM_TO_ID = arrayOf(STONE, DIRT, GRASS_BLOCK, BEDROCK, LAVA, WOOD, LEAVES)
     internal val BLOCK_ID_TO_NUM = BLOCK_NUM_TO_ID.withIndex().associate { it.value to (it.index + 1) }
     internal val BLOCK_NUM_TO_PALETTE = IntArray(BLOCK_NUM_TO_ID.size) { GLOBAL_PALETTE[BLOCK_NUM_TO_ID[it]] ?: 0 }
 }
@@ -154,8 +156,10 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
 
     @OptIn(ExperimentalSerializationApi::class)
     fun save() {
+        LOGGER.info("Saving world {}", name)
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
         openRegions.values.forEach(WorldRegion::save)
+        LOGGER.info("Saved world {}", name)
     }
 
     override fun close() = save()
