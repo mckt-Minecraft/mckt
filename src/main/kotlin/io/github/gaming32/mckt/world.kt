@@ -343,12 +343,12 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
     var blockCount = 0
         private set
 
-    private fun getBlockIndex(x: Int, y: Int, z: Int) = y * 256 + z * 16 + x
+    private fun getBlockIndex(x: Int, y: Int, z: Int) = y * 256 + z * 16 + 15 - x
 
     fun getBlock(x: Int, y: Int, z: Int): Identifier? {
         val id = data[getBlockIndex(x, y, z)]
         if (id == 0.toByte()) return null
-        return Blocks.BLOCK_NUM_TO_ID[id.toInt()]
+        return Blocks.BLOCK_NUM_TO_ID[id.toInt() - 1]
     }
 
     internal fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {

@@ -21,6 +21,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import java.lang.NumberFormatException
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -120,10 +121,11 @@ class MinecraftServer {
             when (baseCommand) {
                 "help" -> for (line in """
                     List of commands:
-                      + help -- Shows this help
-                      + kick -- Kicks a player
-                      + save -- Saves the world
-                      + stop -- Stops the server
+                      + help     -- Shows this help
+                      + kick     -- Kicks a player
+                      + save     -- Saves the world
+                      + getblock -- Gets a block
+                      + stop     -- Stops the server
                 """.trimIndent().lineSequence()) {
                     LOGGER.info(line)
                 }
@@ -152,6 +154,19 @@ class MinecraftServer {
                     world.save()
                     clients.values.forEach(PlayClient::save)
                     LOGGER.info("Saved world")
+                }
+                "getblock" -> {
+                    if (rest.count(' '::equals) != 2) {
+                        LOGGER.warn("Syntax: getblock <x> <y> <z>")
+                        continue
+                    }
+                    val (x, y, z) = try {
+                        rest.split(' ').map(String::toInt)
+                    } catch (e: NumberFormatException) {
+                        LOGGER.warn("Syntax: getblock <x> <y> <z>")
+                        continue
+                    }
+                    LOGGER.info("The block at {} {} {} is {}", x, y, z, world.getBlock(x, y, z))
                 }
                 "stop" -> running = false
                 else -> LOGGER.warn("Unknown command: {}", command)
