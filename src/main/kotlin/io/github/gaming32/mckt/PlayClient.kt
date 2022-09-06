@@ -26,6 +26,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 import kotlin.math.floor
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.nanoseconds
 
 class PlayClient(
@@ -72,6 +73,7 @@ class PlayClient(
         private set
     lateinit var data: PlayerData
         private set
+    private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
 
     var options = ClientOptions(this)
 
@@ -169,23 +171,26 @@ class PlayClient(
             ))
         }
 
-        launch {
-            delay(10)
-            val playerX = floor(data.x / 16).toInt()
-            val playerZ = floor(data.z / 16).toInt()
-            spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
-                val chunk = server.world.getChunkOrGenerate(
-                    playerX + x - server.config.viewDistance,
-                    playerZ + z - server.config.viewDistance
-                )
+        delay(10)
+        loadChunksAroundPlayer()
+    }
+
+    private suspend fun loadChunksAroundPlayer() = coroutineScope { launch {
+        val playerX = floor(data.x / 16).toInt()
+        val playerZ = floor(data.z / 16).toInt()
+        spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
+            val absX = playerX + x
+            val absZ = playerZ + z
+            if (loadedChunks.add(absX to absZ)) {
+                val chunk = server.world.getChunkOrGenerate(absX, absZ)
                 if (sendChannel.isClosedForWrite) return@launch
                 sendChannel.sendPacket(ChunkAndLightDataPacket(
                     chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
                 ))
-                delay(10)
+                yield()
             }
         }
-    }
+    } }
 
     suspend fun handlePackets() {
         while (server.running) {
@@ -229,11 +234,21 @@ class PlayClient(
 //                            entityId, data.yaw, data.pitch, data.onGround
 //                        ))
 //                    }
-                    packet.x?.let { data.x = it }
-                    packet.y?.let { data.y = it }
-                    packet.z?.let { data.z = it }
-                    packet.yaw?.let { data.yaw = it }
-                    packet.pitch?.let { data.pitch = it }
+                    if (packet.x != null) {
+                        if (
+                            data.z.roundToInt() / 16 != packet.z!!.roundToInt() / 16 ||
+                            data.x.roundToInt() / 16 != packet.x.roundToInt() / 16
+                        ) {
+                            loadChunksAroundPlayer()
+                        }
+                        data.x = packet.x
+                        data.y = packet.y!!
+                        data.z = packet.z
+                    }
+                    if (packet.yaw != null) {
+                        data.yaw = packet.yaw
+                        data.pitch = packet.pitch!!
+                    }
                     data.onGround = packet.onGround
                     server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
                         entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround

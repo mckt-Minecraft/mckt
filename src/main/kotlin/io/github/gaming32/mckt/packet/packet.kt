@@ -16,7 +16,7 @@ abstract class Packet(val type: Int) {
         val mcOut = MinecraftOutputStream(output)
         mcOut.writeVarInt(type)
         write(mcOut)
-        writeLocks.computeIfAbsent(channel) { Mutex() }.withLock(channel) {
+        writeLocks.computeIfAbsent(channel) { Mutex() }.withLock {
             channel.writeFully(encodeData {
                 writeVarInt(output.size())
                 write(output.toByteArray())
