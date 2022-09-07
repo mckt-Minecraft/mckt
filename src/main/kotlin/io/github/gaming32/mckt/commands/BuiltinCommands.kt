@@ -159,7 +159,7 @@ object BuiltinCommands {
         OP.call(sender, "${args.substringBefore(' ')} 0")
     }
 
-    val STOP = registerCommand("stop", Component.text("Stops the server"), 4) { sender, args ->
+    val STOP = registerCommand("stop", Component.text("Stops the server"), 4) { sender, _ ->
         if (sender is ClientCommandSender) {
             return@registerCommand sender.reply(
                 Component.text("Player cannot stop the server (yet\u2122)", NamedTextColor.RED)

@@ -13,15 +13,7 @@ val COMMANDS: Map<String, Command> get() =
     commands // Public getter gets immutable-type map. It's still mutable underneath, though
 
 abstract class Command(val name: String, val description: Component?, val minPermission: Int) {
-    abstract suspend fun call(sender: CommandSender, args: String)
-
-    protected suspend fun validatePermission(sender: CommandSender): Boolean {
-        if (sender.operator < minPermission) {
-            sender.noPermission()
-            return false
-        }
-        return true
-    }
+    abstract suspend fun call(sender: CommandSender, args: String): Boolean
 }
 
 fun registerCommand(command: Command) =
@@ -29,14 +21,24 @@ fun registerCommand(command: Command) =
         throw IllegalArgumentException("Command ${existing.name} already exists")
     }.let { command }
 
+inline fun registerCommandPermCheck(
+    name: String,
+    description: Component? = null,
+    permission: Int = 0,
+    crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Boolean
+) = registerCommand(object : Command(name, description, permission) {
+    override suspend fun call(sender: CommandSender, args: String) = executor(sender, args)
+})
+
 inline fun registerCommand(
     name: String,
     description: Component? = null,
     permission: Int = 0,
     crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Unit
-) = registerCommand(object : Command(name, description, permission) {
-    override suspend fun call(sender: CommandSender, args: String) = executor(sender, args)
-})
+) = registerCommandPermCheck(name, description, permission) { sender, args ->
+    executor(sender, args)
+    true
+}
 
 fun CommandSender.evaluateClient(name: String): PlayClient? = server.clients[name]
 
@@ -47,9 +49,12 @@ suspend fun CommandSender.runCommand(command: String) {
         listOf(command, "")
     }
     try {
-        COMMANDS[baseCommand]?.call(this, rest) ?: reply( // TODO: check perms
-            Component.text("Unknown command: $baseCommand", NamedTextColor.RED)
-        )
+        COMMANDS[baseCommand]?.let { commandToRun ->
+            if (commandToRun.minPermission > operator) {
+                return@let null
+            }
+            if (commandToRun.call(this, rest)) Unit else null
+        } ?: reply(Component.translatable("commands.help.failed", NamedTextColor.RED))
     } catch (e: Exception) {
         LOGGER.error("Internal command error", e)
         if (this !is ConsoleCommandSender) reply(
