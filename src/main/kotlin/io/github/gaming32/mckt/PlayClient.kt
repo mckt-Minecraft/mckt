@@ -2,6 +2,9 @@
 
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.commands.ClientCommandSender
+import io.github.gaming32.mckt.commands.CommandSender
+import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.encodeData
@@ -63,7 +66,7 @@ class PlayClient(
     val entityId = server.nextEntityId++
 
     lateinit var handlePacketsJob: Job
-    private var nextTeleportId = 0
+    internal var nextTeleportId = 0
 
     internal var nextPingId = 0
     internal var pingId = -1
@@ -72,6 +75,8 @@ class PlayClient(
     lateinit var dataFile: File
         private set
     lateinit var data: PlayerData
+        private set
+    lateinit var commandSender: CommandSender
         private set
     private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
 
@@ -129,6 +134,8 @@ class PlayClient(
             }
             PlayerData()
         }
+        commandSender = ClientCommandSender(this@PlayClient)
+
         sendChannel.sendPacket(
             ClientboundPlayerAbilitiesPacket(
                 invulnerable = true,
@@ -208,9 +215,7 @@ class PlayClient(
                 is ConfirmTeleportationPacket -> if (packet.teleportId >= nextTeleportId) {
                     LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                 }
-                is CommandPacket -> sendChannel.sendPacket(SystemChatPacket(
-                    Component.text("Commands not implemented yet").color(NamedTextColor.GOLD)
-                ))
+                is CommandPacket -> commandSender.runCommand(packet.command)
                 is ServerboundChatPacket -> server.broadcastIf(SystemChatPacket(
                     Component.translatable(
                         "chat.type.text",

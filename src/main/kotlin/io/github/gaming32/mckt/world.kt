@@ -425,4 +425,5 @@ class PlayerData {
     var pitch = 0f
     var onGround = false
     var flying = false
+    var operatorLevel = 0
 }

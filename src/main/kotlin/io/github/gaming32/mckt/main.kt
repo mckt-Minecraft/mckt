@@ -1,5 +1,8 @@
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.commands.BuiltinCommands
+import io.github.gaming32.mckt.commands.ConsoleCommandSender
+import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
@@ -15,13 +18,11 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
-import java.lang.NumberFormatException
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -51,11 +52,15 @@ class MinecraftServer {
         private set
     internal var nextEntityId = 0
 
+    private val commandSender = ConsoleCommandSender(this)
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
+        BuiltinCommands.register()
         world = World(this@MinecraftServer, "world")
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
+        LOGGER.info("Server started...")
         while (running) {
             val startTime = System.nanoTime()
             world.meta.time++
@@ -108,69 +113,14 @@ class MinecraftServer {
         handshakeJobs.clear()
         world.close()
         joinAll(handleCommandsJob, acceptConnectionsJob)
+        LOGGER.info("Server stopped")
     }
 
     private suspend fun handleCommands() = coroutineScope {
         while (running) {
-            val command = withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
-            val (baseCommand, rest) = if (' ' in command) {
-                command.split(' ', limit = 2)
-            } else {
-                listOf(command, "")
-            }
-            when (baseCommand) {
-                "help" -> for (line in """
-                    List of commands:
-                      + help     -- Shows this help
-                      + kick     -- Kicks a player
-                      + save     -- Saves the world
-                      + getblock -- Gets a block
-                      + stop     -- Stops the server
-                """.trimIndent().lineSequence()) {
-                    LOGGER.info(line)
-                }
-                "kick" -> try {
-                    val spaceIndex = rest.indexOf(' ')
-                    val (username, reason) = if (spaceIndex != -1) {
-                        Pair(
-                            rest.substring(0, spaceIndex),
-                            GsonComponentSerializer.gson().deserialize(rest.substring(spaceIndex + 1))
-                        )
-                    } else {
-                        Pair(rest, Component.text("Kicked by operator"))
-                    }
-                    val client = clients[username]
-                    if (client == null || client.receiveChannel.isClosedForRead) {
-                        LOGGER.warn("Player {} is not online.", username)
-                    } else {
-                        client.sendChannel.sendPacket(PlayDisconnectPacket(reason))
-                        client.socket.dispose()
-                        LOGGER.info("Kicked {} for {}", username, reason.plainText())
-                    }
-                } catch (e: Exception) {
-                    LOGGER.warn("{}", e.localizedMessage)
-                }
-                "save" -> {
-                    world.save()
-                    clients.values.forEach(PlayClient::save)
-                    LOGGER.info("Saved world")
-                }
-                "getblock" -> {
-                    if (rest.count(' '::equals) != 2) {
-                        LOGGER.warn("Syntax: getblock <x> <y> <z>")
-                        continue
-                    }
-                    val (x, y, z) = try {
-                        rest.split(' ').map(String::toInt)
-                    } catch (e: NumberFormatException) {
-                        LOGGER.warn("Syntax: getblock <x> <y> <z>")
-                        continue
-                    }
-                    LOGGER.info("The block at {} {} {} is {}", x, y, z, world.getBlock(x, y, z))
-                }
-                "stop" -> running = false
-                else -> LOGGER.warn("Unknown command: {}", command)
-            }
+            commandSender.runCommand(
+                withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
+            )
         }
     }
 
@@ -282,12 +232,17 @@ class MinecraftServer {
         }
     }
 
-    suspend fun broadcast(packet: Packet) = clients.values.forEach { it.sendChannel.sendPacket(packet) }
+    suspend fun broadcast(packet: Packet) = coroutineScope {
+        clients.values.map { client ->
+            launch { client.sendChannel.sendPacket(packet) }
+        }.joinAll()
+    }
 
-    internal suspend inline fun broadcastIf(packet: Packet, condition: (PlayClient) -> Boolean) =
-        clients.values.forEach { client ->
-            if (!condition(client)) return@forEach
-            client.sendChannel.sendPacket(packet)
+    internal suspend inline fun broadcastIf(packet: Packet, crossinline condition: (PlayClient) -> Boolean) =
+        coroutineScope {
+            clients.values.mapNotNull { client ->
+                if (condition(client)) launch { client.sendChannel.sendPacket(packet) } else null
+            }.joinAll()
         }
 
     suspend fun broadcast(packet: Packet, condition: (PlayClient) -> Boolean) = broadcastIf(packet, condition)

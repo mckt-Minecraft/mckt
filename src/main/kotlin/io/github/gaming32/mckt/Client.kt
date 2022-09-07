@@ -6,7 +6,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 
 sealed class Client(
-    protected val server: MinecraftServer,
+    val server: MinecraftServer,
     internal val socket: Socket,
     internal val receiveChannel: ByteReadChannel,
     internal val sendChannel: ByteWriteChannel

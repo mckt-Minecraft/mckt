@@ -47,7 +47,7 @@ fun JsonNullKotlinx.toGson() = JsonNullGson.INSTANCE!!
 fun JsonPrimitiveKotlinx.toGson() = if (isString) {
     JsonPrimitiveGson(content)
 } else {
-    JSON_PARSER.parse(content)!!
+    JSON_PARSER.parse(content) as JsonPrimitiveGson
 }
 
 fun JsonArrayKotlinx.toGson() = JsonArrayGson().also { array -> forEach { array.add(it.toGson()) } }
