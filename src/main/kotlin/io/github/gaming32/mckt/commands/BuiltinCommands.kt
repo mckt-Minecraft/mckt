@@ -169,5 +169,9 @@ object BuiltinCommands {
         sender.server.running = false
     }
 
+    val SAVE = registerCommand("save", Component.text("Saves the world"), 4) { sender, _ ->
+        sender.server.world.saveAndLog(sender)
+    }
+
     internal fun register() = Unit
 }

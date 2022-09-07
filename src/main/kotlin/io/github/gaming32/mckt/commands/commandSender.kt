@@ -31,7 +31,7 @@ abstract class CommandSender(val server: MinecraftServer) {
             LOGGER.info(broadcastMessage.plainText())
         }
         val skipClient = (this as? ClientCommandSender)?.client
-        server.broadcastIf(SystemChatPacket(broadcastMessage)) { client ->
+        server.broadcast(SystemChatPacket(broadcastMessage)) { client ->
             client.data.operatorLevel > 0 && client != skipClient
         }
     }
@@ -39,8 +39,8 @@ abstract class CommandSender(val server: MinecraftServer) {
     override fun toString() = displayName.plainText()
 }
 
-class ConsoleCommandSender(server: MinecraftServer) : CommandSender(server) {
-    override val displayName = Component.text("CONSOLE")
+class ConsoleCommandSender(server: MinecraftServer, name: String) : CommandSender(server) {
+    override val displayName = Component.text(name)
     override val operator = 4
 
     override suspend fun reply(message: Component) = LOGGER.info(message.plainText())

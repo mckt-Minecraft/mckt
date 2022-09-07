@@ -9,7 +9,7 @@ sealed class Client(
     val server: MinecraftServer,
     internal val socket: Socket,
     internal val receiveChannel: ByteReadChannel,
-    internal val sendChannel: ByteWriteChannel
+    @PublishedApi internal val sendChannel: ByteWriteChannel
 ) {
     protected abstract val primaryState: PacketState
 

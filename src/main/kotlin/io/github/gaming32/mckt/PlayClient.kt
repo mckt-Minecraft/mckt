@@ -29,6 +29,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 import kotlin.math.floor
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -102,10 +103,20 @@ class PlayClient(
     }
 
     suspend fun postHandshake() = coroutineScope {
+        dataFile = File(server.world.playersDir, "$username.json")
+        data = try {
+            dataFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
+        } catch (e: Exception) {
+            if (e !is FileNotFoundException) {
+                LOGGER.warn("Couldn't read player data, creating anew", e)
+            }
+            PlayerData()
+        }
+
         sendChannel.sendPacket(PlayLoginPacket(
             entityId = entityId,
             hardcore = false,
-            gamemode = Gamemode.CREATIVE,
+            gamemode = data.gamemode,
             previousGamemode = null,
             dimensions = listOf(Identifier("overworld")),
             registryCodec = DEFAULT_REGISTRY_CODEC,
@@ -125,32 +136,25 @@ class PlayClient(
             writeString("mckt")
         })
 
-        dataFile = File(server.world.playersDir, "$username.json")
-        data = try {
-            dataFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
-        } catch (e: Exception) {
-            if (e !is FileNotFoundException) {
-                LOGGER.warn("Couldn't read player data, creating anew", e)
-            }
-            PlayerData()
-        }
         commandSender = ClientCommandSender(this@PlayClient)
 
-        sendChannel.sendPacket(
-            ClientboundPlayerAbilitiesPacket(
-                invulnerable = true,
-                flying = data.flying,
-                allowFlying = true,
-                creativeMode = true
-            )
-        )
+        sendChannel.sendPacket(ClientboundPlayerAbilitiesPacket(
+            invulnerable = true,
+            flying = data.flying,
+            allowFlying = true,
+            creativeMode = true
+        ))
+        sendChannel.sendPacket(EntityEventPacket(
+            entityId,
+            (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
+        ))
         sendChannel.sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
         sendChannel.sendPacket(PlayerListUpdatePacket(
             *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
                 uuid = client.uuid,
                 name = client.username,
                 properties = mapOf(),
-                gamemode = Gamemode.CREATIVE,
+                gamemode = client.data.gamemode,
                 ping = -1,
                 displayName = null,
                 signatureData = null
@@ -161,7 +165,7 @@ class PlayClient(
                 uuid = uuid,
                 name = username,
                 properties = mapOf(),
-                gamemode = Gamemode.CREATIVE,
+                gamemode = data.gamemode,
                 ping = -1,
                 displayName = null,
                 signatureData = null
@@ -216,7 +220,7 @@ class PlayClient(
                     LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                 }
                 is CommandPacket -> commandSender.runCommand(packet.command)
-                is ServerboundChatPacket -> server.broadcastIf(SystemChatPacket(
+                is ServerboundChatPacket -> server.broadcast(SystemChatPacket(
                     Component.translatable(
                         "chat.type.text",
                         Component.text(username),

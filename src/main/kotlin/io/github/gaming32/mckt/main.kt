@@ -52,7 +52,8 @@ class MinecraftServer {
         private set
     internal var nextEntityId = 0
 
-    private val commandSender = ConsoleCommandSender(this)
+    private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
+    val serverCommandSender = ConsoleCommandSender(this, "Server")
 
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
@@ -65,7 +66,7 @@ class MinecraftServer {
             val startTime = System.nanoTime()
             world.meta.time++
             if (world.meta.time % 6000 == 0L) {
-                world.save()
+                world.saveAndLog()
                 clients.values.forEach(PlayClient::save)
             }
             val clientsIterator = clients.values.iterator()
@@ -111,14 +112,14 @@ class MinecraftServer {
         handshakeJobs.forEach { it.cancel() }
         handshakeJobs.joinAll()
         handshakeJobs.clear()
-        world.close()
+        world.closeAndLog()
         joinAll(handleCommandsJob, acceptConnectionsJob)
         LOGGER.info("Server stopped")
     }
 
     private suspend fun handleCommands() = coroutineScope {
         while (running) {
-            commandSender.runCommand(
+            consoleCommandSender.runCommand(
                 withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
             )
         }
@@ -238,16 +239,13 @@ class MinecraftServer {
         }.joinAll()
     }
 
-    internal suspend inline fun broadcastIf(packet: Packet, crossinline condition: (PlayClient) -> Boolean) =
-        coroutineScope {
-            clients.values.mapNotNull { client ->
-                if (condition(client)) launch { client.sendChannel.sendPacket(packet) } else null
-            }.joinAll()
-        }
+    suspend inline fun broadcast(packet: Packet, crossinline condition: (PlayClient) -> Boolean) = coroutineScope {
+        clients.values.mapNotNull { client ->
+            if (condition(client)) launch { client.sendChannel.sendPacket(packet) } else null
+        }.joinAll()
+    }
 
-    suspend fun broadcast(packet: Packet, condition: (PlayClient) -> Boolean) = broadcastIf(packet, condition)
-
-    suspend fun broadcastExcept(client: PlayClient, packet: Packet) = broadcastIf(packet) { it !== client }
+    suspend fun broadcastExcept(client: PlayClient, packet: Packet) = broadcast(packet) { it !== client }
 }
 
 fun main() {

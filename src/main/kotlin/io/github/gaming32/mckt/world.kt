@@ -2,6 +2,7 @@
 
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.commands.CommandSender
 import io.github.gaming32.mckt.objects.BitSetSerializer
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
@@ -13,6 +14,7 @@ import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.benwoodworth.knbt.*
+import net.kyori.adventure.text.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.BitSet
@@ -156,13 +158,25 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
 
     @OptIn(ExperimentalSerializationApi::class)
     fun save() {
-        LOGGER.info("Saving world {}", name)
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
         openRegions.values.forEach(WorldRegion::save)
-        LOGGER.info("Saved world {}", name)
     }
 
-    override fun close() = save()
+    suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) {
+        sender.replyBroadcast(Component.text("Saving world \"$name\""))
+        save()
+        sender.replyBroadcast(Component.text("Saved world \"$name\""))
+    }
+
+    override fun close() {
+        save()
+        openRegions.clear()
+    }
+
+    suspend fun closeAndLog() {
+        saveAndLog()
+        openRegions.clear()
+    }
 }
 
 class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
@@ -426,4 +440,5 @@ class PlayerData {
     var onGround = false
     var flying = false
     var operatorLevel = 0
+    var gamemode = Gamemode.CREATIVE
 }
