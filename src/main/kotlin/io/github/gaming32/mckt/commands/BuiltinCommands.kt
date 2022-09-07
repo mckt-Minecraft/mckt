@@ -1,9 +1,11 @@
 package io.github.gaming32.mckt.commands
 
 import com.google.gson.JsonSyntaxException
+import io.github.gaming32.mckt.Gamemode
 import io.github.gaming32.mckt.PlayClient
+import io.github.gaming32.mckt.capitalize
+import io.github.gaming32.mckt.enumValueOfOrNull
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayerPositionSyncPacket
 import io.github.gaming32.mckt.packet.play.s2c.SystemChatPacket
 import io.github.gaming32.mckt.packet.sendPacket
 import net.kyori.adventure.text.Component
@@ -63,12 +65,7 @@ object BuiltinCommands {
             val to = sender.evaluateClient(argv[1]) ?: return@registerCommand sender.reply(
                 Component.text("Player ${argv[1]} not found", NamedTextColor.RED)
             )
-            who.data.x = to.data.x
-            who.data.y = to.data.y
-            who.data.z = to.data.z
-            who.data.yaw = to.data.yaw
-            who.data.pitch = to.data.pitch
-            who.data.onGround = to.data.onGround
+            who.teleport(to)
             sender.replyBroadcast(Component.text("Teleported ${who.username} to ${to.username}"))
         } else {
             val x = argv[1].toDoubleOrNull() ?: return@registerCommand sender.reply(
@@ -80,19 +77,41 @@ object BuiltinCommands {
             val z = argv[3].toDoubleOrNull() ?: return@registerCommand sender.reply(
                 Component.text("Invalid number: ${argv[3]}", NamedTextColor.RED)
             )
-            who.data.x = x
-            who.data.y = y
-            who.data.z = z
+            who.teleport(x, y, z)
             sender.replyBroadcast(Component.text("Teleported ${who.username} to $x $y $z"))
         }
-        who.sendChannel.sendPacket(PlayerPositionSyncPacket(
-            who.nextTeleportId++,
-            who.data.x,
-            who.data.y,
-            who.data.z,
-            who.data.yaw,
-            who.data.pitch
-        ))
+    }
+
+    val GAMEMODE = registerCommand("gamemode", Component.text("Set player gamemode"), 1) { sender, args ->
+        if (args.isEmpty()) {
+            return@registerCommand sender.reply(
+                Component.text("Usage: /gamemode <gamemode> [player]", NamedTextColor.RED)
+            )
+        }
+        val gamemodeString: String
+        val who: PlayClient?
+        if (' ' in args) {
+            gamemodeString = args.substringBefore(' ')
+            who = sender.evaluateClient(args.substringAfter(' '))
+        } else {
+            gamemodeString = args
+            who = (sender as? ClientCommandSender)?.client ?: return@registerCommand sender.reply(
+                Component.text("Usage: /op <gamemode> <player>", NamedTextColor.RED)
+            )
+        }
+        if (who == null) {
+            return@registerCommand sender.reply(
+                Component.text("Player not found online", NamedTextColor.RED)
+            )
+        }
+        val gamemode = enumValueOfOrNull(gamemodeString.uppercase()) ?:
+            Gamemode.values().getOrNull(gamemodeString.toIntOrNull() ?: return@registerCommand sender.reply(
+                Component.text("Invalid integer: $gamemodeString", NamedTextColor.RED)
+            )) ?: return@registerCommand sender.reply(
+                Component.text("Unknown gamemode: $gamemodeString", NamedTextColor.RED)
+            )
+        who.setGamemode(gamemode)
+        sender.reply(Component.text("Set ${who.username}'s gamemode to ${gamemode.name.capitalize()}"))
     }
 
     val KICK = registerCommand("kick", Component.text("Forcefully disconnect a player"), 2) { sender, args ->
@@ -111,12 +130,11 @@ object BuiltinCommands {
         }
         val client = sender.evaluateClient(username)
         if (client == null || client.receiveChannel.isClosedForRead) {
-            sender.reply(Component.text("Player $username is not online.", NamedTextColor.RED))
-        } else {
-            client.sendChannel.sendPacket(PlayDisconnectPacket(reason))
-            client.socket.dispose()
-            sender.replyBroadcast(Component.text("Kicked $username for ").append(reason))
+            return@registerCommand sender.reply(Component.text("Player $username is not online.", NamedTextColor.RED))
         }
+        client.sendChannel.sendPacket(PlayDisconnectPacket(reason))
+        client.socket.dispose()
+        sender.replyBroadcast(Component.text("Kicked $username for ").append(reason))
     }
 
     val OP = registerCommand("op", Component.text("Sets a player's operator level"), 3) { sender, args ->

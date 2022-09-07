@@ -276,6 +276,48 @@ class PlayClient(
         }
     }
 
+    suspend fun teleport(
+        x: Double? = null, y: Double? = null, z: Double? = null,
+        yaw: Float? = null, pitch: Float? = null
+    ) {
+        x?.let { data.x = it }
+        y?.let { data.y = it }
+        z?.let { data.z = it }
+        yaw?.let { data.yaw = it }
+        pitch?.let { data.pitch = it }
+        sendChannel.sendPacket(PlayerPositionSyncPacket(
+            nextTeleportId++,
+            data.x,
+            data.y,
+            data.z,
+            data.yaw,
+            data.pitch
+        ))
+        server.broadcastExcept(this, EntityTeleportPacket(
+            entityId,
+            data.x,
+            data.y,
+            data.z,
+            data.yaw,
+            data.pitch,
+            data.onGround
+        ))
+    }
+
+    suspend fun teleport(to: PlayClient) = teleport(
+        to.data.x, to.data.y, to.data.z,
+        to.data.yaw, to.data.pitch
+    )
+
+    suspend fun setGamemode(new: Gamemode) {
+        if (new == data.gamemode) return
+        data.gamemode = new
+        sendChannel.sendPacket(GameEventPacket(GameEventPacket.SET_GAMEMODE, new.ordinal.toFloat()))
+        server.broadcast(PlayerListUpdatePacket(
+            PlayerListUpdatePacket.UpdateGamemode(uuid, new)
+        ))
+    }
+
     fun save() {
         dataFile.outputStream().use { PRETTY_JSON.encodeToStream(data, it) }
     }

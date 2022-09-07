@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
+import java.lang.IllegalArgumentException
 import kotlin.math.max
 
 val NETWORK_NBT = Nbt {
@@ -53,3 +54,11 @@ inline fun spiralLoop(w: Int, h: Int, action: (x: Int, y: Int) -> Unit) {
         y += dy
     }
 }
+
+inline fun <reified T : Enum<T>> enumValueOfOrNull(name: String) = try {
+    enumValueOf<T>(name)
+} catch (e: IllegalArgumentException) {
+    null
+}
+
+fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecaseChar()}${this.substring(1).lowercase()}"
