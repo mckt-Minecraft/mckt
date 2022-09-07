@@ -102,6 +102,7 @@ class PlayClient(
         sendChannel.sendPacket(LoginSuccessPacket(uuid, username))
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     suspend fun postHandshake() = coroutineScope {
         dataFile = File(server.world.playersDir, "$username.json")
         data = try {
@@ -139,10 +140,7 @@ class PlayClient(
         commandSender = ClientCommandSender(this@PlayClient)
 
         sendChannel.sendPacket(ClientboundPlayerAbilitiesPacket(
-            invulnerable = true,
-            flying = data.flying,
-            allowFlying = true,
-            creativeMode = true
+            data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
         ))
         sendChannel.sendPacket(EntityEventPacket(
             entityId,
@@ -302,6 +300,9 @@ class PlayClient(
             data.pitch,
             data.onGround
         ))
+        if (x != null || z != null) {
+            loadChunksAroundPlayer()
+        }
     }
 
     suspend fun teleport(to: PlayClient) = teleport(
@@ -313,6 +314,9 @@ class PlayClient(
         if (new == data.gamemode) return
         data.gamemode = new
         sendChannel.sendPacket(GameEventPacket(GameEventPacket.SET_GAMEMODE, new.ordinal.toFloat()))
+        sendChannel.sendPacket(ClientboundPlayerAbilitiesPacket(
+            new.defaultAbilities.copyCurrentlyFlying(data.flying)
+        ))
         server.broadcast(PlayerListUpdatePacket(
             PlayerListUpdatePacket.UpdateGamemode(uuid, new)
         ))

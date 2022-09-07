@@ -4,9 +4,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class Gamemode {
-    @SerialName("survival")  SURVIVAL,
-    @SerialName("creative")  CREATIVE,
-    @SerialName("adventure") ADVENTURE,
-    @SerialName("spectator") SPECTATOR
+enum class Gamemode(val defaultAbilities: PlayerAbilities) {
+    @SerialName("survival")  SURVIVAL(PlayerAbilities(
+        invulnerable = false,
+        flying = false,
+        allowFlying = false,
+        creativeMode = false
+    )),
+    @SerialName("creative")  CREATIVE(PlayerAbilities(
+        invulnerable = true,
+        flying = false,
+        allowFlying = true,
+        creativeMode = true
+    )),
+    @SerialName("adventure") ADVENTURE(SURVIVAL.defaultAbilities),
+    @SerialName("spectator") SPECTATOR(CREATIVE.defaultAbilities.copy(flying = true, creativeMode = false))
 }

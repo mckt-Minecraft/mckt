@@ -61,4 +61,4 @@ inline fun <reified T : Enum<T>> enumValueOfOrNull(name: String) = try {
     null
 }
 
-fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecaseChar()}${this.substring(1).lowercase()}"
+fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecase()}${this.substring(1).lowercase()}"
