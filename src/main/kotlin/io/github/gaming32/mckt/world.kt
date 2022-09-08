@@ -7,6 +7,7 @@ import io.github.gaming32.mckt.objects.BitSetSerializer
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
+import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -103,7 +104,7 @@ object Blocks {
 }
 
 @Serializable
-enum class WorldGenerator(val createGenerator: (seed: Long) -> (chunk: WorldChunk) -> Unit) {
+enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (chunk: WorldChunk) -> Unit) {
     @SerialName("flat") FLAT({
         { chunk ->
             repeat(16) { x ->
@@ -116,7 +117,11 @@ enum class WorldGenerator(val createGenerator: (seed: Long) -> (chunk: WorldChun
             }
         }
     }),
-    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed)::generateChunk })
+    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed).let { generator -> { chunk ->
+        coroutineScope { launch(chunk.world.worldgenPool) {
+            generator.generateChunk(chunk)
+        } }
+    } } })
 }
 
 class World(val server: MinecraftServer, val name: String) : AutoCloseable {
@@ -126,6 +131,12 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
     private val openRegions = mutableMapOf<Pair<Int, Int>, WorldRegion>()
+    @OptIn(DelicateCoroutinesApi::class)
+    internal val worldgenPool = if (Runtime.getRuntime().availableProcessors() == 1) {
+        Dispatchers.Default
+    } else {
+        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Worldgen")
+    }
 
     @OptIn(ExperimentalSerializationApi::class)
     val meta = try {
@@ -144,15 +155,15 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
     fun getChunk(x: Int, z: Int): WorldChunk? =
         getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
-    fun getChunkOrElse(x: Int, z: Int, generate: (WorldChunk) -> Unit = {}) =
+    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (WorldChunk) -> Unit = {}) =
         getRegion(x shr 5, z shr 5).getChunkOrElse(x and 31, z and 31, generate)
 
-    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
+    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
 
     fun getBlock(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlock(x and 511, y, z and 511)
 
-    fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
+    suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
@@ -179,8 +190,12 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
         openRegions.clear()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun closeAndLog() {
         saveAndLog()
+        if (worldgenPool is CloseableCoroutineDispatcher) {
+            worldgenPool.close()
+        }
         openRegions.clear()
     }
 }
@@ -205,7 +220,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     fun getChunk(x: Int, z: Int): WorldChunk? = chunks[(x shl 5) + z]
 
-    fun getChunkOrElse(x: Int, z: Int, generate: (WorldChunk) -> Unit = {}): WorldChunk {
+    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (WorldChunk) -> Unit = {}): WorldChunk {
         var chunk = chunks[x * 32 + z]
         if (chunk == null) {
             chunk = WorldChunk(this, x, z)
@@ -215,11 +230,11 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         return chunk
     }
 
-    fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
+    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
     fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shl 1) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
 
-    fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
+    suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =

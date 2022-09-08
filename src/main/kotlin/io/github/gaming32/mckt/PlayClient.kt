@@ -192,12 +192,13 @@ class PlayClient(
             val absX = playerX + x
             val absZ = playerZ + z
             if (loadedChunks.add(absX to absZ)) {
-                val chunk = server.world.getChunkOrGenerate(absX, absZ)
-                if (sendChannel.isClosedForWrite) return@launch
-                sendChannel.sendPacket(ChunkAndLightDataPacket(
-                    chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
-                ))
-                yield()
+                launch loadChunk@ {
+                    val chunk = server.world.getChunkOrGenerate(absX, absZ)
+                    if (sendChannel.isClosedForWrite) return@loadChunk
+                    sendChannel.sendPacket(ChunkAndLightDataPacket(
+                        chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
+                    ))
+                }
             }
         }
     } }
@@ -323,6 +324,7 @@ class PlayClient(
         ))
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     fun save() {
         dataFile.outputStream().use { PRETTY_JSON.encodeToStream(data, it) }
     }
