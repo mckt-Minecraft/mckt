@@ -2,6 +2,7 @@ package io.github.gaming32.mckt.worldgen
 
 import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.phases.BottomPhase
+import io.github.gaming32.mckt.worldgen.phases.CavesPhase
 import io.github.gaming32.mckt.worldgen.phases.GroundPhase
 import io.github.gaming32.mckt.worldgen.phases.TreeDecorationPhase
 import kotlin.random.Random
@@ -14,6 +15,7 @@ class DefaultWorldGenerator(val seed: Long) {
     val groundPhase = GroundPhase(this)
     val phases = listOf(
         groundPhase,
+        CavesPhase(this),
         TreeDecorationPhase(this),
         BottomPhase(this)
     )
