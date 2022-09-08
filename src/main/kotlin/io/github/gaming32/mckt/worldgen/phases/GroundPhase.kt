@@ -17,7 +17,7 @@ class GroundPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
 
     private val perlin = PerlinNoise(generator.seed)
 
-    fun getHeight(x: Int, z: Int) =
+    internal fun getHeight(x: Int, z: Int) =
         (perlin.fbm2d(x / X_SCALE, z / X_SCALE, OCTAVES) * Y_SCALE).toInt() + Y_OFFSET
 
     override fun generateChunk(chunk: WorldChunk, rand: Random) {
