@@ -20,6 +20,8 @@ import java.io.FileNotFoundException
 import java.util.BitSet
 import kotlin.random.Random
 import kotlin.reflect.typeOf
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.DurationUnit
 
 private val LOGGER = getLogger()
 
@@ -140,21 +142,21 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
     fun getRegion(x: Int, z: Int) = openRegions.computeIfAbsent(x to z) { (x, z) -> WorldRegion(this, x, z) }
 
     fun getChunk(x: Int, z: Int): WorldChunk? =
-        getRegion(x / 16, z / 16).getChunk(Math.floorMod(x, 16), Math.floorMod(z, 16))
+        getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
     fun getChunkOrElse(x: Int, z: Int, generate: (WorldChunk) -> Unit = {}) =
-        getRegion(x / 16, z / 16).getChunkOrElse(Math.floorMod(x, 16), Math.floorMod(z, 16), generate)
+        getRegion(x shr 5, z shr 5).getChunkOrElse(x and 31, z and 31, generate)
 
     fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
 
     fun getBlock(x: Int, y: Int, z: Int) =
-        getRegion(x / 512, z / 512).getBlock(Math.floorMod(x, 512), y, Math.floorMod(z, 512))
+        getRegion(x shr 9, z shr 9).getBlock(x and 511, y, z and 511)
 
     fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
-        getRegion(x / 512, z / 512).getBlockOrGenerate(Math.floorMod(x, 512), y, Math.floorMod(z, 512))
+        getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
-        getRegion(x / 512, z / 512).setBlock(Math.floorMod(x, 512), y, Math.floorMod(z, 512), id)
+        getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, id)
 
     @OptIn(ExperimentalSerializationApi::class)
     fun save() {
@@ -164,8 +166,12 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
 
     suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) {
         sender.replyBroadcast(Component.text("Saving world \"$name\""))
+        val start = System.nanoTime()
         save()
-        sender.replyBroadcast(Component.text("Saved world \"$name\""))
+        val duration = System.nanoTime() - start
+        sender.replyBroadcast(Component.text(
+            "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
+        ))
     }
 
     override fun close() {
@@ -197,7 +203,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         }
     }
 
-    fun getChunk(x: Int, z: Int): WorldChunk? = chunks[x * 32 + z]
+    fun getChunk(x: Int, z: Int): WorldChunk? = chunks[(x shl 5) + z]
 
     fun getChunkOrElse(x: Int, z: Int, generate: (WorldChunk) -> Unit = {}): WorldChunk {
         var chunk = chunks[x * 32 + z]
@@ -211,11 +217,13 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
-    fun getBlock(x: Int, y: Int, z: Int) = chunks[x * 2 + z / 16]?.getBlock(x % 16, y, z % 16)
+    fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shl 1) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
 
-    fun getBlockOrGenerate(x: Int, y: Int, z: Int) = getChunkOrGenerate(x / 16, z / 16).getBlock(x % 16, y, z % 16)
+    fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
+        getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
 
-    fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) = getChunk(x / 16, z / 16)?.setBlock(x % 16, y, z % 16, id)
+    fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
+        getChunk(x shr 4, z shr 4)?.setBlock(x and 15, y, z and 15, id)
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -233,7 +241,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         var dataIndex = 0
         repeat(32) { x ->
             repeat(32) { z ->
-                val memIndex = x * 32 + z
+                val memIndex = (x shl 5) + z
                 if (input.chunksPresent[memIndex]) {
                     chunks[memIndex] = WorldChunk(this, x, z).also { it.fromData(input.chunks[dataIndex++]) }
                 } else {
@@ -254,8 +262,8 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
 class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int) {
     val world get() = region.world
-    val x get() = region.x * 32 + xInRegion
-    val z get() = region.z * 32 + zInRegion
+    val x get() = (region.x shl 5) + xInRegion
+    val z get() = (region.z shl 5) + zInRegion
 
     @Serializable
     internal class ChunkData(
@@ -271,19 +279,19 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     fun getBlock(x: Int, y: Int, z: Int): Identifier? {
         if (y < -2064 || y > 2063) return null
-        val section = sections[y / 16 + 127] ?: return null
-        return section.getBlock(x, Math.floorMod(y, 16), z)
+        val section = sections[(y shr 4) + 127] ?: return null
+        return section.getBlock(x, y and 15, z)
     }
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
         if (y < -2064 || y > 2063) return
-        var section = sections[y / 16 + 127]
+        var section = sections[(y shr 4) + 127]
         if (section == null) {
             if (id == null) return
-            section = ChunkSection(this, y / 16)
-            sections[y / 16 + 127] = section
+            section = ChunkSection(this, y shr 4)
+            sections[(y shr 4) + 127] = section
         }
-        section.setBlock(x, Math.floorMod(y, 16), z, id)
+        section.setBlock(x, y and 15, z, id)
     }
 
     internal fun toData(): ChunkData {
@@ -356,12 +364,12 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         @SerialName("Blocks")     val blocks: ByteArray
     )
 
-    internal val data = ByteArray(16 * 16 * 16)
+    internal val data = ByteArray(4096)
 
     var blockCount = 0
         private set
 
-    private fun getBlockIndex(x: Int, y: Int, z: Int) = y * 256 + z * 16 + 15 - x
+    private fun getBlockIndex(x: Int, y: Int, z: Int) = (y shl 8) + (z shl 4) + 15 - x
 
     fun getBlock(x: Int, y: Int, z: Int): Identifier? {
         val id = data[getBlockIndex(x, y, z)]
@@ -392,10 +400,13 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
             throw IllegalArgumentException("Section too complex")
         }
         val paletteList = palette.toList()
+        if (paletteList.size == 1 && blockCount == 4096) {
+            return SectionData(blockCount, paletteList, ByteArray(0))
+        }
         val localIds = ByteArray(Blocks.BLOCK_NUM_TO_ID.size) {
             (paletteList.indexOf(Blocks.BLOCK_NUM_TO_ID[it]) + 1).toByte()
         }
-        val packedData = ByteArray(16 * 16 * 16)
+        val packedData = ByteArray(4096)
         repeat(16 * 16 * 16) { i ->
             val block = data[i].toUByte().toInt()
             packedData[i] = if (block == 0) 0 else localIds[block - 1]
@@ -408,6 +419,9 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         val palette = ByteArray(input.palette.size) {
             Blocks.BLOCK_ID_TO_NUM[input.palette[it]]?.toByte() ?:
                 throw IllegalArgumentException("Unknown block ID ${input.palette[it]}")
+        }
+        if (input.blocks.isEmpty()) {
+            return data.fill(palette[0])
         }
         repeat(16 * 16 * 16) { i ->
             val block = input.blocks[i].toUByte().toInt()

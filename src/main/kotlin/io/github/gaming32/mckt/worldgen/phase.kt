@@ -1,9 +1,10 @@
 package io.github.gaming32.mckt.worldgen
 
 import io.github.gaming32.mckt.WorldChunk
+import kotlin.random.Random
 
 abstract class WorldgenPhase(val generator: DefaultWorldGenerator) {
-    abstract fun generateChunk(chunk: WorldChunk)
+    abstract fun generateChunk(chunk: WorldChunk, rand: Random)
 }
 
 abstract class HeightmappedPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {

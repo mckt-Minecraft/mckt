@@ -17,11 +17,10 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
 
     private val perlin = PerlinNoise(generator.seed xor FLIP_CONSTANT)
 
-    override fun generateChunk(chunk: WorldChunk) {
+    override fun generateChunk(chunk: WorldChunk, rand: Random) {
         val cx = chunk.x shl 4
         val cz = chunk.z shl 4
         if (perlin.noise2d(cx / SCALE, cz / SCALE) > REQUIREMENT) {
-            val rand = Random(generator.seed xor (cx.toLong() shl 32) xor cz.toLong() xor FLIP_CONSTANT)
             val offsetX = rand.nextInt(12)
             val offsetZ = rand.nextInt(12)
             val absX = cx + offsetX

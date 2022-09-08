@@ -187,6 +187,7 @@ class PlayClient(
     private suspend fun loadChunksAroundPlayer() = coroutineScope { launch {
         val playerX = floor(data.x / 16).toInt()
         val playerZ = floor(data.z / 16).toInt()
+        sendChannel.sendPacket(SetCenterChunkPacket(playerX, playerZ))
         spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
             val absX = playerX + x
             val absZ = playerZ + z

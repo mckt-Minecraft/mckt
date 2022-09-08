@@ -1,17 +1,25 @@
 package io.github.gaming32.mckt.worldgen
 
 import io.github.gaming32.mckt.WorldChunk
+import io.github.gaming32.mckt.worldgen.phases.BottomPhase
 import io.github.gaming32.mckt.worldgen.phases.GroundPhase
 import io.github.gaming32.mckt.worldgen.phases.TreeDecorationPhase
+import kotlin.random.Random
 
 class DefaultWorldGenerator(val seed: Long) {
+    companion object {
+        private const val RAND_FLIP = 3402855461729105818L
+    }
+
     val groundPhase = GroundPhase(this)
     val phases = listOf(
         groundPhase,
-        TreeDecorationPhase(this)
+        TreeDecorationPhase(this),
+        BottomPhase(this)
     )
 
     fun generateChunk(chunk: WorldChunk) {
-        phases.forEach { it.generateChunk(chunk) }
+        val rand = Random(seed xor (chunk.x.toLong() shl 32) xor chunk.z.toLong() xor RAND_FLIP)
+        phases.forEach { it.generateChunk(chunk, rand) }
     }
 }

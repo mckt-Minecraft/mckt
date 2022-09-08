@@ -5,6 +5,7 @@ import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise
+import kotlin.random.Random
 
 class GroundPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
@@ -19,7 +20,7 @@ class GroundPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     fun getHeight(x: Int, z: Int) =
         (perlin.fbm2d(x / X_SCALE, z / X_SCALE, OCTAVES) * Y_SCALE).toInt() + Y_OFFSET
 
-    override fun generateChunk(chunk: WorldChunk) {
+    override fun generateChunk(chunk: WorldChunk, rand: Random) {
         val cx = chunk.x shl 4
         val cz = chunk.z shl 4
         repeat(16) { x ->

@@ -8,7 +8,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
-import java.lang.IllegalArgumentException
 import kotlin.math.max
 
 val NETWORK_NBT = Nbt {
