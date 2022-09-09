@@ -83,10 +83,10 @@ class MinecraftServer {
                     continue
                 }
                 if (world.meta.time % 20 == 0L) {
-                    client.sendChannel.sendPacket(UpdateTimePacket(world.meta.time))
+                    client.sendPacket(UpdateTimePacket(world.meta.time))
                     if (client.pingId == -1) {
                         client.pingId = client.nextPingId++
-                        client.sendChannel.sendPacket(PlayPingPacket(client.pingId))
+                        client.sendPacket(PlayPingPacket(client.pingId))
                         client.pingStart = System.nanoTime()
                     }
                 }
@@ -101,7 +101,7 @@ class MinecraftServer {
         }
         LOGGER.info("Stopping server...")
         for (client in clients.values) {
-            client.sendChannel.sendPacket(PlayDisconnectPacket(
+            client.sendPacket(PlayDisconnectPacket(
                 Component.text("Server closed")
             ))
             client.socket.dispose()
@@ -199,7 +199,7 @@ class MinecraftServer {
                                         }
                                     }
                                 LOGGER.warn(message)
-                                sendChannel.sendPacket(LoginDisconnectPacket(Component.text(message)))
+                                sendChannel.sendPacket(LoginDisconnectPacket(Component.text(message)), -1)
                                 socket.dispose()
                                 return@launch
                             }
@@ -215,7 +215,7 @@ class MinecraftServer {
                                 clients.put(client.username, client)?.also { oldClient ->
                                     if (oldClient.receiveChannel.isClosedForRead) return@also
                                     LOGGER.info("Another client with that username was already online")
-                                    oldClient.sendChannel.sendPacket(PlayDisconnectPacket(
+                                    oldClient.sendPacket(PlayDisconnectPacket(
                                         Component.text("You logged in from another location")
                                     ))
                                     oldClient.socket.dispose()
@@ -235,13 +235,13 @@ class MinecraftServer {
 
     suspend fun broadcast(packet: Packet) = coroutineScope {
         clients.values.map { client ->
-            launch { client.sendChannel.sendPacket(packet) }
+            launch { client.sendPacket(packet) }
         }.joinAll()
     }
 
     suspend inline fun broadcast(packet: Packet, crossinline condition: (PlayClient) -> Boolean) = coroutineScope {
         clients.values.mapNotNull { client ->
-            if (condition(client)) launch { client.sendChannel.sendPacket(packet) } else null
+            if (condition(client)) launch { client.sendPacket(packet) } else null
         }.joinAll()
     }
 

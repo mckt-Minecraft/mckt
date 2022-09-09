@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.packet.play.c2s
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
+import io.github.gaming32.mckt.packet.readVarInt
 
 class CommandPacket(val command: String, val timestamp: Long) : Packet(TYPE) {
     companion object {

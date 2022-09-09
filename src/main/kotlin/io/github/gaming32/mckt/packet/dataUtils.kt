@@ -93,24 +93,6 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
 
     fun readIdentifier() = Identifier.parse(readString(32767))
 
-    fun readVarInt(): Int {
-        var value = 0
-        var position = 0
-
-        while (true) {
-            val currentByte = readByte().toUByte().toInt()
-            value = value or (currentByte and VARINT_SEGMENT_BITS shl position)
-
-            if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
-
-            position += 7
-
-            if (position >= 32) throw RuntimeException("VarInt is too big")
-        }
-
-        return value
-    }
-
     fun readVarLong(): Long {
         var value = 0L
         var position = 0
@@ -159,6 +141,27 @@ suspend fun ByteWriteChannel.writeVarInt(i: Int) {
 
         value = value ushr 7
     }
+}
+
+fun InputStream.readVarInt(): Int {
+    var value = 0
+    var position = 0
+
+    while (true) {
+        val currentByte = read()
+        if (currentByte < 0) {
+            throw EOFException()
+        }
+        value = value or (currentByte and VARINT_SEGMENT_BITS shl position)
+
+        if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
+
+        position += 7
+
+        if (position >= 32) throw RuntimeException("VarInt is too big")
+    }
+
+    return value
 }
 
 suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {

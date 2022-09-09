@@ -3,7 +3,8 @@ package io.github.gaming32.mckt.packet.login.c2s
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import java.util.UUID
+import io.github.gaming32.mckt.packet.readVarInt
+import java.util.*
 
 class LoginStartPacket(
     val username: String,

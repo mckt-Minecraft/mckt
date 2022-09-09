@@ -9,6 +9,10 @@ import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.ktor.utils.io.*
 import kotlinx.coroutines.withTimeout
 import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.util.zip.Inflater
+
+private val INFLATER = Inflater()
 
 enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> Packet>) {
     HANDSHAKE(mapOf()),
@@ -33,22 +37,43 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         /* 0x20 */ PlayPingPacket.C2S_TYPE to ::PlayPingPacket
     ));
 
-    suspend fun readPacket(channel: ByteReadChannel): Packet {
-        val packetLength = channel.readVarInt()
-        val bytesRead = channel.totalBytesRead
-        val packetId = channel.readVarInt()
-        val packetIdLength = (channel.totalBytesRead - bytesRead).toInt()
-        val packetData = ByteArray(packetLength - packetIdLength)
-        channel.readFully(packetData, 0, packetData.size)
+    suspend fun readPacket(channel: ByteReadChannel, compression: Boolean): Packet {
+        val totalPacketLength = channel.readVarInt()
+        val packetInput: InputStream
+        if (compression) {
+            val bytesRead = channel.totalBytesRead
+            val uncompressedLength = channel.readVarInt()
+            if (uncompressedLength == 0) {
+                val packetData = ByteArray(totalPacketLength - 1)
+                channel.readFully(packetData)
+                packetInput = ByteArrayInputStream(packetData)
+            } else {
+                val compressedData = ByteArray(totalPacketLength - (channel.totalBytesRead - bytesRead).toInt())
+                channel.readFully(compressedData)
+                INFLATER.setInput(compressedData)
+                val result = ByteArray(uncompressedLength)
+                var index = 0
+                while (!INFLATER.finished()) {
+                    index += INFLATER.inflate(result, index, result.size - index)
+                }
+                INFLATER.reset()
+                packetInput = ByteArrayInputStream(result)
+            }
+        } else {
+            val packetData = ByteArray(totalPacketLength)
+            channel.readFully(packetData)
+            packetInput = ByteArrayInputStream(packetData)
+        }
+        val packetId = packetInput.readVarInt()
         val reader = packets[packetId] ?: throw IllegalArgumentException(
             "Unknown packet ID for state $this: 0x${packetId.toString(16).padStart(2, '0')}"
         )
-        return reader(MinecraftInputStream(ByteArrayInputStream(packetData)))
+        return reader(MinecraftInputStream(packetInput))
     }
 
     @JvmName("readSpecificPacketWithTimeout")
-    suspend inline fun <reified T : Packet> readPacket(channel: ByteReadChannel): T? {
-        val packet = withTimeout(5000) { readPacket(channel) }
+    suspend inline fun <reified T : Packet> readPacket(channel: ByteReadChannel, compression: Boolean): T? {
+        val packet = withTimeout(5000) { readPacket(channel, compression) }
         return if (packet is T) packet else null
     }
 }

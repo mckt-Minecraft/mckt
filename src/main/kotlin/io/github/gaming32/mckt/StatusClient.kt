@@ -1,7 +1,6 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.packet.PacketState
-import io.github.gaming32.mckt.packet.sendPacket
 import io.github.gaming32.mckt.packet.status.StatusPingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
@@ -19,7 +18,7 @@ class StatusClient(
 
     suspend fun handle() = socket.use {
         readPacket<StatusRequestPacket>() ?: return
-        sendChannel.sendPacket(StatusResponsePacket(
+        sendPacket(StatusResponsePacket(
             StatusResponse(
                 version = StatusResponse.Version(
                     name = "1.19.2",
@@ -39,6 +38,6 @@ class StatusClient(
                 enforcesSecureChat = false
             )
         ))
-        sendChannel.sendPacket(readPacket<StatusPingPacket>() ?: return)
+        sendPacket(readPacket<StatusPingPacket>() ?: return)
     }
 }

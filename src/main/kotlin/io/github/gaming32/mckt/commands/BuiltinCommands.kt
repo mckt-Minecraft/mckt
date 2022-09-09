@@ -7,7 +7,6 @@ import io.github.gaming32.mckt.capitalize
 import io.github.gaming32.mckt.enumValueOfOrNull
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.play.s2c.SystemChatPacket
-import io.github.gaming32.mckt.packet.sendPacket
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
@@ -132,7 +131,7 @@ object BuiltinCommands {
         if (client == null || client.receiveChannel.isClosedForRead) {
             return@registerCommand sender.reply(Component.text("Player $username is not online.", NamedTextColor.RED))
         }
-        client.sendChannel.sendPacket(PlayDisconnectPacket(reason))
+        client.sendPacket(PlayDisconnectPacket(reason))
         client.socket.dispose()
         sender.replyBroadcast(Component.text("Kicked $username for ").append(reason))
     }

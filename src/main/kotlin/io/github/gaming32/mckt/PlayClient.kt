@@ -11,15 +11,18 @@ import io.github.gaming32.mckt.packet.encodeData
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
+import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
-import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -84,22 +87,27 @@ class PlayClient(
     var options = ClientOptions(this)
 
     suspend fun handshake() {
-        val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel)
+        val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
         if (loginStart == null) {
-            sendChannel.sendPacket(LoginDisconnectPacket(Component.text("Unexpected packet")))
+            sendPacket(LoginDisconnectPacket(Component.text("Unexpected packet")))
             socket.dispose()
             return
         }
         username = loginStart.username
         if (!(username matches USERNAME_REGEX)) {
-            sendChannel.sendPacket(
+            sendPacket(
                 LoginDisconnectPacket(Component.text("Username doesn't match regex $USERNAME_REGEX"))
             )
             socket.dispose()
             return
         }
         uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".encodeToByteArray())
-        sendChannel.sendPacket(LoginSuccessPacket(uuid, username))
+        val useCompression = server.config.networkCompressionThreshold
+        if (useCompression != -1) {
+            sendPacket(SetCompressionPacket(useCompression))
+            compression = useCompression
+        }
+        sendPacket(LoginSuccessPacket(uuid, username))
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -114,7 +122,7 @@ class PlayClient(
             PlayerData()
         }
 
-        sendChannel.sendPacket(PlayLoginPacket(
+        sendPacket(PlayLoginPacket(
             entityId = entityId,
             hardcore = false,
             gamemode = data.gamemode,
@@ -133,21 +141,21 @@ class PlayClient(
             isFlat = true,
             deathLocation = null
         ))
-        sendChannel.sendPacket(PlayPluginPacket(Identifier("brand")) {
+        sendPacket(PlayPluginPacket(Identifier("brand")) {
             writeString("mckt")
         })
 
         commandSender = ClientCommandSender(this@PlayClient)
 
-        sendChannel.sendPacket(ClientboundPlayerAbilitiesPacket(
+        sendPacket(ClientboundPlayerAbilitiesPacket(
             data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
         ))
-        sendChannel.sendPacket(EntityEventPacket(
+        sendPacket(EntityEventPacket(
             entityId,
             (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
         ))
-        sendChannel.sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
-        sendChannel.sendPacket(PlayerListUpdatePacket(
+        sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
+        sendPacket(PlayerListUpdatePacket(
             *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
                 uuid = client.uuid,
                 name = client.username,
@@ -172,8 +180,8 @@ class PlayClient(
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
         for (client in server.clients.values) {
             if (client === this@PlayClient) continue
-            client.sendChannel.sendPacket(spawnPlayerPacket)
-            sendChannel.sendPacket(SpawnPlayerPacket(
+            client.sendPacket(spawnPlayerPacket)
+            sendPacket(SpawnPlayerPacket(
                 client.entityId, client.uuid,
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
@@ -187,7 +195,7 @@ class PlayClient(
     private suspend fun loadChunksAroundPlayer() = coroutineScope { launch {
         val playerX = floor(data.x / 16).toInt()
         val playerZ = floor(data.z / 16).toInt()
-        sendChannel.sendPacket(SetCenterChunkPacket(playerX, playerZ))
+        sendPacket(SetCenterChunkPacket(playerX, playerZ))
         spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
             val absX = playerX + x
             val absZ = playerZ + z
@@ -195,7 +203,7 @@ class PlayClient(
                 launch loadChunk@ {
                     val chunk = server.world.getChunkOrGenerate(absX, absZ)
                     if (sendChannel.isClosedForWrite) return@loadChunk
-                    sendChannel.sendPacket(ChunkAndLightDataPacket(
+                    sendPacket(ChunkAndLightDataPacket(
                         chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
                     ))
                 }
@@ -209,7 +217,7 @@ class PlayClient(
                 readPacket()
             } catch (e: Exception) {
                 if (e is ClosedReceiveChannelException) break
-                sendChannel.sendPacket(SystemChatPacket(
+                sendPacket(SystemChatPacket(
                     Component.text(e.toString()).color(NamedTextColor.GOLD), true
                 ))
                 LOGGER.warn("Client connection had error", e)
@@ -285,7 +293,7 @@ class PlayClient(
         z?.let { data.z = it }
         yaw?.let { data.yaw = it }
         pitch?.let { data.pitch = it }
-        sendChannel.sendPacket(PlayerPositionSyncPacket(
+        sendPacket(PlayerPositionSyncPacket(
             nextTeleportId++,
             data.x,
             data.y,
@@ -315,8 +323,8 @@ class PlayClient(
     suspend fun setGamemode(new: Gamemode) {
         if (new == data.gamemode) return
         data.gamemode = new
-        sendChannel.sendPacket(GameEventPacket(GameEventPacket.SET_GAMEMODE, new.ordinal.toFloat()))
-        sendChannel.sendPacket(ClientboundPlayerAbilitiesPacket(
+        sendPacket(GameEventPacket(GameEventPacket.SET_GAMEMODE, new.ordinal.toFloat()))
+        sendPacket(ClientboundPlayerAbilitiesPacket(
             new.defaultAbilities.copyCurrentlyFlying(data.flying)
         ))
         server.broadcast(PlayerListUpdatePacket(

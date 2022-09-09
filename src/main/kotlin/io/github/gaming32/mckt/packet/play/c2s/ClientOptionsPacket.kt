@@ -4,6 +4,7 @@ import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
+import io.github.gaming32.mckt.packet.readVarInt
 
 class ClientOptionsPacket(val options: PlayClient.ClientOptions) : Packet(TYPE) {
     companion object {
