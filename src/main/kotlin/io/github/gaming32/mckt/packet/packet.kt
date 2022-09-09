@@ -1,15 +1,18 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.getLogger
 import io.ktor.utils.io.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.*
 import java.util.zip.Deflater
 
 private val writeLocks = WeakHashMap<ByteWriteChannel, Mutex>()
 private val DEFLATER = Deflater()
 private val BUFFER = ByteArray(8192)
+private val LOGGER = getLogger()
 
 abstract class Packet(val type: Int) {
     abstract fun write(out: MinecraftOutputStream)
@@ -38,13 +41,18 @@ abstract class Packet(val type: Int) {
             }
             output = out2
         }
-        writeLocks.computeIfAbsent(channel) { Mutex() }.withLock {
-            channel.writeFully(encodeData {
-                writeVarInt(output.size())
-                write(output.toByteArray())
-            })
+        try {
+            writeLocks.computeIfAbsent(channel) { Mutex() }.withLock {
+                channel.writeFully(encodeData {
+                    writeVarInt(output.size())
+                    write(output.toByteArray())
+                })
+            }
+            channel.flush()
+        } catch (e: IOException) {
+            LOGGER.error("Client connection had error", e)
+            throw e
         }
-        channel.flush()
     }
 }
 

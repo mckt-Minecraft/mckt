@@ -1,10 +1,7 @@
 package io.github.gaming32.mckt.commands
 
 import com.google.gson.JsonSyntaxException
-import io.github.gaming32.mckt.Gamemode
-import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.capitalize
-import io.github.gaming32.mckt.enumValueOfOrNull
+import io.github.gaming32.mckt.*
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.play.s2c.SystemChatPacket
 import net.kyori.adventure.text.Component
@@ -14,6 +11,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import kotlin.math.min
 
 object BuiltinCommands {
+    private val LOGGER = getLogger()
+
     val HELP = registerCommand("help", Component.text("Show this help")) { sender, _ ->
         val maxNameWidth = COMMANDS.keys.asSequence().map(String::length).max()
         val text = Component.text { text ->
@@ -32,6 +31,7 @@ object BuiltinCommands {
     }
 
     val SAY = registerCommand("say", Component.text("Send a message")) { sender, args ->
+        LOGGER.info("CHAT: <{}> {}", sender.displayName.plainText(), args)
         sender.server.broadcast(SystemChatPacket(
             Component.text('<')
                 .append(sender.displayName)

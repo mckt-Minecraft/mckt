@@ -21,5 +21,5 @@ sealed class Client(
     internal suspend inline fun <reified T : Packet> readPacket() =
         primaryState.readPacket<T>(receiveChannel, compression >= 0)
 
-    suspend fun sendPacket(packet: Packet) = sendChannel.sendPacket(packet, compression)
+    open suspend fun sendPacket(packet: Packet) = sendChannel.sendPacket(packet, compression)
 }

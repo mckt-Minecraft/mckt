@@ -60,9 +60,9 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
 
     fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
 
-    fun writeDegrees(degrees: Double) = write((degrees / 360.0 * 256.0).toInt())
+    fun writeDegrees(degrees: Float) = write((degrees / 360.0 * 256.0).toInt())
 
-    fun writeRadians(radians: Double) = write((radians / 2.0 / PI * 256.0).toInt())
+    fun writeRadians(radians: Float) = write((radians / 2.0 / PI * 256.0).toInt())
 
     fun writeUuid(uuid: UUID) {
         writeLong(uuid.mostSignificantBits)
@@ -115,9 +115,9 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
 
     fun readBlockPosition() = BlockPosition.decodeFromLong(readLong())
 
-    fun readDegrees() = readByte().toDouble() / 256.0 * 360.0
+    fun readDegrees() = readByte().toFloat() / 256.0 * 360.0
 
-    fun readRadians() = readByte().toDouble() / 256.0 * 2 * PI
+    fun readRadians() = readByte().toFloat() / 256.0 * 2 * PI
 
     fun readUuid() = UUID(readLong(), readLong())
 

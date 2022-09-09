@@ -12,10 +12,10 @@ class SkyIslandsPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generato
         const val OCTAVES = 3
         const val X_SCALE_ISLAND = 150.0
         const val Y_SCALE_ISLAND = 96.0
-        const val Y_OFFSET_ISLAND = 748
+        const val Y_OFFSET_ISLAND = 1048
         const val X_SCALE_SURFACE = 225.0
         const val Y_SCALE_SURFACE = 32.0
-        const val Y_OFFSET_SURFACE = 780
+        const val Y_OFFSET_SURFACE = 1080
     }
 
     private val perlin = PerlinNoise(Random(generator.seed).nextLong())

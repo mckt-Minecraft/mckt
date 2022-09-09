@@ -27,7 +27,7 @@ val PRETTY_JSON = Json {
     coerceInputValues = true
 }
 
-val USERNAME_REGEX = Regex("^\\w{2,16}\$")
+val USERNAME_REGEX = Regex("^\\w{1,16}\$")
 
 fun getLogger() = LoggerFactory.getLogger(Util.getCallingClass())!!
 

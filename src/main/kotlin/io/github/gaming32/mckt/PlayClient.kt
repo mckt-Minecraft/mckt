@@ -6,6 +6,7 @@ import io.github.gaming32.mckt.commands.ClientCommandSender
 import io.github.gaming32.mckt.commands.CommandSender
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.encodeData
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
@@ -30,6 +31,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.util.*
 import kotlin.math.floor
 import kotlin.math.min
@@ -85,6 +87,7 @@ class PlayClient(
     private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
 
     var options = ClientOptions(this)
+    internal var ended = false
 
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
@@ -212,7 +215,7 @@ class PlayClient(
     } }
 
     suspend fun handlePackets() {
-        while (server.running) {
+        while (server.running && !ended) {
             val packet = try {
                 readPacket()
             } catch (e: Exception) {
@@ -220,7 +223,7 @@ class PlayClient(
                 sendPacket(SystemChatPacket(
                     Component.text(e.toString()).color(NamedTextColor.GOLD), true
                 ))
-                LOGGER.warn("Client connection had error", e)
+                LOGGER.error("Client connection had error", e)
                 continue
             }
             when (packet) {
@@ -228,29 +231,52 @@ class PlayClient(
                     LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                 }
                 is CommandPacket -> commandSender.runCommand(packet.command)
-                is ServerboundChatPacket -> server.broadcast(SystemChatPacket(
-                    Component.translatable(
-                        "chat.type.text",
-                        Component.text(username),
-                        Component.text(packet.message)
-                    )
-                )) { it.options.chatMode == 0 }
+                is ServerboundChatPacket -> {
+                    LOGGER.info("CHAT: <{}> {}", username, packet.message)
+                    server.broadcast(SystemChatPacket(
+                        Component.translatable(
+                            "chat.type.text",
+                            Component.text(username),
+                            Component.text(packet.message)
+                        )
+                    )) { it.options.chatMode == 0 }
+                }
                 is ClientOptionsPacket -> options = packet.options
                 is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                 is MovementPacket -> {
-//                    if (packet.x != null && packet.yaw != null) {
-//                        server.broadcastExcept(this@PlayClient, EntityPositionAndRotationPacket(
-//                            entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
-//                        ))
-//                    } else if (packet.x != null) {
-//                        server.broadcastExcept(this@PlayClient, EntityPositionPacket(
-//                            entityId, data.x, data.y, data.z, data.onGround
-//                        ))
-//                    } else if (packet.yaw != null) {
-//                        server.broadcastExcept(this@PlayClient, EntityRotationPacket(
-//                            entityId, data.yaw, data.pitch, data.onGround
-//                        ))
-//                    }
+                    val shouldUseTeleport = packet.x != null && (
+                        (packet.x - data.x) * (packet.x - data.x) +
+                        (packet.y!! - data.y) * (packet.y - data.y) +
+                        (packet.z!! - data.z) * (packet.z - data.z)
+                    ) > 64.0
+                    if (!shouldUseTeleport) {
+                        if (packet.x != null && packet.yaw != null) {
+                            server.broadcastExcept(this, EntityPositionAndRotationUpdatePacket(
+                                entityId,
+                                packet.x - data.x,
+                                packet.y!! - data.y,
+                                packet.z!! - data.z,
+                                packet.yaw,
+                                packet.pitch!!,
+                                packet.onGround
+                            ))
+                        } else if (packet.x != null) {
+                            server.broadcastExcept(this, EntityPositionUpdatePacket(
+                                entityId,
+                                packet.x - data.x,
+                                packet.y!! - data.y,
+                                packet.z!! - data.z,
+                                packet.onGround
+                            ))
+                        } else if (packet.yaw != null) {
+                            server.broadcastExcept(this, EntityRotationUpdatePacket(
+                                entityId,
+                                packet.yaw,
+                                packet.pitch!!,
+                                packet.onGround
+                            ))
+                        }
+                    }
                     if (packet.x != null) {
                         if (
                             data.z.roundToInt() / 16 != packet.z!!.roundToInt() / 16 ||
@@ -267,9 +293,14 @@ class PlayClient(
                         data.pitch = packet.pitch!!
                     }
                     data.onGround = packet.onGround
-                    server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
-                        entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
-                    ))
+                    if (shouldUseTeleport) {
+                        server.broadcastExcept(this, EntityTeleportPacket(
+                            entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
+                        ))
+                    }
+                    if (packet.yaw != null) {
+                        server.broadcastExcept(this, SetHeadRotationPacket(entityId, data.yaw))
+                    }
                 }
                 is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
                 is PlayPingPacket -> if (packet.id == pingId) {
@@ -330,6 +361,19 @@ class PlayClient(
         server.broadcast(PlayerListUpdatePacket(
             PlayerListUpdatePacket.UpdateGamemode(uuid, new)
         ))
+    }
+
+    override suspend fun sendPacket(packet: Packet) {
+        try {
+            super.sendPacket(packet)
+        } catch (e: IOException) {
+            ended = true
+            try {
+                super.sendPacket(PlayDisconnectPacket(Component.text(e.toString(), NamedTextColor.RED)))
+            } catch (_: IOException) {
+            }
+            socket.dispose()
+        }
     }
 
     @OptIn(ExperimentalSerializationApi::class)

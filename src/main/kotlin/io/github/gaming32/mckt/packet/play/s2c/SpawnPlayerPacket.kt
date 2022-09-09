@@ -23,7 +23,7 @@ class SpawnPlayerPacket(
         out.writeDouble(x)
         out.writeDouble(y)
         out.writeDouble(z)
-        out.writeDegrees(yaw.toDouble())
-        out.writeDegrees(pitch.toDouble())
+        out.writeDegrees(yaw)
+        out.writeDegrees(pitch)
     }
 }

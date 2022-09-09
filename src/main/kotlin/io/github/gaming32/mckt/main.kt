@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import io.github.gaming32.mckt.packet.play.s2c.PlayerListUpdatePacket
+import io.github.gaming32.mckt.packet.play.s2c.RemoveEntitiesPacket
 import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
@@ -69,17 +70,16 @@ class MinecraftServer {
                 world.saveAndLog()
                 clients.values.forEach(PlayClient::save)
             }
-            val clientsIterator = clients.values.iterator()
-            while (clientsIterator.hasNext()) {
-                val client = clientsIterator.next()
-                if (client.receiveChannel.isClosedForRead || client.handlePacketsJob.isCompleted) {
+            for (client in clients.values.toList()) {
+                if (client.ended || client.receiveChannel.isClosedForRead || client.handlePacketsJob.isCompleted) {
                     client.handlePacketsJob.cancelAndJoin()
                     LOGGER.info("{} left the game.", client.username)
-                    clientsIterator.remove()
+                    clients.remove(client.username)
                     client.close()
                     broadcast(PlayerListUpdatePacket(
                         PlayerListUpdatePacket.RemovePlayer(client.uuid)
                     ))
+                    broadcast(RemoveEntitiesPacket(client.entityId))
                     continue
                 }
                 if (world.meta.time % 20 == 0L) {
