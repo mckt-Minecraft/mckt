@@ -232,13 +232,13 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
-    fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shl 1) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
+    fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
 
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
-        getChunk(x shr 4, z shr 4)?.setBlock(x and 15, y, z and 15, id)
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, id)
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)

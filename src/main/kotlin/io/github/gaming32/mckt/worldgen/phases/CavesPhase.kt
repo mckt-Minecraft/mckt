@@ -1,6 +1,5 @@
 package io.github.gaming32.mckt.worldgen.phases
 
-import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
@@ -9,7 +8,7 @@ import kotlin.random.Random
 
 class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
-        const val BOUND = 0.1
+        const val BOUND = 0.4
         const val X_SCALE = 50.0
         const val Y_SCALE = 50.0
         const val Y_OFFSET = 0.0
@@ -36,12 +35,9 @@ class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
             repeat(16) { z ->
                 val absZ = cz + z
                 for (y in -2031..-80) {
-                    val oldBlock = chunk.getBlock(x, y, z) ?: continue
-                    if ((oldBlock == Blocks.DIRT || oldBlock == Blocks.GRASS_BLOCK) && rand.nextDouble() < 0.1) {
-                        continue
-                    }
+                    chunk.getBlock(x, y, z) ?: continue
                     val noise = noise(absX / X_SCALE, y / Y_SCALE, absZ / X_SCALE) + Y_OFFSET
-                    if (noise > BOUND) continue
+                    if (noise <= BOUND) continue
                     chunk.setBlock(x, y, z, null)
                 }
             }
