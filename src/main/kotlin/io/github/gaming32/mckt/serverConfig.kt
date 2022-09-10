@@ -48,5 +48,6 @@ class ServerConfig(
     var motd: Component = Component.text("My mckt server"),
     var defaultWorldGenerator: WorldGenerator = WorldGenerator.NORMAL,
     var defaultSaveFormat: SaveFormat = SaveFormat.NBT,
-    var networkCompressionThreshold: Int = 256
+    var networkCompressionThreshold: Int = 256,
+    var autosavePeriod: Int = 6000
 )
