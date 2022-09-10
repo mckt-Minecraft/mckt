@@ -310,6 +310,10 @@ class PlayClient(
                         PlayerListUpdatePacket.UpdatePing(uuid, pingTime.nanoseconds.inWholeMilliseconds.toInt())
                     ))
                 }
+                is SwingArmPacket -> server.broadcastExcept(this, EntityAnimationPacket(
+                    entityId,
+                    if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
+                ))
                 else -> LOGGER.warn("Unhandled packet {}", packet)
             }
         }
