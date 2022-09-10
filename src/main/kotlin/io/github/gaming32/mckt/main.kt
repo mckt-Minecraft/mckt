@@ -92,7 +92,14 @@ class MinecraftServer {
                 }
             }
             val endTime = System.nanoTime()
-            val sleepTime = 50 - (endTime - startTime).nanoseconds.inWholeMilliseconds
+            val tickTime = (endTime - startTime).nanoseconds.inWholeMilliseconds
+            if (tickTime >= 1000) {
+                LOGGER.warn(
+                    "Is the server overloaded? Running {} seconds ({} ticks) behind.",
+                    tickTime / 1000.0, tickTime / 50.0
+                )
+            }
+            val sleepTime = 50 - tickTime
             if (sleepTime <= 0) {
                 yield()
             } else {

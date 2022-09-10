@@ -187,6 +187,7 @@ object BuiltinCommands {
             )
         }
         who.data.operatorLevel = level
+        who.syncOpLevel()
         sender.replyBroadcast(Component.text("Set ${who.username}'s operator level to $level"))
     }
 

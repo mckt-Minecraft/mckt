@@ -11,4 +11,8 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
 
     fun encodeToLong() =
         (x.toLong() and 0x3FFFFFFL shl 38) or (z.toLong() and 0x3FFFFFFL shl 12) or (y.toLong() and 0xFFFL)
+
+    operator fun plus(other: BlockPosition) = BlockPosition(x + other.x, y + other.y, z + other.z)
+
+    operator fun minus(other: BlockPosition) = BlockPosition(x - other.x, y - other.y, z - other.z)
 }

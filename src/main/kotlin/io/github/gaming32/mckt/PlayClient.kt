@@ -16,6 +16,7 @@ import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
+import io.github.gaming32.mckt.packet.play.c2s.SwingArmPacket
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -153,10 +154,7 @@ class PlayClient(
         sendPacket(ClientboundPlayerAbilitiesPacket(
             data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
         ))
-        sendPacket(EntityEventPacket(
-            entityId,
-            (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
-        ))
+        syncOpLevel()
         sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
         sendPacket(PlayerListUpdatePacket(
             *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
@@ -197,6 +195,11 @@ class PlayClient(
         delay(10)
         loadChunksAroundPlayer()
     }
+
+    internal suspend fun syncOpLevel() = sendPacket(EntityEventPacket(
+        entityId,
+        (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
+    ))
 
     private suspend fun loadChunksAroundPlayer() = coroutineScope { launch {
         val playerX = floor(data.x / 16).toInt()
@@ -350,6 +353,26 @@ class PlayClient(
                     entityId,
                     if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
                 ))
+                is UseItemOnBlockPacket -> {
+                    val placePos = packet.location + packet.face.vector
+                    // TODO: Implement inventory and don't just use stone
+                    server.world.setBlock(placePos, Blocks.STONE)
+                    server.broadcastExcept(this, SetBlockPacket(placePos, Blocks.STONE))
+                }
+                is PlayerActionPacket -> {
+                    val finishedAction = if (data.gamemode == Gamemode.CREATIVE) {
+                        PlayerActionPacket.Action.START_DIGGING
+                    } else {
+                        PlayerActionPacket.Action.FINISH_DIGGING
+                    }
+                    if (packet.action == finishedAction) {
+                        server.world.setBlock(packet.location, null)
+                        server.broadcastExcept(this, EntityAnimationPacket(
+                            entityId, EntityAnimationPacket.SWING_MAINHAND
+                        ))
+                        server.broadcastExcept(this, SetBlockPacket(packet.location, null))
+                    }
+                }
                 else -> LOGGER.warn("Unhandled packet {}", packet)
             }
         }

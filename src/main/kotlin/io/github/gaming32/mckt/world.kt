@@ -4,6 +4,7 @@ package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.commands.CommandSender
 import io.github.gaming32.mckt.objects.BitSetSerializer
+import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
@@ -173,11 +174,17 @@ class World(val server: MinecraftServer, val name: String) {
     fun getBlock(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlock(x and 511, y, z and 511)
 
+    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
+    suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
+
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
         getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, id)
+
+    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
 
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
@@ -244,11 +251,17 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
 
+    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
 
+    suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
+
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
         chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, id)
+
+    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -308,6 +321,8 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
         return section.getBlock(x, y and 15, z)
     }
 
+    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
         if (y < -2064 || y > 2063) return
         synchronized(this) {
@@ -320,6 +335,8 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
             section.setBlock(x, y and 15, z, id)
         }
     }
+
+    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
 
     internal fun toData() = synchronized(this) {
         val sectionsPresent = BitSet(sections.size)
@@ -403,6 +420,8 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         if (id == 0.toByte()) return null
         return Blocks.BLOCK_NUM_TO_ID[id.toInt() - 1]
     }
+
+    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
     internal fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
         val index = getBlockIndex(x, y, z)

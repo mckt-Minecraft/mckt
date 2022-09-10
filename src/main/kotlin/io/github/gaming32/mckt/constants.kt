@@ -29,10 +29,10 @@ val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS
 
 // blocks.json was generated from the Vanilla server JAR with its builtin tool
 @OptIn(ExperimentalSerializationApi::class)
-val GLOBAL_PALETTE = MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
+val GLOBAL_PALETTE = (MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
     Json.decodeFromStream<JsonObject>(input)
 }?.asSequence()?.associate { (id, data) ->
     Identifier.parse(id) to data.toGson().asJsonObject["states"].asJsonArray.first {
         it.asJsonObject["default"]?.asBoolean ?: false
     }.asJsonObject["id"].asInt
-} ?: mapOf()
+} ?: mapOf()) + mapOf(null to 0)
