@@ -1,16 +1,16 @@
 package io.github.gaming32.mckt.objects
 
-import io.github.gaming32.mckt.packet.toGson
-import io.github.gaming32.mckt.packet.toKotlinx
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
+import io.github.gaming32.mckt.data.toGson
+import io.github.gaming32.mckt.data.toKotlinx
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.serializer
+import net.benwoodworth.knbt.NbtCompound
+import net.benwoodworth.knbt.StringifiedNbt
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.util.*
@@ -49,4 +49,13 @@ object BitSetSerializer : KSerializer<BitSet> {
 
     override fun deserialize(decoder: Decoder): BitSet =
         BitSet.valueOf(decoder.decodeSerializableValue(delegateSerializer))
+}
+
+object SNbtCompoundSerializer : KSerializer<NbtCompound> {
+    override val descriptor = PrimitiveSerialDescriptor("NbtCompound", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: NbtCompound) =
+        encoder.encodeString(StringifiedNbt.encodeToString(value))
+
+    override fun deserialize(decoder: Decoder): NbtCompound = StringifiedNbt.decodeFromString(decoder.decodeString())
 }

@@ -6,7 +6,9 @@ import io.github.gaming32.mckt.commands.CommandSender
 import io.github.gaming32.mckt.objects.BitSetSerializer
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,6 +22,7 @@ import net.kyori.adventure.text.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.BitSet
+import java.util.EnumMap
 import kotlin.random.Random
 import kotlin.reflect.typeOf
 import kotlin.time.Duration.Companion.nanoseconds
@@ -501,6 +504,19 @@ class PlayerData {
     var flying = false
     var operatorLevel = 0
     var gamemode = Gamemode.CREATIVE
+    val inventory = arrayOfNulls<ItemStack>(46)
+    var selectedHotbarSlot = 0
+        set(value) {
+            require(value in 0..9) { "Hotbar slot not in range 0..9" }
+            field = value
+        }
+
+    var selectedInventorySlot
+        get() = selectedHotbarSlot + 36
+        set(value) {
+            selectedHotbarSlot = value - 36
+        }
+
     var flags: Int = 0
 
     var isSneaking: Boolean
@@ -532,6 +548,17 @@ class PlayerData {
                 flags and EntityFlags.FALL_FLYING.inv()
             }
         }
+
+    fun getEquipment(): Map<SetEquipmentPacket.Slot, ItemStack?> {
+        val result = EnumMap<SetEquipmentPacket.Slot, ItemStack?>(SetEquipmentPacket.Slot::class.java)
+        for (slot in SetEquipmentPacket.Slot.values()) {
+            val rawSlot = if (slot.rawSlot == -1) selectedInventorySlot else slot.rawSlot
+            if (inventory[rawSlot] != null) {
+                result[slot] = inventory[rawSlot]
+            }
+        }
+        return result
+    }
 }
 
 object EntityFlags {

@@ -15,7 +15,7 @@ class UseItemOnBlockPacket(
     val cursorY: Float,
     val cursorZ: Float,
     val insideBlock: Boolean,
-    val breakSequence: Int = 0
+    val sequence: Int = 0
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x31
@@ -40,6 +40,6 @@ class UseItemOnBlockPacket(
         out.writeFloat(cursorY)
         out.writeFloat(cursorZ)
         out.writeBoolean(insideBlock)
-        out.writeVarInt(breakSequence)
+        out.writeVarInt(sequence)
     }
 }

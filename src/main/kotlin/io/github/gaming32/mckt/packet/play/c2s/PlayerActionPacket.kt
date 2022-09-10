@@ -11,7 +11,7 @@ class PlayerActionPacket(
     val action: Action,
     val location: BlockPosition,
     val face: Direction,
-    val breakSequence: Int = 0
+    val sequence: Int = 0
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x1D
@@ -38,6 +38,6 @@ class PlayerActionPacket(
         out.writeVarInt(action.ordinal)
         out.writeBlockPosition(location)
         out.writeByte(face.ordinal)
-        out.writeVarInt(breakSequence)
+        out.writeVarInt(sequence)
     }
 }

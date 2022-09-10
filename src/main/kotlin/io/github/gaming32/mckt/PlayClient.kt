@@ -16,14 +16,12 @@ import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
-import io.github.gaming32.mckt.packet.play.c2s.SwingArmPacket
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
@@ -178,21 +176,36 @@ class PlayClient(
                 signatureData = null
             )
         ))
+
+        sendPacket(SetContainerContentPacket(0u, *data.inventory))
+
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
         val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags)
+        val equipment = data.getEquipment()
+        val setEquipmentPacket = if (equipment.isNotEmpty()) {
+            SetEquipmentPacket(entityId, *equipment.toList().toTypedArray())
+        } else {
+            null
+        }
         for (client in server.clients.values) {
             client.sendPacket(syncTrackedDataPacket)
             if (client === this@PlayClient) continue
             client.sendPacket(spawnPlayerPacket)
+            if (setEquipmentPacket != null) {
+                client.sendPacket(setEquipmentPacket)
+            }
             sendPacket(SpawnPlayerPacket(
                 client.entityId, client.uuid,
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
             ))
             sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags))
+            val otherEquipment = client.data.getEquipment()
+            if (otherEquipment.isNotEmpty()) {
+                sendPacket(SetEquipmentPacket(client.entityId, *otherEquipment.toList().toTypedArray()))
+            }
         }
 
-        delay(10)
         loadChunksAroundPlayer()
     }
 
@@ -232,148 +245,225 @@ class PlayClient(
                 LOGGER.error("Client connection had error", e)
                 continue
             }
-            when (packet) {
-                is ConfirmTeleportationPacket -> if (packet.teleportId >= nextTeleportId) {
-                    LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
-                }
-                is CommandPacket -> commandSender.runCommand(packet.command)
-                is ServerboundChatPacket -> {
-                    LOGGER.info("CHAT: <{}> {}", username, packet.message)
-                    server.broadcast(SystemChatPacket(
-                        Component.translatable(
-                            "chat.type.text",
-                            Component.text(username),
-                            Component.text(packet.message)
+            try {
+                when (packet) {
+                    is ConfirmTeleportationPacket -> if (packet.teleportId >= nextTeleportId) {
+                        LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
+                    }
+
+                    is CommandPacket -> commandSender.runCommand(packet.command)
+                    is ServerboundChatPacket -> {
+                        LOGGER.info("CHAT: <{}> {}", username, packet.message)
+                        server.broadcast(
+                            SystemChatPacket(
+                                Component.translatable(
+                                    "chat.type.text",
+                                    Component.text(username),
+                                    Component.text(packet.message)
+                                )
+                            )
+                        ) { it.options.chatMode == 0 }
+                    }
+
+                    is ClientOptionsPacket -> options = packet.options
+                    is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
+                    is MovementPacket -> {
+                        val shouldUseTeleport = packet.x != null && (
+                            (packet.x - data.x) * (packet.x - data.x) +
+                                (packet.y!! - data.y) * (packet.y - data.y) +
+                                (packet.z!! - data.z) * (packet.z - data.z)
+                            ) > 64.0
+                        if (!shouldUseTeleport) {
+                            if (packet.x != null && packet.yaw != null) {
+                                server.broadcastExcept(
+                                    this, EntityPositionAndRotationUpdatePacket(
+                                        entityId,
+                                        packet.x - data.x,
+                                        packet.y!! - data.y,
+                                        packet.z!! - data.z,
+                                        packet.yaw,
+                                        packet.pitch!!,
+                                        packet.onGround
+                                    )
+                                )
+                            } else if (packet.x != null) {
+                                server.broadcastExcept(
+                                    this, EntityPositionUpdatePacket(
+                                        entityId,
+                                        packet.x - data.x,
+                                        packet.y!! - data.y,
+                                        packet.z!! - data.z,
+                                        packet.onGround
+                                    )
+                                )
+                            } else if (packet.yaw != null) {
+                                server.broadcastExcept(
+                                    this, EntityRotationUpdatePacket(
+                                        entityId,
+                                        packet.yaw,
+                                        packet.pitch!!,
+                                        packet.onGround
+                                    )
+                                )
+                            }
+                        }
+                        if (packet.x != null) {
+                            if (
+                                data.z.roundToInt() / 16 != packet.z!!.roundToInt() / 16 ||
+                                data.x.roundToInt() / 16 != packet.x.roundToInt() / 16
+                            ) {
+                                loadChunksAroundPlayer()
+                            }
+                            data.x = packet.x
+                            data.y = packet.y!!
+                            data.z = packet.z
+                        }
+                        if (packet.yaw != null) {
+                            data.yaw = packet.yaw
+                            data.pitch = packet.pitch!!
+                        }
+                        data.onGround = packet.onGround
+                        if (shouldUseTeleport) {
+                            server.broadcastExcept(
+                                this, EntityTeleportPacket(
+                                    entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
+                                )
+                            )
+                        }
+                        if (packet.yaw != null) {
+                            server.broadcastExcept(this, SetHeadRotationPacket(entityId, data.yaw))
+                        }
+                        if (data.onGround && data.isFallFlying) {
+                            data.isFallFlying = false
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                        }
+                    }
+
+                    is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
+                    is PlayerCommandPacket -> {
+                        var syncTracker = false
+                        when (packet.action) {
+                            PlayerCommandPacket.START_SNEAKING -> {
+                                data.isSneaking = true
+                                syncTracker = true
+                            }
+
+                            PlayerCommandPacket.STOP_SNEAKING -> {
+                                data.isSneaking = false
+                                syncTracker = true
+                            }
+
+                            PlayerCommandPacket.START_SPRINTING -> {
+                                data.isSprinting = true
+                                syncTracker = true
+                            }
+
+                            PlayerCommandPacket.STOP_SPRINTING -> {
+                                data.isSprinting = false
+                                syncTracker = true
+                            }
+
+                            PlayerCommandPacket.START_FALL_FLYING -> {
+                                data.isFallFlying = true
+                                syncTracker = true
+                            }
+
+                            else -> LOGGER.warn(
+                                "Unsupported PlayerCommandPacket action: 0x{}",
+                                packet.action.toString(16)
+                            )
+                        }
+                        if (syncTracker) {
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                        }
+                    }
+
+                    is PlayPingPacket -> if (packet.id == pingId) {
+                        val pingTime = System.nanoTime() - pingStart
+                        pingId = -1
+                        server.broadcast(
+                            PlayerListUpdatePacket(
+                                PlayerListUpdatePacket.UpdatePing(
+                                    uuid,
+                                    pingTime.nanoseconds.inWholeMilliseconds.toInt()
+                                )
+                            )
                         )
-                    )) { it.options.chatMode == 0 }
-                }
-                is ClientOptionsPacket -> options = packet.options
-                is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
-                is MovementPacket -> {
-                    val shouldUseTeleport = packet.x != null && (
-                        (packet.x - data.x) * (packet.x - data.x) +
-                        (packet.y!! - data.y) * (packet.y - data.y) +
-                        (packet.z!! - data.z) * (packet.z - data.z)
-                    ) > 64.0
-                    if (!shouldUseTeleport) {
-                        if (packet.x != null && packet.yaw != null) {
-                            server.broadcastExcept(this, EntityPositionAndRotationUpdatePacket(
-                                entityId,
-                                packet.x - data.x,
-                                packet.y!! - data.y,
-                                packet.z!! - data.z,
-                                packet.yaw,
-                                packet.pitch!!,
-                                packet.onGround
-                            ))
-                        } else if (packet.x != null) {
-                            server.broadcastExcept(this, EntityPositionUpdatePacket(
-                                entityId,
-                                packet.x - data.x,
-                                packet.y!! - data.y,
-                                packet.z!! - data.z,
-                                packet.onGround
-                            ))
-                        } else if (packet.yaw != null) {
-                            server.broadcastExcept(this, EntityRotationUpdatePacket(
-                                entityId,
-                                packet.yaw,
-                                packet.pitch!!,
-                                packet.onGround
-                            ))
-                        }
                     }
-                    if (packet.x != null) {
+
+                    is ServerboundSetHeldItemPacket -> {
+                        data.selectedHotbarSlot = packet.slot
+                        server.broadcastExcept(this, SetEquipmentPacket(
+                            entityId, SetEquipmentPacket.Slot.MAIN_HAND to data.inventory[data.selectedInventorySlot]
+                        ))
+                    }
+                    is SetCreativeInventorySlotPacket -> {
+                        data.inventory[packet.slot] = packet.item
+                        val syncSlot = SetEquipmentPacket.Slot.getSlot(packet.slot)
                         if (
-                            data.z.roundToInt() / 16 != packet.z!!.roundToInt() / 16 ||
-                            data.x.roundToInt() / 16 != packet.x.roundToInt() / 16
+                            syncSlot != null &&
+                            (syncSlot != SetEquipmentPacket.Slot.MAIN_HAND || packet.slot == data.selectedInventorySlot)
                         ) {
-                            loadChunksAroundPlayer()
+                            server.broadcastExcept(this, SetEquipmentPacket(entityId, syncSlot to packet.item))
                         }
-                        data.x = packet.x
-                        data.y = packet.y!!
-                        data.z = packet.z
                     }
-                    if (packet.yaw != null) {
-                        data.yaw = packet.yaw
-                        data.pitch = packet.pitch!!
+                    is SwingArmPacket -> server.broadcastExcept(
+                        this, EntityAnimationPacket(
+                            entityId,
+                            if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
+                        )
+                    )
+
+                    is UseItemOnBlockPacket -> {
+                        val placePos = packet.location + packet.face.vector
+                        val slot = if (packet.offhand) 45 else data.selectedInventorySlot
+                        var itemStack = data.inventory[slot]
+                        if (itemStack != null) {
+                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                            server.world.setBlock(placePos, itemStack.itemId)
+                            server.broadcast(SetBlockPacket(placePos, itemStack.itemId))
+                            if (!data.gamemode.defaultAbilities.creativeMode) {
+                                if (--itemStack.count == 0) {
+                                    itemStack = null
+                                    data.inventory[slot] = null
+                                }
+                            }
+                            server.broadcastExcept(this, SetEquipmentPacket(
+                                entityId,
+                                if (packet.offhand) {
+                                    SetEquipmentPacket.Slot.OFFHAND
+                                } else {
+                                    SetEquipmentPacket.Slot.MAIN_HAND
+                                } to itemStack
+                            ))
+                        }
                     }
-                    data.onGround = packet.onGround
-                    if (shouldUseTeleport) {
-                        server.broadcastExcept(this, EntityTeleportPacket(
-                            entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
-                        ))
+
+                    is PlayerActionPacket -> {
+                        val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                            PlayerActionPacket.Action.START_DIGGING
+                        } else {
+                            PlayerActionPacket.Action.FINISH_DIGGING
+                        }
+                        if (packet.action == finishedAction) {
+                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                            server.world.setBlock(packet.location, null)
+                            server.broadcastExcept(
+                                this, EntityAnimationPacket(
+                                    entityId, EntityAnimationPacket.SWING_MAINHAND
+                                )
+                            )
+                            server.broadcast(SetBlockPacket(packet.location, null))
+                        }
                     }
-                    if (packet.yaw != null) {
-                        server.broadcastExcept(this, SetHeadRotationPacket(entityId, data.yaw))
-                    }
-                    if (data.onGround && data.isFallFlying) {
-                        data.isFallFlying = false
-                        server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
-                    }
+
+                    else -> LOGGER.warn("Unhandled packet {}", packet)
                 }
-                is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
-                is PlayerCommandPacket -> {
-                    var syncTracker = false
-                    when (packet.action) {
-                        PlayerCommandPacket.START_SNEAKING -> {
-                            data.isSneaking = true
-                            syncTracker = true
-                        }
-                        PlayerCommandPacket.STOP_SNEAKING -> {
-                            data.isSneaking = false
-                            syncTracker = true
-                        }
-                        PlayerCommandPacket.START_SPRINTING -> {
-                            data.isSprinting = true
-                            syncTracker = true
-                        }
-                        PlayerCommandPacket.STOP_SPRINTING -> {
-                            data.isSprinting = false
-                            syncTracker = true
-                        }
-                        PlayerCommandPacket.START_FALL_FLYING -> {
-                            data.isFallFlying = true
-                            syncTracker = true
-                        }
-                        else -> LOGGER.warn("Unsupported PlayerCommandPacket action: 0x{}", packet.action.toString(16))
-                    }
-                    if (syncTracker) {
-                        server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
-                    }
-                }
-                is PlayPingPacket -> if (packet.id == pingId) {
-                    val pingTime = System.nanoTime() - pingStart
-                    pingId = -1
-                    server.broadcast(PlayerListUpdatePacket(
-                        PlayerListUpdatePacket.UpdatePing(uuid, pingTime.nanoseconds.inWholeMilliseconds.toInt())
-                    ))
-                }
-                is SwingArmPacket -> server.broadcastExcept(this, EntityAnimationPacket(
-                    entityId,
-                    if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
+            } catch (e: Exception) {
+                LOGGER.warn("Exception in packet handling", e)
+                sendPacket(SystemChatPacket(
+                    Component.text(e.toString()).color(NamedTextColor.GOLD), true
                 ))
-                is UseItemOnBlockPacket -> {
-                    val placePos = packet.location + packet.face.vector
-                    // TODO: Implement inventory and don't just use stone
-                    server.world.setBlock(placePos, Blocks.STONE)
-                    server.broadcastExcept(this, SetBlockPacket(placePos, Blocks.STONE))
-                }
-                is PlayerActionPacket -> {
-                    val finishedAction = if (data.gamemode == Gamemode.CREATIVE) {
-                        PlayerActionPacket.Action.START_DIGGING
-                    } else {
-                        PlayerActionPacket.Action.FINISH_DIGGING
-                    }
-                    if (packet.action == finishedAction) {
-                        server.world.setBlock(packet.location, null)
-                        server.broadcastExcept(this, EntityAnimationPacket(
-                            entityId, EntityAnimationPacket.SWING_MAINHAND
-                        ))
-                        server.broadcastExcept(this, SetBlockPacket(packet.location, null))
-                    }
-                }
-                else -> LOGGER.warn("Unhandled packet {}", packet)
             }
         }
     }

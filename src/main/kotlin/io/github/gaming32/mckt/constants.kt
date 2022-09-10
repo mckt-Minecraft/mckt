@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.toGson
+import io.github.gaming32.mckt.data.toGson
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -27,7 +27,7 @@ val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS
     .filter(GameVersion::usesNetty)
     .associateBy(GameVersion::version)
 
-// blocks.json was generated from the Vanilla server JAR with its builtin tool
+// blocks.json and registries.json were generated from the Vanilla server JAR with its builtin tool
 @OptIn(ExperimentalSerializationApi::class)
 val GLOBAL_PALETTE = (MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
     Json.decodeFromStream<JsonObject>(input)
@@ -36,3 +36,15 @@ val GLOBAL_PALETTE = (MinecraftServer::class.java.getResourceAsStream("/blocks.j
         it.asJsonObject["default"]?.asBoolean ?: false
     }.asJsonObject["id"].asInt
 } ?: mapOf()) + mapOf(null to 0)
+
+@OptIn(ExperimentalSerializationApi::class)
+private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->
+    Json.decodeFromStream<JsonObject>(input)
+}?.asSequence()?.associate { (registry, data) ->
+    Identifier.parse(registry) to data.toGson().asJsonObject["entries"].asJsonObject
+} ?: mapOf()
+
+val ITEM_ID_TO_PROTOCOL = REGISTRIES_DATA[Identifier("item")]?.entrySet()?.associate { (name, data) ->
+    Identifier.parse(name) to data.asJsonObject["protocol_id"].asInt
+} ?: mapOf()
+val ITEM_PROTOCOL_TO_ID = ITEM_ID_TO_PROTOCOL.flip()

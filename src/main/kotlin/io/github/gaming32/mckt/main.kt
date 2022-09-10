@@ -67,7 +67,7 @@ class MinecraftServer {
             val startTime = System.nanoTime()
             world.meta.time++
             if (world.meta.time % config.autosavePeriod == 0L) {
-                world.saveAndLog()
+                launch { world.saveAndLog() }
                 clients.values.forEach(PlayClient::save)
             }
             for (client in clients.values.toList()) {

@@ -1,4 +1,4 @@
-package io.github.gaming32.mckt.packet
+package io.github.gaming32.mckt.data
 
 import com.google.gson.JsonParser
 import com.google.gson.JsonArray as JsonArrayGson

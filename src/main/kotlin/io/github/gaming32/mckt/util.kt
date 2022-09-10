@@ -61,3 +61,5 @@ inline fun <reified T : Enum<T>> enumValueOfOrNull(name: String) = try {
 }
 
 fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecase()}${this.substring(1).lowercase()}"
+
+fun <K, V> Map<K, V>.flip() = asSequence().associate { (k, v) -> v to k }

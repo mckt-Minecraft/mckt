@@ -1,9 +1,13 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
+import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
 import io.github.gaming32.mckt.NETWORK_NBT
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.objects.ItemStack
 import io.ktor.utils.io.*
+import net.benwoodworth.knbt.NbtCompound
 import net.benwoodworth.knbt.NbtTag
 import net.benwoodworth.knbt.decodeFromStream
 import net.benwoodworth.knbt.encodeToStream
@@ -53,6 +57,19 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
             write((value and VARINT_SEGMENT_BITS.toLong() or VARINT_CONTINUE_BIT.toLong()).toInt())
 
             value = value ushr 7
+        }
+    }
+
+    fun writeItemStack(item: ItemStack?) {
+        writeBoolean(item != null && item.count > 0)
+        if (item != null && item.count > 0) {
+            writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
+            writeVarInt(item.count)
+            if (item.extraNbt.isNullOrEmpty()) {
+                writeByte(0) // TAG_End
+            } else {
+                writeNbtTag(item.extraNbt)
+            }
         }
     }
 
@@ -109,6 +126,16 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
         }
 
         return value
+    }
+
+    fun readItemStack(): ItemStack? {
+        if (!readBoolean()) return null
+        val intItemId = readVarInt()
+        return ItemStack(
+            ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
+            readUnsignedByte(),
+            readNbtTag() as NbtCompound?
+        )
     }
 
     fun readNbtTag() = NETWORK_NBT.decodeFromStream<NbtTag>(this)
