@@ -34,6 +34,7 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         /* 0x16 */ PlayerRotationPacket.TYPE to ::PlayerRotationPacket,
         /* 0x17 */ PlayerOnGroundPacket.TYPE to ::PlayerOnGroundPacket,
         /* 0x1C */ ServerboundPlayerAbilitiesPacket.TYPE to ::ServerboundPlayerAbilitiesPacket,
+        /* 0x1C */ PlayerCommandPacket.TYPE to ::PlayerCommandPacket,
         /* 0x20 */ PlayPingPacket.C2S_TYPE to ::PlayPingPacket,
         /* 0x2F */ SwingArmPacket.TYPE to ::SwingArmPacket
     ));

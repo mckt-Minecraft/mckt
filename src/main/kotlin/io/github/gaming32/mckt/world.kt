@@ -472,4 +472,45 @@ class PlayerData {
     var flying = false
     var operatorLevel = 0
     var gamemode = Gamemode.CREATIVE
+    var flags: Int = 0
+
+    var isSneaking: Boolean
+        get() = (flags and EntityFlags.SNEAKING) != 0
+        set(value) {
+            flags = if (value) {
+                flags or EntityFlags.SNEAKING
+            } else {
+                flags and EntityFlags.SNEAKING.inv()
+            }
+        }
+
+    var isSprinting: Boolean
+        get() = (flags and EntityFlags.SPRINTING) != 0
+        set(value) {
+            flags = if (value) {
+                flags or EntityFlags.SPRINTING
+            } else {
+                flags and EntityFlags.SPRINTING.inv()
+            }
+        }
+
+    var isFallFlying: Boolean
+        get() = (flags and EntityFlags.FALL_FLYING) != 0
+        set(value) {
+            flags = if (value) {
+                flags or EntityFlags.FALL_FLYING
+            } else {
+                flags and EntityFlags.FALL_FLYING.inv()
+            }
+        }
+}
+
+object EntityFlags {
+    const val BURNING = 0x01
+    const val SNEAKING = 0x02
+    const val SPRINTING = 0x08
+    const val SWIMMING = 0x10
+    const val INVISIBLE = 0x20
+    const val GLOWING = 0x40
+    const val FALL_FLYING = 0x80
 }

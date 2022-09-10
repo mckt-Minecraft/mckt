@@ -181,7 +181,9 @@ class PlayClient(
             )
         ))
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
+        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags)
         for (client in server.clients.values) {
+            client.sendPacket(syncTrackedDataPacket)
             if (client === this@PlayClient) continue
             client.sendPacket(spawnPlayerPacket)
             sendPacket(SpawnPlayerPacket(
@@ -189,6 +191,7 @@ class PlayClient(
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
             ))
+            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags))
         }
 
         delay(10)
@@ -301,8 +304,41 @@ class PlayClient(
                     if (packet.yaw != null) {
                         server.broadcastExcept(this, SetHeadRotationPacket(entityId, data.yaw))
                     }
+                    if (data.onGround && data.isFallFlying) {
+                        data.isFallFlying = false
+                        server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                    }
                 }
                 is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
+                is PlayerCommandPacket -> {
+                    var syncTracker = false
+                    when (packet.action) {
+                        PlayerCommandPacket.START_SNEAKING -> {
+                            data.isSneaking = true
+                            syncTracker = true
+                        }
+                        PlayerCommandPacket.STOP_SNEAKING -> {
+                            data.isSneaking = false
+                            syncTracker = true
+                        }
+                        PlayerCommandPacket.START_SPRINTING -> {
+                            data.isSprinting = true
+                            syncTracker = true
+                        }
+                        PlayerCommandPacket.STOP_SPRINTING -> {
+                            data.isSprinting = false
+                            syncTracker = true
+                        }
+                        PlayerCommandPacket.START_FALL_FLYING -> {
+                            data.isFallFlying = true
+                            syncTracker = true
+                        }
+                        else -> LOGGER.warn("Unsupported PlayerCommandPacket action: 0x{}", packet.action.toString(16))
+                    }
+                    if (syncTracker) {
+                        server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                    }
+                }
                 is PlayPingPacket -> if (packet.id == pingId) {
                     val pingTime = System.nanoTime() - pingStart
                     pingId = -1
