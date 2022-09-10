@@ -61,6 +61,9 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
         chunk.setBlockIf(x + 2, endY + 1, z + 1, Blocks.LEAVES)
         chunk.setBlockIf(x + 2, endY + 1, z + 3, Blocks.LEAVES)
         chunk.setBlockIf(x + 2, endY + 1, z + 2, Blocks.LEAVES)
+        if (x + 2 in 0..15 && z + 2 in 0..15) {
+            chunk.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
+        }
     }
 
     private fun WorldChunk.setBlockIf(x: Int, y: Int, z: Int, block: Identifier?) {
