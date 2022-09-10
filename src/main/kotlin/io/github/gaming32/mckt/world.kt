@@ -202,7 +202,7 @@ class World(val server: MinecraftServer, val name: String) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun closeAndLog() {
-        saveAndLog()
+        saveAndLog().join()
         if (worldgenPool is CloseableCoroutineDispatcher) {
             worldgenPool.close()
         }
