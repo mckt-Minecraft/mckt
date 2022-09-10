@@ -124,18 +124,28 @@ enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (chunk: W
     } } })
 }
 
-class World(val server: MinecraftServer, val name: String) : AutoCloseable {
+class World(val server: MinecraftServer, val name: String) {
     val worldDir = File("worlds", name).apply { mkdirs() }
     val metaFile = File(worldDir, "meta.json")
     val playersDir = File(worldDir, "players").apply { mkdirs() }
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
     private val openRegions = mutableMapOf<Pair<Int, Int>, WorldRegion>()
+    private lateinit var saveJob: Job
+
+    val isSaving get() = this::saveJob.isInitialized && !saveJob.isCompleted
+
     @OptIn(DelicateCoroutinesApi::class)
     internal val worldgenPool = if (Runtime.getRuntime().availableProcessors() == 1) {
         Dispatchers.Default
     } else {
-        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Worldgen")
+        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Worldgen-$name")
+    }
+    @OptIn(DelicateCoroutinesApi::class)
+    internal val savePool = if (Runtime.getRuntime().availableProcessors() == 1) {
+        Dispatchers.Default
+    } else {
+        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Save-$name")
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -170,24 +180,24 @@ class World(val server: MinecraftServer, val name: String) : AutoCloseable {
         getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, id)
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun save() {
-        metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
-        openRegions.values.forEach(WorldRegion::save)
-    }
-
-    suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) {
-        sender.replyBroadcast(Component.text("Saving world \"$name\""))
-        val start = System.nanoTime()
-        save()
-        val duration = System.nanoTime() - start
-        sender.replyBroadcast(Component.text(
-            "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
-        ))
-    }
-
-    override fun close() {
-        save()
-        openRegions.clear()
+    suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
+        val oldSaveJob = if (this@World::saveJob.isInitialized) saveJob else null
+        saveJob = launch {
+            oldSaveJob?.join()
+            sender.replyBroadcast(Component.text("Saving world \"$name\""))
+            val start = System.nanoTime()
+            metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
+            openRegions.values.toList().map { region ->
+                launch(savePool) { region.save() }
+            }.joinAll()
+            val duration = System.nanoTime() - start
+            sender.replyBroadcast(
+                Component.text(
+                    "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
+                )
+            )
+        }
+        saveJob
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
