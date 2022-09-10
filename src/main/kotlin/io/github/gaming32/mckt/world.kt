@@ -243,7 +243,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
         val chunksData = mutableListOf<WorldChunk.ChunkData>()
-        chunks.forEachIndexed { i, chunk ->
+        chunks.toList().forEachIndexed { i, chunk ->
             if (chunk != null) {
                 chunksPresent.set(i)
                 chunksData.add(chunk.toData())
@@ -300,16 +300,18 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
         if (y < -2064 || y > 2063) return
-        var section = sections[(y shr 4) + 127]
-        if (section == null) {
-            if (id == null) return
-            section = ChunkSection(this, y shr 4)
-            sections[(y shr 4) + 127] = section
+        synchronized(this) {
+            var section = sections[(y shr 4) + 127]
+            if (section == null) {
+                if (id == null) return
+                section = ChunkSection(this, y shr 4)
+                sections[(y shr 4) + 127] = section
+            }
+            section.setBlock(x, y and 15, z, id)
         }
-        section.setBlock(x, y and 15, z, id)
     }
 
-    internal fun toData(): ChunkData {
+    internal fun toData() = synchronized(this) {
         val sectionsPresent = BitSet(sections.size)
         val sectionsData = mutableListOf<ChunkSection.SectionData>()
         sections.forEachIndexed { i, section ->
@@ -318,7 +320,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sectionsData.add(section.toData())
             }
         }
-        return ChunkData(sectionsPresent, sectionsData.toTypedArray(), heightmap)
+        ChunkData(sectionsPresent, sectionsData.toTypedArray(), heightmap)
     }
 
     internal fun fromData(input: ChunkData) {

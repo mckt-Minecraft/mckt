@@ -18,23 +18,24 @@ class PerlinNoise(seed: Long?) {
             129, 22, 39, 253,  19, 98, 108, 110, 79, 113, 224, 232, 178, 185,  112, 104, 218, 246, 97, 228,
             251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241,  81, 51, 145, 235, 249, 14, 239, 107,
             49, 192, 214,  31, 181, 199, 106, 157, 184,  84, 204, 176, 115, 121, 50, 45, 127,  4, 150, 254,
-            138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
-            151
+            138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
         )
     }
 
-    private val perm = if (seed == null) PERM else PERM.copyOf().apply { shuffle(Random(seed)) }
+    private val perm = if (seed == null) PERM else PERM.copyOf()
+        .apply { shuffle(Random(seed)) }
+        .copyOf(257).also { it[256] = it[0] }
 
     fun noise1d(x: Double): Double {
-        val x2 = x.toInt() and 0xff
+        val x2 = floor(x).toInt() and 0xff
         val x3 = x - floor(x)
         val u = fade(x3)
         return lerp(u, grad1d(perm[x2], x3), grad1d(perm[x2 + 1], x3 - 1)) * 2
     }
 
     fun noise2d(x: Double, y: Double): Double {
-        val x2 = x.toInt() and 0xff
-        val y2 = y.toInt() and 0xff
+        val x2 = floor(x).toInt() and 0xff
+        val y2 = floor(y).toInt() and 0xff
         val x3 = x - floor(x)
         val y3 = y - floor(y)
         val u = fade(x3)
