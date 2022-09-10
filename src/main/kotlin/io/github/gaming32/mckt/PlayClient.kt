@@ -226,7 +226,7 @@ class PlayClient(
                     val chunk = server.world.getChunkOrGenerate(absX, absZ)
                     if (sendChannel.isClosedForWrite) return@loadChunk
                     sendPacket(ChunkAndLightDataPacket(
-                        chunk.x, chunk.z, chunk.heightmap, encodeData(chunk::networkEncode)
+                        chunk.x, chunk.z, encodeData(chunk::networkEncode)
                     ))
                 }
             }

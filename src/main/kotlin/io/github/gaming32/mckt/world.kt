@@ -309,12 +309,10 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     @Serializable
     internal class ChunkData(
         @SerialName("SectionsPresent") val sectionsPresent: BitSet,
-        @SerialName("Sections")        val sections: Array<ChunkSection.SectionData>,
-        @SerialName("Heightmap")       val heightmap: SimpleBitStorage
+        @SerialName("Sections")        val sections: Array<ChunkSection.SectionData>
     )
 
     private val sections = arrayOfNulls<ChunkSection>(254)
-    internal val heightmap = SimpleBitStorage(12, 16 * 16)
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
@@ -350,7 +348,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sectionsData.add(section.toData())
             }
         }
-        ChunkData(sectionsPresent, sectionsData.toTypedArray(), heightmap)
+        ChunkData(sectionsPresent, sectionsData.toTypedArray())
     }
 
     internal fun fromData(input: ChunkData) {
@@ -362,9 +360,6 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sections[i] = null
             }
         }
-        require(input.heightmap.bits == heightmap.bits)
-        require(input.heightmap.size == heightmap.size)
-        input.heightmap.data.copyInto(heightmap.data)
     }
 
     fun networkEncode(out: MinecraftOutputStream) {

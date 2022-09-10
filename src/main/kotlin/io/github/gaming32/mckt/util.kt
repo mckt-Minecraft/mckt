@@ -18,6 +18,7 @@ val NETWORK_NBT = Nbt {
 val SAVE_NBT = Nbt {
     variant = NbtVariant.Java
     compression = NbtCompression.Gzip
+    ignoreUnknownKeys = true
 }
 
 val PRETTY_JSON = Json {
