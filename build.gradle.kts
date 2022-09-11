@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-network:2.1.0")
+    implementation("io.ktor:ktor-network:2.1.1")
 
     implementation("net.kyori:adventure-api:4.11.0")
     implementation("net.kyori:adventure-text-serializer-gson:4.11.0")

@@ -120,16 +120,17 @@ class MinecraftServer {
         clients.clear()
         handshakeJobs.forEach { it.cancel() }
         world.closeAndLog()
-        joinAll(handleCommandsJob, acceptConnectionsJob)
         handshakeJobs.joinAll()
         handshakeJobs.clear()
         LOGGER.info("Server stopped")
     }
 
-    private suspend fun handleCommands() = coroutineScope {
+    @Suppress("RedundantAsync")
+    @OptIn(DelicateCoroutinesApi::class)
+    private suspend fun handleCommands() {
         while (running) {
             consoleCommandSender.runCommand(
-                withContext(Dispatchers.IO) { readlnOrNull() }?.trim()?.ifEmpty { null } ?: continue
+                GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue
             )
         }
     }
