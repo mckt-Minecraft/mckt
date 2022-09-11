@@ -19,11 +19,8 @@ import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -85,6 +82,7 @@ class PlayClient(
     lateinit var commandSender: CommandSender
         private set
     private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
+    private var ignoreMovementPackets = true
 
     var options = ClientOptions(this)
     internal var ended = false
@@ -155,7 +153,7 @@ class PlayClient(
             data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
         ))
         syncOpLevel()
-        sendPacket(PlayerPositionSyncPacket(nextTeleportId++, data.x, data.y, data.z, data.yaw, data.pitch))
+        syncPosition(false)
         sendPacket(PlayerListUpdatePacket(
             *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
                 uuid = client.uuid,
@@ -209,6 +207,9 @@ class PlayClient(
             }
         }
 
+        loadChunksAroundPlayer(3).joinAll()
+        syncPosition(false)
+        ignoreMovementPackets = false
         loadChunksAroundPlayer()
     }
 
@@ -217,28 +218,32 @@ class PlayClient(
         (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
     ))
 
-    private suspend fun loadChunksAroundPlayer() = coroutineScope { launch {
-        val playerX = floor(data.x / 16).toInt()
-        val playerZ = floor(data.z / 16).toInt()
-        sendPacket(SetCenterChunkPacket(playerX, playerZ))
-        spiralLoop(server.config.viewDistance * 2, server.config.viewDistance * 2) { x, z ->
-            val absX = playerX + x
-            val absZ = playerZ + z
-            if (loadedChunks.add(absX to absZ)) {
-                launch loadChunk@ {
-                    val chunk = server.world.getChunkOrGenerate(absX, absZ)
-                    if (sendChannel.isClosedForWrite) return@loadChunk
-                    sendPacket(ChunkAndLightDataPacket(
-                        chunk.x, chunk.z, withContext(chunk.world.networkSerializationPool) {
-                            encodeData(chunk::networkEncode)
-                        }
-                    ))
+    private suspend fun loadChunk(x: Int, z: Int) {
+        if (loadedChunks.add(x to z)) {
+            val chunk = server.world.getChunkOrGenerate(x, z)
+            if (sendChannel.isClosedForWrite) return
+            sendPacket(ChunkAndLightDataPacket(
+                chunk.x, chunk.z, withContext(chunk.world.networkSerializationPool) {
+                    encodeData(chunk::networkEncode)
                 }
-            }
+            ))
         }
-    } }
+    }
 
-    suspend fun handlePackets() {
+    @Suppress("SuspendFunctionOnCoroutineScope")
+    private suspend fun CoroutineScope.loadChunksAroundPlayer(range: Int = server.config.viewDistance * 2): List<Job> {
+        val (playerX, playerZ) = getChunkPos()
+        sendPacket(SetCenterChunkPacket(playerX, playerZ))
+        val jobs = mutableListOf<Job>()
+        spiralLoop(range, range) { x, z ->
+            jobs.add(launch { loadChunk(playerX + x, playerZ + z) })
+        }
+        return jobs
+    }
+
+    fun getChunkPos() = floor(data.x / 16).toInt() to floor(data.z / 16).toInt()
+
+    suspend fun handlePackets() = coroutineScope {
         while (server.running && !ended) {
             val packet = try {
                 readPacket()
@@ -273,6 +278,7 @@ class PlayClient(
                     is ClientOptionsPacket -> options = packet.options
                     is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                     is MovementPacket -> {
+                        if (ignoreMovementPackets) continue
                         val shouldUseTeleport = packet.x != null && (
                             (packet.x - data.x) * (packet.x - data.x) +
                                 (packet.y!! - data.y) * (packet.y - data.y) +
@@ -281,7 +287,7 @@ class PlayClient(
                         if (!shouldUseTeleport) {
                             if (packet.x != null && packet.yaw != null) {
                                 server.broadcastExcept(
-                                    this, EntityPositionAndRotationUpdatePacket(
+                                    this@PlayClient, EntityPositionAndRotationUpdatePacket(
                                         entityId,
                                         packet.x - data.x,
                                         packet.y!! - data.y,
@@ -293,7 +299,7 @@ class PlayClient(
                                 )
                             } else if (packet.x != null) {
                                 server.broadcastExcept(
-                                    this, EntityPositionUpdatePacket(
+                                    this@PlayClient, EntityPositionUpdatePacket(
                                         entityId,
                                         packet.x - data.x,
                                         packet.y!! - data.y,
@@ -303,7 +309,7 @@ class PlayClient(
                                 )
                             } else if (packet.yaw != null) {
                                 server.broadcastExcept(
-                                    this, EntityRotationUpdatePacket(
+                                    this@PlayClient, EntityRotationUpdatePacket(
                                         entityId,
                                         packet.yaw,
                                         packet.pitch!!,
@@ -330,13 +336,13 @@ class PlayClient(
                         data.onGround = packet.onGround
                         if (shouldUseTeleport) {
                             server.broadcastExcept(
-                                this, EntityTeleportPacket(
+                                this@PlayClient, EntityTeleportPacket(
                                     entityId, data.x, data.y, data.z, data.yaw, data.pitch, data.onGround
                                 )
                             )
                         }
                         if (packet.yaw != null) {
-                            server.broadcastExcept(this, SetHeadRotationPacket(entityId, data.yaw))
+                            server.broadcastExcept(this@PlayClient, SetHeadRotationPacket(entityId, data.yaw))
                         }
                         if (data.onGround && data.isFallFlying) {
                             data.isFallFlying = false
@@ -398,10 +404,14 @@ class PlayClient(
 
                     is ServerboundSetHeldItemPacket -> {
                         data.selectedHotbarSlot = packet.slot
-                        server.broadcastExcept(this, SetEquipmentPacket(
-                            entityId, SetEquipmentPacket.Slot.MAIN_HAND to data.inventory[data.selectedInventorySlot]
-                        ))
+                        server.broadcastExcept(
+                            this@PlayClient, SetEquipmentPacket(
+                                entityId,
+                                SetEquipmentPacket.Slot.MAIN_HAND to data.inventory[data.selectedInventorySlot]
+                            )
+                        )
                     }
+
                     is SetCreativeInventorySlotPacket -> {
                         data.inventory[packet.slot] = packet.item
                         val syncSlot = SetEquipmentPacket.Slot.getSlot(packet.slot)
@@ -409,11 +419,12 @@ class PlayClient(
                             syncSlot != null &&
                             (syncSlot != SetEquipmentPacket.Slot.MAIN_HAND || packet.slot == data.selectedInventorySlot)
                         ) {
-                            server.broadcastExcept(this, SetEquipmentPacket(entityId, syncSlot to packet.item))
+                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(entityId, syncSlot to packet.item))
                         }
                     }
+
                     is SwingArmPacket -> server.broadcastExcept(
-                        this, EntityAnimationPacket(
+                        this@PlayClient, EntityAnimationPacket(
                             entityId,
                             if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
                         )
@@ -433,14 +444,16 @@ class PlayClient(
                                     data.inventory[slot] = null
                                 }
                             }
-                            server.broadcastExcept(this, SetEquipmentPacket(
-                                entityId,
-                                if (packet.offhand) {
-                                    SetEquipmentPacket.Slot.OFFHAND
-                                } else {
-                                    SetEquipmentPacket.Slot.MAIN_HAND
-                                } to itemStack
-                            ))
+                            server.broadcastExcept(
+                                this@PlayClient, SetEquipmentPacket(
+                                    entityId,
+                                    if (packet.offhand) {
+                                        SetEquipmentPacket.Slot.OFFHAND
+                                    } else {
+                                        SetEquipmentPacket.Slot.MAIN_HAND
+                                    } to itemStack
+                                )
+                            )
                         }
                     }
 
@@ -454,7 +467,7 @@ class PlayClient(
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
                             server.world.setBlock(packet.location, null)
                             server.broadcastExcept(
-                                this, EntityAnimationPacket(
+                                this@PlayClient, EntityAnimationPacket(
                                     entityId, EntityAnimationPacket.SWING_MAINHAND
                                 )
                             )
@@ -476,12 +489,23 @@ class PlayClient(
     suspend fun teleport(
         x: Double? = null, y: Double? = null, z: Double? = null,
         yaw: Float? = null, pitch: Float? = null
-    ) {
+    ) = coroutineScope {
         x?.let { data.x = it }
         y?.let { data.y = it }
         z?.let { data.z = it }
         yaw?.let { data.yaw = it }
         pitch?.let { data.pitch = it }
+        syncPosition(true)
+        if (x != null || z != null) {
+            ignoreMovementPackets = true
+            loadChunksAroundPlayer(3).joinAll()
+            syncPosition(false)
+            ignoreMovementPackets = false
+            loadChunksAroundPlayer()
+        }
+    }
+
+    private suspend fun syncPosition(toOthers: Boolean) {
         sendPacket(PlayerPositionSyncPacket(
             nextTeleportId++,
             data.x,
@@ -490,17 +514,16 @@ class PlayClient(
             data.yaw,
             data.pitch
         ))
-        server.broadcastExcept(this, EntityTeleportPacket(
-            entityId,
-            data.x,
-            data.y,
-            data.z,
-            data.yaw,
-            data.pitch,
-            data.onGround
-        ))
-        if (x != null || z != null) {
-            loadChunksAroundPlayer()
+        if (toOthers) {
+            server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
+                entityId,
+                data.x,
+                data.y,
+                data.z,
+                data.yaw,
+                data.pitch,
+                data.onGround
+            ))
         }
     }
 
@@ -522,6 +545,7 @@ class PlayClient(
     }
 
     override suspend fun sendPacket(packet: Packet) {
+        LOGGER.debug("Sending packet {}", packet)
         try {
             super.sendPacket(packet)
         } catch (e: IOException) {

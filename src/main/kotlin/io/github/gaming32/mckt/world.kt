@@ -289,9 +289,8 @@ class World(val server: MinecraftServer, val name: String) {
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
     private val openRegions = mutableMapOf<Pair<Int, Int>, WorldRegion>()
-    private lateinit var saveJob: Job
-
-    val isSaving get() = this::saveJob.isInitialized && !saveJob.isCompleted
+    var isSaving = false
+        private set
 
     internal val worldgenPool = server.threadPoolContext
     private val saveLoadPool = server.threadPoolContext
@@ -370,27 +369,25 @@ class World(val server: MinecraftServer, val name: String) {
 
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
-        val oldSaveJob = if (this@World::saveJob.isInitialized) saveJob else null
-        saveJob = launch {
-            oldSaveJob?.join()
-            sender.replyBroadcast(Component.text("Saving world \"$name\""))
-            val start = System.nanoTime()
-            metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
-            openRegions.values.toList().map { region ->
-                launch(saveLoadPool) { region.save() }
-            }.joinAll()
-            val duration = System.nanoTime() - start
-            sender.replyBroadcast(
-                Component.text(
-                    "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
-                )
+        while (isSaving) yield()
+        isSaving = true
+        sender.replyBroadcast(Component.text("Saving world \"$name\""))
+        val start = System.nanoTime()
+        metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
+        openRegions.values.toList().map { region ->
+            launch(saveLoadPool) { region.save() }
+        }.joinAll()
+        val duration = System.nanoTime() - start
+        sender.replyBroadcast(
+            Component.text(
+                "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
             )
-        }
-        saveJob
+        )
+        isSaving = false
     }
 
     suspend fun closeAndLog() {
-        saveAndLog().join()
+        saveAndLog()
         openRegions.clear()
     }
 }

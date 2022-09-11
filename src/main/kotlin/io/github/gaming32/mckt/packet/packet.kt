@@ -47,8 +47,8 @@ abstract class Packet(val type: Int) {
                     writeVarInt(output.size())
                     write(output.toByteArray())
                 })
+                channel.flush()
             }
-            channel.flush()
         } catch (e: IOException) {
             LOGGER.error("Client connection had error", e)
             throw e
