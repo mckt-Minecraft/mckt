@@ -7,7 +7,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Serializable(with = Identifier.IdentifierSerializer::class)
+@Serializable(Identifier.IdentifierSerializer::class)
 data class Identifier(val namespace: String, val value: String) {
     companion object {
         fun parse(s: String) = s.indexOf(':').let { colonIndex ->

@@ -121,7 +121,8 @@ class PlayClient(
             if (e !is FileNotFoundException) {
                 LOGGER.warn("Couldn't read player data, creating anew", e)
             }
-            PlayerData()
+            val spawnPoint = server.world.findSpawnPoint()
+            PlayerData(spawnPoint.x + 0.5, spawnPoint.y.toDouble(), spawnPoint.z + 0.5)
         }
 
         sendPacket(PlayLoginPacket(
@@ -180,7 +181,7 @@ class PlayClient(
         sendPacket(SetContainerContentPacket(0u, *data.inventory))
 
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
-        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags)
+        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags, data.flying)
         val equipment = data.getEquipment()
         val setEquipmentPacket = if (equipment.isNotEmpty()) {
             SetEquipmentPacket(entityId, *equipment.toList().toTypedArray())
@@ -199,7 +200,7 @@ class PlayClient(
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
             ))
-            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags))
+            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags, data.flying))
             val otherEquipment = client.data.getEquipment()
             if (otherEquipment.isNotEmpty()) {
                 sendPacket(SetEquipmentPacket(client.entityId, *otherEquipment.toList().toTypedArray()))
@@ -335,7 +336,7 @@ class PlayClient(
                         }
                         if (data.onGround && data.isFallFlying) {
                             data.isFallFlying = false
-                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.flying))
                         }
                     }
 
@@ -374,7 +375,7 @@ class PlayClient(
                             )
                         }
                         if (syncTracker) {
-                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.flying))
                         }
                     }
 

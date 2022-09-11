@@ -60,6 +60,7 @@ class MinecraftServer {
         LOGGER.info("Starting server...")
         BuiltinCommands.register()
         world = World(this@MinecraftServer, "world")
+        world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
         LOGGER.info("Server started...")
@@ -107,6 +108,8 @@ class MinecraftServer {
             }
         }
         LOGGER.info("Stopping server...")
+        handleCommandsJob.cancel()
+        acceptConnectionsJob.cancel()
         for (client in clients.values) {
             client.sendPacket(PlayDisconnectPacket(
                 Component.text("Server closed")
@@ -115,12 +118,11 @@ class MinecraftServer {
             client.close()
         }
         clients.clear()
-        acceptConnectionsJob.cancel()
         handshakeJobs.forEach { it.cancel() }
-        handshakeJobs.joinAll()
-        handshakeJobs.clear()
         world.closeAndLog()
         joinAll(handleCommandsJob, acceptConnectionsJob)
+        handshakeJobs.joinAll()
+        handshakeJobs.clear()
         LOGGER.info("Server stopped")
     }
 
@@ -142,98 +144,103 @@ class MinecraftServer {
                 launch initialConnection@ {
                     val receiveChannel = socket.openReadChannel()
                     val sendChannel = socket.openWriteChannel()
-                    val packetLength = receiveChannel.readVarInt(specialFe = true)
-                    if (packetLength == 0xFE) {
-                        val encoded = if (receiveChannel.availableForRead == 0) {
-                            // Pre-1.4
-                            PlainTextComponentSerializer.plainText().serialize(config.motd) +
-                                "\u00a7${clients.size}\u00a7${config.maxPlayers}"
-                        } else {
-                            // 1.4 through 1.6
-                            "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
-                                "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
-                                "\u0000${clients.size}\u0000${config.maxPlayers}"
-                        }.toByteArray(Charsets.UTF_16BE)
-                        sendChannel.writeByte(0xff)
-                        sendChannel.writeShort(encoded.size / 2)
-                        sendChannel.writeFully(encoded, 0, encoded.size)
-                        sendChannel.flush()
-                        socket.dispose()
-                        return@initialConnection
-                    }
-                    val bytesRead = receiveChannel.totalBytesRead
-                    val packetId = receiveChannel.readVarInt()
-                    val packetIdLength = (receiveChannel.totalBytesRead - bytesRead).toInt()
-                    if (packetId != 0x00) {
-                        socket.dispose()
-                        return@initialConnection
-                    }
-                    val packet = ByteArray(packetLength - packetIdLength)
-                    receiveChannel.readFully(packet, 0, packet.size)
-                    val packetInput = MinecraftInputStream(ByteArrayInputStream(packet))
-                    val protocolVersion = packetInput.readVarInt()
-                    packetInput.readString(255) // Server address
-                    @Suppress("BlockingMethodInNonBlockingContext")
-                    packetInput.readUnsignedShort() // Server port
-                    val nextStateInt = packetInput.readVarInt()
-                    val nextState = try {
-                        PacketState.values()[nextStateInt]
-                    } catch (e: IndexOutOfBoundsException) {
-                        LOGGER.warn("Unexpected packet state: ${nextStateInt.toString(16)}")
-                        socket.dispose()
-                        return@initialConnection
-                    }
-                    when (nextState) {
-                        PacketState.STATUS -> handshakeJobs.add(launch {
-                            try {
-                                StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle()
-                            } catch (e: Exception) {
-                                if (e !is ClosedReceiveChannelException) {
-                                    LOGGER.error("Error sharing status with client", e)
-                                }
-                            } finally {
-                                handshakeJobs.remove(coroutineContext[Job])
-                            }
-                        })
-                        PacketState.LOGIN -> handshakeJobs.add(launch {
-                            if (protocolVersion != PROTOCOL_VERSION) {
-                                val message = "Unsupported game version: " +
-                                    GAME_VERSIONS_BY_PROTOCOL[protocolVersion].let { version ->
-                                        if (version != null) {
-                                            "${version.minecraftVersion} (protocol version $protocolVersion)"
-                                        } else {
-                                            "Protocol version $protocolVersion"
-                                        }
-                                    }
-                                LOGGER.warn(message)
-                                sendChannel.sendPacket(LoginDisconnectPacket(Component.text(message)), -1)
-                                socket.dispose()
-                                return@launch
-                            }
-                            val client = PlayClient(this@MinecraftServer, socket, receiveChannel, sendChannel)
-                            try {
-                                client.handshake()
-                            } finally {
-                                handshakeJobs.remove(coroutineContext[Job])
-                            }
-                            if (!client.receiveChannel.isClosedForRead) {
-                                LOGGER.info("{} joined the game.", client.username)
-                                client.handlePacketsJob = launch { client.handlePackets() }
-                                clients.put(client.username, client)?.also { oldClient ->
-                                    if (oldClient.receiveChannel.isClosedForRead) return@also
-                                    LOGGER.info("Another client with that username was already online")
-                                    oldClient.sendPacket(PlayDisconnectPacket(
-                                        Component.text("You logged in from another location")
-                                    ))
-                                    oldClient.socket.dispose()
-                                }
-                                client.postHandshake()
-                            }
-                        })
-                        else -> {
-                            LOGGER.warn("Unexpected packet state: $nextState")
+                    try {
+                        val packetLength = receiveChannel.readVarInt(specialFe = true)
+                        if (packetLength == 0xFE) {
+                            val encoded = if (receiveChannel.availableForRead == 0) {
+                                // Pre-1.4
+                                PlainTextComponentSerializer.plainText().serialize(config.motd) +
+                                    "\u00a7${clients.size}\u00a7${config.maxPlayers}"
+                            } else {
+                                // 1.4 through 1.6
+                                "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
+                                    "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
+                                    "\u0000${clients.size}\u0000${config.maxPlayers}"
+                            }.toByteArray(Charsets.UTF_16BE)
+                            sendChannel.writeByte(0xff)
+                            sendChannel.writeShort(encoded.size / 2)
+                            sendChannel.writeFully(encoded, 0, encoded.size)
+                            sendChannel.flush()
                             socket.dispose()
+                            return@initialConnection
                         }
+                        val bytesRead = receiveChannel.totalBytesRead
+                        val packetId = receiveChannel.readVarInt()
+                        val packetIdLength = (receiveChannel.totalBytesRead - bytesRead).toInt()
+                        if (packetId != 0x00) {
+                            socket.dispose()
+                            return@initialConnection
+                        }
+                        val packet = ByteArray(packetLength - packetIdLength)
+                        receiveChannel.readFully(packet, 0, packet.size)
+                        val packetInput = MinecraftInputStream(ByteArrayInputStream(packet))
+                        val protocolVersion = packetInput.readVarInt()
+                        packetInput.readString(255) // Server address
+                        @Suppress("BlockingMethodInNonBlockingContext")
+                        packetInput.readUnsignedShort() // Server port
+                        val nextStateInt = packetInput.readVarInt()
+                        val nextState = try {
+                            PacketState.values()[nextStateInt]
+                        } catch (e: IndexOutOfBoundsException) {
+                            LOGGER.warn("Unexpected packet state: ${nextStateInt.toString(16)}")
+                            socket.dispose()
+                            return@initialConnection
+                        }
+                        when (nextState) {
+                            PacketState.STATUS -> handshakeJobs.add(launch {
+                                try {
+                                    StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle()
+                                } catch (e: Exception) {
+                                    if (e !is ClosedReceiveChannelException) {
+                                        LOGGER.error("Error sharing status with client", e)
+                                    }
+                                } finally {
+                                    handshakeJobs.remove(coroutineContext[Job])
+                                }
+                            })
+                            PacketState.LOGIN -> handshakeJobs.add(launch {
+                                if (protocolVersion != PROTOCOL_VERSION) {
+                                    val message = "Unsupported game version: " +
+                                        GAME_VERSIONS_BY_PROTOCOL[protocolVersion].let { version ->
+                                            if (version != null) {
+                                                "${version.minecraftVersion} (protocol version $protocolVersion)"
+                                            } else {
+                                                "Protocol version $protocolVersion"
+                                            }
+                                        }
+                                    LOGGER.warn(message)
+                                    sendChannel.sendPacket(LoginDisconnectPacket(Component.text(message)), -1)
+                                    socket.dispose()
+                                    return@launch
+                                }
+                                val client = PlayClient(this@MinecraftServer, socket, receiveChannel, sendChannel)
+                                try {
+                                    client.handshake()
+                                } finally {
+                                    handshakeJobs.remove(coroutineContext[Job])
+                                }
+                                if (!client.receiveChannel.isClosedForRead) {
+                                    LOGGER.info("{} joined the game.", client.username)
+                                    client.handlePacketsJob = launch { client.handlePackets() }
+                                    clients.put(client.username, client)?.also { oldClient ->
+                                        if (oldClient.receiveChannel.isClosedForRead) return@also
+                                        LOGGER.info("Another client with that username was already online")
+                                        oldClient.sendPacket(PlayDisconnectPacket(
+                                            Component.text("You logged in from another location")
+                                        ))
+                                        oldClient.socket.dispose()
+                                    }
+                                    client.postHandshake()
+                                }
+                            })
+                            else -> {
+                                LOGGER.warn("Unexpected packet state: $nextState")
+                                socket.dispose()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        LOGGER.warn("Client sent invalid data during handshake", e)
+                        socket.dispose()
                     }
                 }
             }

@@ -21,8 +21,7 @@ import net.benwoodworth.knbt.*
 import net.kyori.adventure.text.Component
 import java.io.File
 import java.io.FileNotFoundException
-import java.util.BitSet
-import java.util.EnumMap
+import java.util.*
 import kotlin.random.Random
 import kotlin.reflect.typeOf
 import kotlin.time.Duration.Companion.nanoseconds
@@ -85,6 +84,161 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound("") {
                         put("offset", 2f)
                         put("sound", "minecraft:ambient_cave")
                         put("block_search_extent", 8)
+                    }
+                }
+            }
+        }
+    }
+    putNbtCompound("minecraft:chat_type") {
+        put("type", "minecraft:chat_type")
+        putNbtList("value") {
+            addNbtCompound {
+                put("name", "minecraft:chat")
+                put("id", 0)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "chat.type.text")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:say_command")
+                put("id", 1)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "chat.type.announcement")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:msg_command_incoming")
+                put("id", 2)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "commands.message.display.incoming")
+                        putNbtCompound("style") {
+                            put("color", "gray")
+                            put("italic", true)
+                        }
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:msg_command_outcoming")
+                put("id", 3)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "commands.message.display.outgoing")
+                        putNbtCompound("style") {
+                            put("color", "gray")
+                            put("italic", true)
+                        }
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:team_msg_command_incoming")
+                put("id", 4)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "chat.type.team.text")
+                        putNbtList("parameters") {
+                            this.add("target")
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:team_msg_command_outgoing")
+                put("id", 5)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "chat.type.team.sent")
+                        putNbtList("parameters") {
+                            this.add("target")
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.text.narrate")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                }
+            }
+            addNbtCompound {
+                put("name", "minecraft:emote_command")
+                put("id", 6)
+                putNbtCompound("element") {
+                    putNbtCompound("chat") {
+                        put("translation_key", "chat.type.emote")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
+                    }
+                    putNbtCompound("narration") {
+                        put("translation_key", "chat.type.emote")
+                        putNbtList("parameters") {
+                            this.add("sender")
+                            this.add("content")
+                        }
                     }
                 }
             }
@@ -189,6 +343,32 @@ class World(val server: MinecraftServer, val name: String) {
 
     fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
 
+    suspend fun findSpawnPoint(): BlockPosition {
+        if (meta.spawnPos != BlockPosition.ZERO) {
+            return meta.spawnPos
+        }
+        val rand = Random(meta.seed)
+        val x = rand.nextInt(-256, 257)
+        val z = rand.nextInt(-256, 257)
+        var y = 0
+        while (true) {
+            val check = BlockPosition(x, y, z)
+            if (getBlockOrGenerate(check) == null) {
+                if (getBlockOrGenerate(check.down()) != null) {
+                    if (getBlockOrGenerate(check.up()) == null) {
+                        meta.spawnPos = check
+                        return check
+                    }
+                    y++
+                    continue
+                }
+                y--
+                continue
+            }
+            y++
+        }
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
         val oldSaveJob = if (this@World::saveJob.isInitialized) saveJob else null
@@ -215,6 +395,9 @@ class World(val server: MinecraftServer, val name: String) {
         saveAndLog().join()
         if (worldgenPool is CloseableCoroutineDispatcher) {
             worldgenPool.close()
+        }
+        if (savePool is CloseableCoroutineDispatcher) {
+            savePool.close()
         }
         openRegions.clear()
     }
@@ -478,6 +661,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 class WorldMeta() {
     var time = 0L
     var seed = 0L
+    var spawnPos = BlockPosition.ZERO
     var worldGenerator = WorldGenerator.NORMAL
     var saveFormat = SaveFormat.NBT
 
@@ -489,10 +673,11 @@ class WorldMeta() {
 }
 
 @Serializable
-class PlayerData {
-    var x = 0.0
-    var y = 5.0
-    var z = 0.0
+class PlayerData(
+    var x: Double = 0.0,
+    var y: Double = 0.0,
+    var z: Double = 0.0
+) {
     var yaw = 0f
     var pitch = 0f
     var onGround = false

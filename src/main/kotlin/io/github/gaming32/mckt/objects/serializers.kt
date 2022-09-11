@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package io.github.gaming32.mckt.objects
 
 import io.github.gaming32.mckt.data.toGson
@@ -23,7 +25,6 @@ object UUIDSerializer : KSerializer<UUID> {
     override fun deserialize(decoder: Decoder) = UUID.fromString(decoder.decodeString())!!
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 object TextSerializer : KSerializer<Component> {
     private val delegateSerializer = serializer<JsonElement>()
     override val descriptor = SerialDescriptor("Component", delegateSerializer.descriptor)
@@ -37,7 +38,6 @@ object TextSerializer : KSerializer<Component> {
         GsonComponentSerializer.gson().deserializeFromTree(decoder.decodeSerializableValue(delegateSerializer).toGson())
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 object BitSetSerializer : KSerializer<BitSet> {
     private val delegateSerializer = serializer<LongArray>()
     override val descriptor = SerialDescriptor("BitSet", delegateSerializer.descriptor)
@@ -58,4 +58,19 @@ object SNbtCompoundSerializer : KSerializer<NbtCompound> {
         encoder.encodeString(StringifiedNbt.encodeToString(value))
 
     override fun deserialize(decoder: Decoder): NbtCompound = StringifiedNbt.decodeFromString(decoder.decodeString())
+}
+
+object BlockPositionSerializer : KSerializer<BlockPosition> {
+    private val delegateSerializer = serializer<IntArray>()
+    override val descriptor = SerialDescriptor("BlockPosition", delegateSerializer.descriptor)
+
+    override fun serialize(encoder: Encoder, value: BlockPosition) = encoder.encodeSerializableValue(
+        delegateSerializer,
+        intArrayOf(value.x, value.y, value.z)
+    )
+
+    override fun deserialize(decoder: Decoder): BlockPosition {
+        val value = decoder.decodeSerializableValue(delegateSerializer)
+        return BlockPosition(value[0], value[1], value[2])
+    }
 }

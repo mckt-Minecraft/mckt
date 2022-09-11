@@ -7,7 +7,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 // Gotten from Minecraft
-@Serializable(with = SimpleBitStorage.SimpleBitStorageSerializer::class)
+@Serializable(SimpleBitStorage.SimpleBitStorageSerializer::class)
 class SimpleBitStorage(val bits: Int, val size: Int, input: LongArray? = null) {
     val data: LongArray
     private val mask: Long
