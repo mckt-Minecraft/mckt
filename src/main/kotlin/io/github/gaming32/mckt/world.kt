@@ -293,18 +293,9 @@ class World(val server: MinecraftServer, val name: String) {
 
     val isSaving get() = this::saveJob.isInitialized && !saveJob.isCompleted
 
-    @OptIn(DelicateCoroutinesApi::class)
-    internal val worldgenPool = if (Runtime.getRuntime().availableProcessors() == 1) {
-        Dispatchers.Default
-    } else {
-        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Worldgen-$name")
-    }
-    @OptIn(DelicateCoroutinesApi::class)
-    internal val savePool = if (Runtime.getRuntime().availableProcessors() == 1) {
-        Dispatchers.Default
-    } else {
-        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Save-$name")
-    }
+    internal val worldgenPool = server.threadPoolContext
+    private val saveLoadPool = server.threadPoolContext
+    internal val networkSerializationPool = server.threadPoolContext
 
     @OptIn(ExperimentalSerializationApi::class)
     val meta = try {
@@ -318,9 +309,17 @@ class World(val server: MinecraftServer, val name: String) {
 
     val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
 
-    fun getRegion(x: Int, z: Int) = openRegions.computeIfAbsent(x to z) { (x, z) -> WorldRegion(this, x, z) }
+    suspend fun getRegion(x: Int, z: Int) = coroutineScope {
+        var region = openRegions[x to z]
+        if (region == null) {
+            region = WorldRegion(this@World, x, z)
+            openRegions[x to z] = region
+            launch(saveLoadPool) { region.load() }.join()
+        }
+        region
+    }
 
-    fun getChunk(x: Int, z: Int): WorldChunk? =
+    suspend fun getChunk(x: Int, z: Int): WorldChunk? =
         getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
     suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (WorldChunk) -> Unit = {}) =
@@ -328,20 +327,20 @@ class World(val server: MinecraftServer, val name: String) {
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
 
-    fun getBlock(x: Int, y: Int, z: Int) =
+    suspend fun getBlock(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlock(x and 511, y, z and 511)
 
-    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+    suspend fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
+    suspend fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
         getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, id)
 
-    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
+    suspend fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
 
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {
@@ -378,7 +377,7 @@ class World(val server: MinecraftServer, val name: String) {
             val start = System.nanoTime()
             metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
             openRegions.values.toList().map { region ->
-                launch(savePool) { region.save() }
+                launch(saveLoadPool) { region.save() }
             }.joinAll()
             val duration = System.nanoTime() - start
             sender.replyBroadcast(
@@ -390,15 +389,8 @@ class World(val server: MinecraftServer, val name: String) {
         saveJob
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun closeAndLog() {
         saveAndLog().join()
-        if (worldgenPool is CloseableCoroutineDispatcher) {
-            worldgenPool.close()
-        }
-        if (savePool is CloseableCoroutineDispatcher) {
-            savePool.close()
-        }
         openRegions.clear()
     }
 }
@@ -414,7 +406,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     private val chunks = arrayOfNulls<WorldChunk>(32 * 32)
 
-    init {
+    fun load() {
         try {
             regionFile.inputStream().use { fromData(world.meta.saveFormat.decodeFromStream(it, typeOf<RegionData>())) }
         } catch (_: FileNotFoundException) {

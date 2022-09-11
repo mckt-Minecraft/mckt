@@ -23,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -179,6 +180,7 @@ class PlayClient(
         ))
 
         sendPacket(SetContainerContentPacket(0u, *data.inventory))
+        sendPacket(ClientboundSetHeldItemPacket(data.selectedHotbarSlot))
 
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
         val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags, data.flying)
@@ -227,7 +229,9 @@ class PlayClient(
                     val chunk = server.world.getChunkOrGenerate(absX, absZ)
                     if (sendChannel.isClosedForWrite) return@loadChunk
                     sendPacket(ChunkAndLightDataPacket(
-                        chunk.x, chunk.z, encodeData(chunk::networkEncode)
+                        chunk.x, chunk.z, withContext(chunk.world.networkSerializationPool) {
+                            encodeData(chunk::networkEncode)
+                        }
                     ))
                 }
             }

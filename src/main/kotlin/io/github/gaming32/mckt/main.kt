@@ -56,6 +56,13 @@ class MinecraftServer {
     private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
     val serverCommandSender = ConsoleCommandSender(this, "Server")
 
+    @OptIn(DelicateCoroutinesApi::class)
+    internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
+        Dispatchers.Default
+    } else {
+        newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Heavy-Computation")
+    }
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
         BuiltinCommands.register()
@@ -122,6 +129,10 @@ class MinecraftServer {
         world.closeAndLog()
         handshakeJobs.joinAll()
         handshakeJobs.clear()
+        @OptIn(ExperimentalCoroutinesApi::class)
+        if (threadPoolContext is CloseableCoroutineDispatcher) {
+            threadPoolContext.close()
+        }
         LOGGER.info("Server stopped")
     }
 
