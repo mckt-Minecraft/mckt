@@ -64,3 +64,7 @@ inline fun <reified T : Enum<T>> enumValueOfOrNull(name: String) = try {
 fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecase()}${this.substring(1).lowercase()}"
 
 fun <K, V> Map<K, V>.flip() = asSequence().associate { (k, v) -> v to k }
+
+fun ByteArray.toHexString(): String = joinToString("") { it.toUByte().toString(radix = 16).padStart(2, '0') }
+
+fun <K, V> Map<K, V>.toTypedArray() = iterator().let { iter -> Array(size) { iter.next().run { key to value } } }

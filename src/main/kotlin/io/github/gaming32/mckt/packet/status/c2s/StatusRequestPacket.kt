@@ -12,4 +12,6 @@ class StatusRequestPacket() : Packet(TYPE) {
     constructor(inp: MinecraftInputStream) : this()
 
     override fun write(out: MinecraftOutputStream) = Unit
+
+    override fun toString() = "StatusRequestPacket()"
 }

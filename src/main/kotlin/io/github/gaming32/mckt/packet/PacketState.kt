@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.getLogger
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
@@ -43,6 +44,10 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         /* 0x31 */ UseItemOnBlockPacket.TYPE to ::UseItemOnBlockPacket
     ));
 
+    companion object {
+        private val LOGGER = getLogger()
+    }
+
     suspend fun readPacket(channel: ByteReadChannel, compression: Boolean): Packet {
         val totalPacketLength = channel.readVarInt()
         val packetInput: InputStream
@@ -74,7 +79,7 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         val reader = packets[packetId] ?: throw IllegalArgumentException(
             "Unknown packet ID for state $this: 0x${packetId.toString(16).padStart(2, '0')}"
         )
-        return reader(MinecraftInputStream(packetInput))
+        return reader(MinecraftInputStream(packetInput)).also { LOGGER.debug("Received packet {}", it) }
     }
 
     @JvmName("readSpecificPacketWithTimeout")

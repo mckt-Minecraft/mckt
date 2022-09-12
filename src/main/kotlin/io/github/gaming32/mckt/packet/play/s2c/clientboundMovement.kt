@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import kotlin.math.roundToInt
 
-class EntityTeleportPacket(
+data class EntityTeleportPacket(
     val entityId: Int,
     val x: Double,
     val y: Double,
@@ -59,6 +59,9 @@ class EntityPositionUpdatePacket(
     companion object {
         const val TYPE = 0x28
     }
+
+    override fun toString() =
+        "EntityPositionUpdatePacket(entityId=$entityId, relX=$relX, relY=$relY, relZ=$relZ, onGround=$onGround)"
 }
 
 class EntityPositionAndRotationUpdatePacket(
@@ -73,6 +76,10 @@ class EntityPositionAndRotationUpdatePacket(
     companion object {
         const val TYPE = 0x29
     }
+
+    override fun toString() =
+        "EntityRelativeMovementPacket(entityId=$entityId, relX=$relX, relY=$relY, relZ=$relZ, yaw=$yaw, pitch=$pitch, " +
+            "onGround=$onGround)"
 }
 
 class EntityRotationUpdatePacket(
@@ -84,4 +91,7 @@ class EntityRotationUpdatePacket(
     companion object {
         const val TYPE = 0x2A
     }
+
+    override fun toString() =
+        "EntityRotationUpdatePacket(entityId=$entityId, yaw=$yaw, pitch=$pitch, onGround=$onGround)"
 }

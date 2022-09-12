@@ -7,7 +7,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class PlayerActionPacket(
+data class PlayerActionPacket(
     val action: Action,
     val location: BlockPosition,
     val face: Direction,

@@ -19,7 +19,7 @@ object EntityEvent {
     }
 }
 
-class EntityEventPacket(val entityId: Int, val event: UByte) : Packet(TYPE) {
+data class EntityEventPacket(val entityId: Int, val event: UByte) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x1A
     }

@@ -3,7 +3,7 @@ package io.github.gaming32.mckt.packet.play.s2c
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class GameEventPacket(val event: UByte, val value: Float) : Packet(TYPE) {
+data class GameEventPacket(val event: UByte, val value: Float) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x1D
         const val NO_RESPAWN_POINT: UByte = 0u

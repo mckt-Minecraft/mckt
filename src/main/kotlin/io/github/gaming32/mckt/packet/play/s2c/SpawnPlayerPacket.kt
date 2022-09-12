@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import java.util.UUID
 
-class SpawnPlayerPacket(
+data class SpawnPlayerPacket(
     val entityId: Int,
     val uuid: UUID,
     val x: Double,

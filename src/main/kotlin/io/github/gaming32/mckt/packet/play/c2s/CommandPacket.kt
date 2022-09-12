@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class CommandPacket(val command: String, val timestamp: Long) : Packet(TYPE) {
+data class CommandPacket(val command: String, val timestamp: Long) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x04
     }

@@ -6,7 +6,7 @@ import net.benwoodworth.knbt.buildNbtCompound
 import net.benwoodworth.knbt.put
 import java.util.*
 
-class ChunkAndLightDataPacket(
+data class ChunkAndLightDataPacket(
     val x: Int, val z: Int,
     val chunk: ByteArray
 ) : Packet(TYPE) {
@@ -34,4 +34,6 @@ class ChunkAndLightDataPacket(
         out.writeVarInt(0) // Skylight data count
         out.writeVarInt(0) // Block light data count
     }
+
+    override fun toString() = "ChunkAndLightDataPacket(x=$x, z=$z, chunk=...)"
 }

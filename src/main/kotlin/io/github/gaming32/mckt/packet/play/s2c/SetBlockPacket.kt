@@ -6,7 +6,7 @@ import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class SetBlockPacket(val location: BlockPosition, val id: Identifier?) : Packet(TYPE) {
+data class SetBlockPacket(val location: BlockPosition, val id: Identifier?) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x09
     }

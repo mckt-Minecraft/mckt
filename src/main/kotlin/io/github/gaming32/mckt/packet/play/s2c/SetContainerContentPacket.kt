@@ -20,4 +20,6 @@ class SetContainerContentPacket(
         slots.forEach { out.writeItemStack(it) }
         out.writeItemStack(carriedItem)
     }
+
+    override fun toString() = "SetContainerContentPacket(windowId=$windowId, slots=..., carriedItem=$carriedItem)"
 }

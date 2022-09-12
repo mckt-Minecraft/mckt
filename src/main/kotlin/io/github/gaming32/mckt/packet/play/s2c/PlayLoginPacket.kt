@@ -7,7 +7,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import net.benwoodworth.knbt.NbtCompound
 
-class PlayLoginPacket(
+data class PlayLoginPacket(
     val entityId: Int,
     val hardcore: Boolean,
     val gamemode: Gamemode,

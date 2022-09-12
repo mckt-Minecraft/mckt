@@ -39,6 +39,8 @@ class PlayerPositionPacket(
         inp.readDouble(),
         inp.readBoolean()
     )
+
+    override fun toString() = "PlayerPositionPacket(x=$x, y=$y, z=$z, onGround=$onGround)"
 }
 
 class PlayerPositionAndRotationPacket(
@@ -61,6 +63,9 @@ class PlayerPositionAndRotationPacket(
         inp.readFloat(),
         inp.readBoolean()
     )
+
+    override fun toString() =
+        "PlayerPositionAndRotationPacket(x=$x, y=$y, z=$z, yaw=$yaw, pitch=$pitch, onGround=$onGround)"
 }
 
 class PlayerRotationPacket(
@@ -77,6 +82,8 @@ class PlayerRotationPacket(
         inp.readFloat(),
         inp.readBoolean()
     )
+
+    override fun toString() = "PlayerRotationPacket(yaw=$yaw, pitch=$pitch, onGround=$onGround)"
 }
 
 class PlayerOnGroundPacket(
@@ -87,4 +94,6 @@ class PlayerOnGroundPacket(
     }
 
     constructor(inp: MinecraftInputStream) : this(inp.readBoolean())
+
+    override fun toString() = "PlayerOnGroundPacket(onGround=$onGround)"
 }

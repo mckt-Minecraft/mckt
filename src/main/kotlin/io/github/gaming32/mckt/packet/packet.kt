@@ -18,6 +18,7 @@ abstract class Packet(val type: Int) {
     abstract fun write(out: MinecraftOutputStream)
 
     suspend fun writePacket(channel: ByteWriteChannel, compression: Int) {
+        LOGGER.debug("Sending packet {}", this)
         var output = ByteArrayOutputStream()
         MinecraftOutputStream(output).let { mcOut ->
             mcOut.writeVarInt(type)

@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.EntityFlags
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class SyncTrackedDataPacket(
+data class SyncTrackedDataPacket(
     val entityId: Int,
     val entityFlags: Int, // Just flags and pose for now
     val flying: Boolean

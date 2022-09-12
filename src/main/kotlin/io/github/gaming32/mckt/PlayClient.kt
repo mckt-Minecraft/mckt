@@ -545,7 +545,6 @@ class PlayClient(
     }
 
     override suspend fun sendPacket(packet: Packet) {
-        LOGGER.debug("Sending packet {}", packet)
         try {
             super.sendPacket(packet)
         } catch (e: IOException) {

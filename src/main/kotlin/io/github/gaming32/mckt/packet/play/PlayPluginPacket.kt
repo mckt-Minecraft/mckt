@@ -6,7 +6,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.encodeData
 
-class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
+data class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
     companion object {
         const val S2C_TYPE = 0x16
         const val C2S_TYPE = 0x0D

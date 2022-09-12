@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class ConfirmTeleportationPacket(val teleportId: Int) : Packet(TYPE) {
+data class ConfirmTeleportationPacket(val teleportId: Int) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x00
     }

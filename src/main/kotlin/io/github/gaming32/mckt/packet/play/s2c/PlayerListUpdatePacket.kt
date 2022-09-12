@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.Gamemode
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import net.kyori.adventure.text.Component
-import java.util.UUID
+import java.util.*
 
 class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
     companion object {
@@ -39,7 +39,9 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
             val timestamp: Long,
             val publicKey: ByteArray?,
             val signature: ByteArray?
-        )
+        ) {
+            override fun toString() = "SignatureData(timestamp=$timestamp, publicKey=..., signature=...)"
+        }
 
         override fun write(out: MinecraftOutputStream) {
             out.writeString(name, 16)
@@ -63,14 +65,22 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
                 it.signature?.let { sig -> out.write(sig) }
             }
         }
+
+        override fun toString() =
+            "AddPlayer(uuid=$uuid, name=$name, properties=$properties, gamemode=$gamemode, ping=${ping}, " +
+                "displayName=$displayName, signatureData=$signatureData)"
     }
 
     class UpdateGamemode(uuid: UUID, val gamemode: Gamemode) : Action(1, uuid) {
         override fun write(out: MinecraftOutputStream) = out.writeVarInt(gamemode.ordinal)
+
+        override fun toString() = "UpdateGamemode(uuid=$uuid, gamemode=$gamemode)"
     }
 
     class UpdatePing(uuid: UUID, val ping: Int) : Action(2, uuid) {
         override fun write(out: MinecraftOutputStream) = out.writeVarInt(ping)
+
+        override fun toString() = "UpdatePing(uuid=$uuid, ping=$ping)"
     }
 
     class UpdateDisplayName(uuid: UUID, val displayName: Component?) : Action(3, uuid) {
@@ -78,10 +88,14 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
             out.writeBoolean(displayName != null)
             displayName?.let { out.writeText(it) }
         }
+
+        override fun toString() = "UpdateDisplayName(uuid=$uuid, displayName=$displayName)"
     }
 
     class RemovePlayer(uuid: UUID) : Action(4, uuid) {
         override fun write(out: MinecraftOutputStream) = Unit
+
+        override fun toString() = "RemovePlayer(uuid=$uuid)"
     }
 
     override fun write(out: MinecraftOutputStream) {
@@ -97,4 +111,6 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
             action.write(out)
         }
     }
+
+    override fun toString() = "PlayerListUpdatePacket(actions=${actions.contentToString()})"
 }

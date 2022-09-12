@@ -6,7 +6,7 @@ import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 import java.util.*
 
-class LoginStartPacket(
+data class LoginStartPacket(
     val username: String,
     val signatureInfo: SignatureInfo? = null,
     val uuid: UUID? = null

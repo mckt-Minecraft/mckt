@@ -14,7 +14,7 @@ import java.util.*
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
-class StatusResponse(
+data class StatusResponse(
     val version: Version,
     val players: Players,
     val description: Component,
@@ -24,17 +24,17 @@ class StatusResponse(
     val enforcesSecureChat: Boolean
 ) {
     @Serializable
-    class Version(val name: String, val protocol: Int)
+    data class Version(val name: String, val protocol: Int)
 
     @Serializable
-    class Players(
+    data class Players(
         val max: Int,
         val online: Int,
         @EncodeDefault(EncodeDefault.Mode.ALWAYS)
         val sample: List<Sample> = listOf()
     ) {
         @Serializable
-        class Sample(
+        data class Sample(
             val name: String,
             val id: UUID
         ) {
@@ -43,7 +43,7 @@ class StatusResponse(
     }
 }
 
-class StatusResponsePacket(val status: StatusResponse) : Packet(TYPE) {
+data class StatusResponsePacket(val status: StatusResponse) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x00
     }

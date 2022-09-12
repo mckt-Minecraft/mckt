@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.PlayerAbilities
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class ClientboundPlayerAbilitiesPacket(val abilities: PlayerAbilities) : Packet(TYPE) {
+data class ClientboundPlayerAbilitiesPacket(val abilities: PlayerAbilities) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x31
     }

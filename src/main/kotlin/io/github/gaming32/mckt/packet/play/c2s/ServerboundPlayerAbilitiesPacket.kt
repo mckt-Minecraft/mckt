@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.packet.MinecraftInputStream
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class ServerboundPlayerAbilitiesPacket(val flying: Boolean) : Packet(TYPE) {
+data class ServerboundPlayerAbilitiesPacket(val flying: Boolean) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x1C
     }

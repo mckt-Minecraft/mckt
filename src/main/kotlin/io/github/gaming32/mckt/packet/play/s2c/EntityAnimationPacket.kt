@@ -3,7 +3,7 @@ package io.github.gaming32.mckt.packet.play.s2c
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
-class EntityAnimationPacket(val entityId: Int, val animation: UByte) : Packet(TYPE) {
+data class EntityAnimationPacket(val entityId: Int, val animation: UByte) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x03
         const val SWING_MAINHAND: UByte = 0u

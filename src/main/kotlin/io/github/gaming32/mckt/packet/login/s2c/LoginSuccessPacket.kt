@@ -4,7 +4,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import java.util.UUID
 
-class LoginSuccessPacket(
+data class LoginSuccessPacket(
     val uuid: UUID,
     val username: String,
     val properties: List<Property> = listOf()

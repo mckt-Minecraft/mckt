@@ -12,4 +12,6 @@ class RemoveEntitiesPacket(vararg val entities: Int) : Packet(TYPE) {
         out.writeVarInt(entities.size)
         entities.forEach { out.writeVarInt(it) }
     }
+
+    override fun toString() = "RemoveEntitiesPacket(entities=${entities.contentToString()})"
 }

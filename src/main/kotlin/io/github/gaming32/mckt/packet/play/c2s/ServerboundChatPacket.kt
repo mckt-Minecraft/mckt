@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class ServerboundChatPacket(
+data class ServerboundChatPacket(
     val message: String,
     val timestamp: Long,
     val salt: Long,

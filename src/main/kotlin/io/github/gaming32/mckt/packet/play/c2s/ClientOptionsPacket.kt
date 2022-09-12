@@ -6,7 +6,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class ClientOptionsPacket(val options: PlayClient.ClientOptions) : Packet(TYPE) {
+data class ClientOptionsPacket(val options: PlayClient.ClientOptions) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x08
     }

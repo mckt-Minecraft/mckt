@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.readVarInt
 
-class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJumpBoost: Int = 0) : Packet(TYPE) {
+data class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJumpBoost: Int = 0) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x1E
         const val START_SNEAKING = 0
