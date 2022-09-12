@@ -719,7 +719,7 @@ class PlayerData(
         }
 
     fun getEquipment(): Map<SetEquipmentPacket.Slot, ItemStack?> {
-        val result = EnumMap<SetEquipmentPacket.Slot, ItemStack?>(SetEquipmentPacket.Slot::class.java)
+        val result = enumMapOf<SetEquipmentPacket.Slot, ItemStack?>()
         for (slot in SetEquipmentPacket.Slot.values()) {
             val rawSlot = if (slot.rawSlot == -1) selectedInventorySlot else slot.rawSlot
             if (inventory[rawSlot] != null) {

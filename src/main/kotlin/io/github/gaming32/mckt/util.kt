@@ -10,6 +10,7 @@ import net.kyori.adventure.text.flattener.ComponentFlattener
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
+import java.util.EnumMap
 import kotlin.math.max
 
 // Note: This does not handle translation args
@@ -79,3 +80,12 @@ fun <K, V> Map<K, V>.flip() = asSequence().associate { (k, v) -> v to k }
 fun ByteArray.toHexString(): String = joinToString("") { it.toUByte().toString(radix = 16).padStart(2, '0') }
 
 fun <K, V> Map<K, V>.toTypedArray() = iterator().let { iter -> Array(size) { iter.next().run { key to value } } }
+
+inline fun <reified K : Enum<K>, V> enumMapOf(): MutableMap<K, V> = EnumMap(K::class.java)
+
+fun <K : Enum<K>, V> enumMapOf(vararg elements: Pair<K, V>): MutableMap<K, V> {
+    require(elements.isNotEmpty()) { "At least one element is required" }
+    val result = EnumMap<K, V>(elements[0].first.javaClass)
+    elements.forEach { result[it.first] = it.second }
+    return result
+}

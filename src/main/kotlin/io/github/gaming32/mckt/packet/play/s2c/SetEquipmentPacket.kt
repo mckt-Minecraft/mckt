@@ -1,10 +1,10 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
+import io.github.gaming32.mckt.enumMapOf
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.toTypedArray
-import java.util.EnumMap
 
 class SetEquipmentPacket(val entityId: Int, vararg val equipment: Pair<Slot, ItemStack?>) : Packet(TYPE) {
     companion object {
@@ -41,9 +41,7 @@ class SetEquipmentPacket(val entityId: Int, vararg val equipment: Pair<Slot, Ite
     constructor(entityId: Int, equipment: Map<Slot, ItemStack?>) : this(entityId, *equipment.toTypedArray())
 
     val equipmentAsMap: Map<Slot, ItemStack?>
-        get() = EnumMap<Slot, ItemStack?>(Slot::class.java).also { map ->
-            equipment.forEach { (slot, item) -> map[slot] = item }
-        }
+        get() = if (equipment.isEmpty()) mapOf() else enumMapOf(*equipment)
 
     override fun write(out: MinecraftOutputStream) {
         out.writeVarInt(entityId)
