@@ -9,8 +9,12 @@ import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
+import io.github.gaming32.mckt.util.IntInt2ObjectBiMap
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -288,7 +292,7 @@ class World(val server: MinecraftServer, val name: String) {
     val playersDir = File(worldDir, "players").apply { mkdirs() }
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
-    private val openRegions = mutableMapOf<Pair<Int, Int>, WorldRegion>()
+    private val openRegions = IntInt2ObjectBiMap<WorldRegion>()
     var isSaving = false
         private set
 
@@ -309,10 +313,10 @@ class World(val server: MinecraftServer, val name: String) {
     val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
 
     suspend fun getRegion(x: Int, z: Int) = coroutineScope {
-        var region = openRegions[x to z]
+        var region = openRegions[x, z]
         if (region == null) {
             region = WorldRegion(this@World, x, z)
-            openRegions[x to z] = region
+            openRegions[x, z] = region
             launch(saveLoadPool) { region.load() }.join()
         }
         region
@@ -374,7 +378,7 @@ class World(val server: MinecraftServer, val name: String) {
         sender.replyBroadcast(Component.text("Saving world \"$name\""))
         val start = System.nanoTime()
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
-        openRegions.values.toList().map { region ->
+        openRegions.values.map { region ->
             launch(saveLoadPool) { region.save() }
         }.joinAll()
         val duration = System.nanoTime() - start
