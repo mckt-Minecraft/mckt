@@ -1,4 +1,4 @@
-package io.github.gaming32.mckt
+package io.github.gaming32.mckt.util
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName

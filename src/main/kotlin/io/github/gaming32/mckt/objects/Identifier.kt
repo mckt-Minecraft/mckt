@@ -10,6 +10,8 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(Identifier.IdentifierSerializer::class)
 data class Identifier(val namespace: String, val value: String) {
     companion object {
+        val EMPTY = Identifier("", "")
+
         fun parse(s: String) = s.indexOf(':').let { colonIndex ->
             if (colonIndex == -1) Identifier(s)
             else Identifier(s.substring(0, colonIndex), s.substring(colonIndex + 1))

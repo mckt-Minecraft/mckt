@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectFunction
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 
-class IntInt2ObjectBiMap<V>(
+class IntIntPair2ObjectMap<V>(
     @PublishedApi internal val internal: Long2ObjectMap<V> = Long2ObjectOpenHashMap()
 ) : Iterable<Pair<IntIntPair, V>> {
     @PublishedApi internal fun join(x: Int, y: Int) = x.toLong() shl 32 or y.toLong()
@@ -17,6 +17,11 @@ class IntInt2ObjectBiMap<V>(
     operator fun get(x: Int, y: Int): V? = internal[join(x, y)]
     operator fun set(x: Int, y: Int, value: V) {
         internal[join(x, y)] = value
+    }
+
+    operator fun get(key: IntIntPair) = this[key.firstInt(), key.secondInt()]
+    operator fun set(key: IntIntPair, value: V) {
+        this[key.firstInt(), key.secondInt()] = value
     }
 
     inline fun computeIfAbsent(x: Int, y: Int, crossinline compute: (Int, Int) -> V): V =

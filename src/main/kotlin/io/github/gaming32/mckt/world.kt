@@ -9,7 +9,7 @@ import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
-import io.github.gaming32.mckt.util.IntInt2ObjectBiMap
+import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
@@ -262,7 +262,7 @@ object Blocks {
     // These are used in memory only
     internal val BLOCK_NUM_TO_ID = arrayOf(STONE, DIRT, GRASS_BLOCK, BEDROCK, LAVA, WOOD, LEAVES)
     internal val BLOCK_ID_TO_NUM = BLOCK_NUM_TO_ID.withIndex().associate { it.value to (it.index + 1) }
-    internal val BLOCK_NUM_TO_PALETTE = IntArray(BLOCK_NUM_TO_ID.size) { GLOBAL_PALETTE[BLOCK_NUM_TO_ID[it]] ?: 0 }
+    internal val BLOCK_NUM_TO_PALETTE = IntArray(BLOCK_NUM_TO_ID.size) { GLOBAL_PALETTE_OLD[BLOCK_NUM_TO_ID[it]] ?: 0 }
 }
 
 @Serializable
@@ -292,7 +292,7 @@ class World(val server: MinecraftServer, val name: String) {
     val playersDir = File(worldDir, "players").apply { mkdirs() }
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
-    private val openRegions = IntInt2ObjectBiMap<WorldRegion>()
+    private val openRegions = IntIntPair2ObjectMap<WorldRegion>()
     var isSaving = false
         private set
 
