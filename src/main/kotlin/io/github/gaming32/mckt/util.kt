@@ -5,10 +5,21 @@ import net.benwoodworth.knbt.Nbt
 import net.benwoodworth.knbt.NbtCompression
 import net.benwoodworth.knbt.NbtVariant
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.text.flattener.ComponentFlattener
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
 import kotlin.math.max
+
+// Note: This does not handle translation args
+val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
+    flattener(ComponentFlattener.basic().toBuilder().apply {
+        mapper(TranslatableComponent::class.java) { component ->
+            DEFAULT_TRANSLATIONS[component.key()] ?: component.key()
+        }
+    }.build())
+}.build()
 
 val NETWORK_NBT = Nbt {
     variant = NbtVariant.Java
@@ -32,7 +43,7 @@ val USERNAME_REGEX = Regex("^\\w{1,16}\$")
 
 fun getLogger() = LoggerFactory.getLogger(Util.getCallingClass())!!
 
-fun Component.plainText() = PlainTextComponentSerializer.plainText().serialize(this)
+fun Component.plainText() = PLAIN_TEXT_SERIALIZER.serialize(this)
 
 fun Int.squared() = this * this
 

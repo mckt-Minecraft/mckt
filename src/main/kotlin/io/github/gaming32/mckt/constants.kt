@@ -19,6 +19,11 @@ class GameVersion(
 )
 
 @OptIn(ExperimentalSerializationApi::class)
+val DEFAULT_TRANSLATIONS = MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use { input ->
+    Json.decodeFromStream<Map<String, String>>(input)
+} ?: mapOf()
+
+@OptIn(ExperimentalSerializationApi::class)
 val GAME_VERSIONS = MinecraftServer::class.java.getResourceAsStream("/protocolVersions.json")?.use { input ->
     Json.decodeFromStream<List<GameVersion>>(input)
 } ?: listOf()

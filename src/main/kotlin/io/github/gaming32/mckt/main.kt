@@ -20,7 +20,6 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -161,8 +160,7 @@ class MinecraftServer {
                         if (packetLength == 0xFE) {
                             val encoded = if (receiveChannel.availableForRead == 0) {
                                 // Pre-1.4
-                                PlainTextComponentSerializer.plainText().serialize(config.motd) +
-                                    "\u00a7${clients.size}\u00a7${config.maxPlayers}"
+                                "${config.motd.plainText()}\u00a7${clients.size}\u00a7${config.maxPlayers}"
                             } else {
                                 // 1.4 through 1.6
                                 "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
