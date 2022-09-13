@@ -10,6 +10,8 @@ import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
+import io.github.gaming32.mckt.util.PalettedStorage
+import io.github.gaming32.mckt.util.SimpleBitStorage
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
@@ -251,18 +253,18 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound("") {
 }
 
 object Blocks {
-    val STONE = Identifier("stone")
-    val DIRT = Identifier("dirt")
-    val GRASS_BLOCK = Identifier("grass_block")
-    val BEDROCK = Identifier("bedrock")
-    val LAVA = Identifier("lava")
-    val WOOD = Identifier("oak_log")
-    val LEAVES = Identifier("oak_leaves")
+    private fun getBlock(id: String) =
+        DEFAULT_BLOCKSTATES[Identifier.parse(id)]
+            ?: throw Error("Standard block $id not found")
 
-    // These are used in memory only
-    internal val BLOCK_NUM_TO_ID = arrayOf(STONE, DIRT, GRASS_BLOCK, BEDROCK, LAVA, WOOD, LEAVES)
-    internal val BLOCK_ID_TO_NUM = BLOCK_NUM_TO_ID.withIndex().associate { it.value to (it.index + 1) }
-    internal val BLOCK_NUM_TO_PALETTE = IntArray(BLOCK_NUM_TO_ID.size) { GLOBAL_PALETTE_OLD[BLOCK_NUM_TO_ID[it]] ?: 0 }
+    val AIR = getBlock("air")
+    val STONE = getBlock("stone")
+    val DIRT = getBlock("dirt")
+    val GRASS_BLOCK = getBlock("grass_block")
+    val BEDROCK = getBlock("bedrock")
+    val LAVA = getBlock("lava")
+    val WOOD = getBlock("oak_log")
+    val LEAVES = getBlock("oak_leaves")
 }
 
 @Serializable
@@ -340,10 +342,10 @@ class World(val server: MinecraftServer, val name: String) {
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    suspend fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
-        getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, id)
+    suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+        getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, block)
 
-    suspend fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
+    suspend fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {
@@ -355,9 +357,9 @@ class World(val server: MinecraftServer, val name: String) {
         var y = 0
         while (true) {
             val check = BlockPosition(x, y, z)
-            if (getBlockOrGenerate(check) == null) {
-                if (getBlockOrGenerate(check.down()) != null) {
-                    if (getBlockOrGenerate(check.up()) == null) {
+            if (getBlockOrGenerate(check) == Blocks.AIR) {
+                if (getBlockOrGenerate(check.down()) == Blocks.AIR) {
+                    if (getBlockOrGenerate(check.up()) == Blocks.AIR) {
                         meta.spawnPos = check
                         return check
                     }
@@ -437,10 +439,10 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) =
-        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, id)
+    fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block)
 
-    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
+    fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -492,28 +494,28 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
-    fun getBlock(x: Int, y: Int, z: Int): Identifier? {
-        if (y < -2064 || y > 2063) return null
-        val section = sections[(y shr 4) + 127] ?: return null
+    fun getBlock(x: Int, y: Int, z: Int): BlockState {
+        if (y < -2064 || y > 2063) return Blocks.AIR
+        val section = sections[(y shr 4) + 127] ?: return Blocks.AIR
         return section.getBlock(x, y and 15, z)
     }
 
     fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
+    fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
         if (y < -2064 || y > 2063) return
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
             if (section == null) {
-                if (id == null) return
+                if (block == Blocks.AIR) return
                 section = ChunkSection(this, y shr 4)
                 sections[(y shr 4) + 127] = section
             }
-            section.setBlock(x, y and 15, z, id)
+            section.setBlock(x, y and 15, z, block)
         }
     }
 
-    fun setBlock(pos: BlockPosition, id: Identifier?) = setBlock(pos.x, pos.y, pos.z, id)
+    fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 
     internal fun toData() = synchronized(this) {
         val sectionsPresent = BitSet(sections.size)
@@ -547,18 +549,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 out.writeVarInt(0) // Blocks: Data size
             } else {
                 out.writeShort(section.blockCount)
-                out.writeByte(4) // Blocks: Bits per entry
-                out.writeVarInt(Blocks.BLOCK_NUM_TO_PALETTE.size + 1)
-                out.writeVarInt(0)
-                Blocks.BLOCK_NUM_TO_PALETTE.forEach { out.writeVarInt(it) }
-                out.writeVarInt(256)
-                for (i in 0 until 16 * 16 * 16 step 16) {
-                    var value = 0L
-                    for (j in i until i + 16) {
-                        value = value shl 4 or section.data[j].toLong()
-                    }
-                    out.writeLong(value)
-                }
+                section.data.encode(out)
             }
             out.writeByte(0) // Biomes: Bits per entry
             out.writeVarInt(0) // Biomes: Plains ID
@@ -578,75 +569,46 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
     @Serializable
     internal class SectionData(
         @SerialName("BlockCount") val blockCount: Int,
-        @SerialName("Palette")    val palette: List<Identifier>,
-        @SerialName("Blocks")     val blocks: ByteArray
+        @SerialName("Palette")    val palette: List<Map<String, String>>,
+        @SerialName("Blocks")     val blocks: SimpleBitStorage
     )
 
-    internal val data = ByteArray(4096)
+    internal val data = PalettedStorage(4096, Blocks.AIR) { out -> out.writeVarInt(globalId) }
 
     var blockCount = 0
         private set
 
     private fun getBlockIndex(x: Int, y: Int, z: Int) = (y shl 8) + (z shl 4) + 15 - x
 
-    fun getBlock(x: Int, y: Int, z: Int): Identifier? {
-        val id = data[getBlockIndex(x, y, z)]
-        if (id == 0.toByte()) return null
-        return Blocks.BLOCK_NUM_TO_ID[id.toInt() - 1]
-    }
+    fun getBlock(x: Int, y: Int, z: Int) = data[getBlockIndex(x, y, z)] ?: Blocks.AIR
 
     fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
-    internal fun setBlock(x: Int, y: Int, z: Int, id: Identifier?) {
+    internal fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
         val index = getBlockIndex(x, y, z)
         val old = data[index]
-        if (id == null) {
-            data[index] = 0
-            if (old != 0.toByte()) blockCount--
-            return
+        data[index] = block
+        if (block == Blocks.AIR) {
+            if (old != Blocks.AIR) {
+                blockCount--
+            }
+        } else if (old == Blocks.AIR) {
+            blockCount++
         }
-        data[index] = Blocks.BLOCK_ID_TO_NUM[id]?.toByte()
-            ?: throw IllegalArgumentException("Unknown block $id")
-        if (old == 0.toByte()) blockCount++
     }
 
-    internal fun toData(): SectionData {
-        val palette = mutableSetOf<Identifier>()
-        for (block in data) {
-            if (block == 0.toByte()) continue // Air
-            palette.add(Blocks.BLOCK_NUM_TO_ID[block - 1])
-        }
-        if (palette.size > 255) {
-            throw IllegalArgumentException("Section too complex")
-        }
-        val paletteList = palette.toList()
-        if (paletteList.size == 1 && blockCount == 4096) {
-            return SectionData(blockCount, paletteList, ByteArray(0))
-        }
-        val localIds = ByteArray(Blocks.BLOCK_NUM_TO_ID.size) {
-            (paletteList.indexOf(Blocks.BLOCK_NUM_TO_ID[it]) + 1).toByte()
-        }
-        val packedData = ByteArray(4096)
-        repeat(16 * 16 * 16) { i ->
-            val block = data[i].toUByte().toInt()
-            packedData[i] = if (block == 0) 0 else localIds[block - 1]
-        }
-        return SectionData(blockCount, paletteList, packedData)
-    }
+    internal fun toData() = SectionData(
+        blockCount,
+        data.getPaletteItems()
+            .map { it!!.toMap() }
+            .toList(),
+        data.storage
+    )
 
     internal fun fromData(input: SectionData) {
         blockCount = input.blockCount
-        val palette = ByteArray(input.palette.size) {
-            Blocks.BLOCK_ID_TO_NUM[input.palette[it]]?.toByte() ?:
-                throw IllegalArgumentException("Unknown block ID ${input.palette[it]}")
-        }
-        if (input.blocks.isEmpty()) {
-            return data.fill(palette[0])
-        }
-        repeat(16 * 16 * 16) { i ->
-            val block = input.blocks[i].toUByte().toInt()
-            data[i] = if (block == 0) 0 else palette[block - 1]
-        }
+        data.setPaletteItems(input.palette.map { BlockState.fromMap(it).canonicalize() })
+        data.storage = input.blocks
     }
 }
 

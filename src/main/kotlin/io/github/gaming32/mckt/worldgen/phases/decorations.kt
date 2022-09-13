@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.worldgen.phases
 
+import io.github.gaming32.mckt.BlockState
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.WorldChunk
-import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise
@@ -66,10 +66,10 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
         }
     }
 
-    private fun WorldChunk.setBlockIf(x: Int, y: Int, z: Int, block: Identifier?) {
+    private fun WorldChunk.setBlockIf(x: Int, y: Int, z: Int, block: BlockState) {
         if (x < 0 || x > 15) return
         if (z < 0 || z > 15) return
-        if (getBlock(x, y, z) == null) {
+        if (getBlock(x, y, z) == Blocks.AIR) {
             setBlock(x, y, z, block)
         }
     }

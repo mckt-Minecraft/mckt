@@ -436,7 +436,7 @@ class PlayClient(
                         var itemStack = data.inventory[slot]
                         if (itemStack != null) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            server.world.setBlock(placePos, itemStack.itemId)
+                            server.world.setBlock(placePos, DEFAULT_BLOCKSTATES[itemStack.itemId] ?: Blocks.STONE)
                             server.broadcast(SetBlockPacket(placePos, itemStack.itemId))
                             if (!data.gamemode.defaultAbilities.creativeMode) {
                                 if (--itemStack.count == 0) {
@@ -465,7 +465,7 @@ class PlayClient(
                         }
                         if (packet.action == finishedAction) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            server.world.setBlock(packet.location, null)
+                            server.world.setBlock(packet.location, Blocks.AIR)
                             server.broadcastExcept(
                                 this@PlayClient, EntityAnimationPacket(
                                     entityId, EntityAnimationPacket.SWING_MAINHAND

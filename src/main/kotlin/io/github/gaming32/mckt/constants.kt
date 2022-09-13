@@ -1,9 +1,9 @@
 package io.github.gaming32.mckt
 
-import com.google.gson.annotations.SerializedName
-import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.data.toGson
+import io.github.gaming32.mckt.objects.Identifier
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
@@ -22,11 +22,23 @@ data class GameVersion(
 @Serializable
 data class BlockState(
     val blockId: Identifier = Identifier.EMPTY,
-    val id: Int,
+    @SerialName("id")
+    val globalId: Int = -1,
     val properties: Map<String, String> = mapOf(),
-    @SerializedName("default")
+    @SerialName("default")
     val defaultForId: Boolean = false
 ) {
+    companion object {
+        fun fromMap(map: Map<String, String>) = BlockState(
+            blockId = Identifier.parse(map["blockId"] ?: throw IllegalArgumentException(
+                "Missing blockId field from block state data"
+            )),
+            properties = map.toMutableMap().apply { remove("blockId") }
+        )
+    }
+
+    fun toMap() = properties + ("blockId" to blockId.toString())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -54,6 +66,10 @@ data class BlockState(
             append(", ", properties.entries.joinToString { "${it.key}=${it.value}" })
         }
         append(')')
+    }
+
+    fun canonicalize(): BlockState {
+        return ID_TO_BLOCKSTATE[BLOCKSTATE_TO_ID[this] ?: return this] ?: this
     }
 }
 
@@ -84,7 +100,12 @@ val GLOBAL_PALETTE = MinecraftServer::class.java.getResourceAsStream("/blocks.js
         .map { Json.decodeFromJsonElement<BlockState>(it).copy(blockId = blockIdAsIdentifier) }
 }?.toSet() ?: emptySet()
 
-val ID_TO_BLOCKSTATE = GLOBAL_PALETTE.associateBy { it.id }
+val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE
+    .asSequence()
+    .filter(BlockState::defaultForId)
+    .associateBy(BlockState::blockId)
+
+val ID_TO_BLOCKSTATE = GLOBAL_PALETTE.associateBy { it.globalId }
 val BLOCKSTATE_TO_ID = ID_TO_BLOCKSTATE.inverted()
 
 @OptIn(ExperimentalSerializationApi::class)
