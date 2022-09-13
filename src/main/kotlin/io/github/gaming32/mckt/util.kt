@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt
 
+import it.unimi.dsi.fastutil.ints.IntIntPair
 import kotlinx.serialization.json.Json
 import net.benwoodworth.knbt.Nbt
 import net.benwoodworth.knbt.NbtCompression
@@ -89,3 +90,6 @@ fun <K : Enum<K>, V> enumMapOf(vararg elements: Pair<K, V>): MutableMap<K, V> {
     elements.forEach { result[it.first] = it.second }
     return result
 }
+
+operator fun IntIntPair.component1() = firstInt()
+operator fun IntIntPair.component2() = secondInt()

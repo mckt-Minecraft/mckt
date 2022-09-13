@@ -17,6 +17,10 @@ class PalettedStorage<V>(
     internal var storage = SimpleBitStorage(4, size)
     private val paletteCapacity get() = 1 shl storage.bits
 
+    init {
+        palette[0] = defaultValue
+    }
+
     operator fun get(index: Int) = palette.getValue(storage[index]) ?: defaultValue
     operator fun set(index: Int, value: V) {
         var paletteIndex = palette.getKey(value)
@@ -43,7 +47,7 @@ class PalettedStorage<V>(
     fun getPaletteItems() = (0 until palette.size).asSequence().map { palette.getValue(it) }
 
     fun encode(out: MinecraftOutputStream) {
-        out.writeVarInt(storage.bits)
+        out.writeByte(storage.bits)
         out.writeVarInt(palette.size)
         palette.values.forEach { it.encoder(out) }
         val longs = storage.data
