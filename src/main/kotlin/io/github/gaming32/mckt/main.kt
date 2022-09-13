@@ -273,7 +273,7 @@ class MinecraftServer {
 }
 
 fun main() {
-    thread(isDaemon = true) {
+    thread(name = "Timer-Hack-Thread", isDaemon = true) {
         while (true) {
             Thread.sleep(Long.MAX_VALUE)
         }

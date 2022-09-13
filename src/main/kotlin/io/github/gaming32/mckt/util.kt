@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt
 
+import it.unimi.dsi.fastutil.ints.IntIntPair
 import kotlinx.serialization.json.Json
 import net.benwoodworth.knbt.Nbt
 import net.benwoodworth.knbt.NbtCompression
@@ -75,7 +76,7 @@ inline fun <reified T : Enum<T>> enumValueOfOrNull(name: String) = try {
 
 fun CharSequence.capitalize() = if (isEmpty()) "" else "${this[0].titlecase()}${this.substring(1).lowercase()}"
 
-fun <K, V> Map<K, V>.flip() = asSequence().associate { (k, v) -> v to k }
+fun <K, V> Map<K, V>.inverted() = asSequence().associate { (k, v) -> v to k }
 
 fun ByteArray.toHexString(): String = joinToString("") { it.toUByte().toString(radix = 16).padStart(2, '0') }
 
@@ -89,3 +90,6 @@ fun <K : Enum<K>, V> enumMapOf(vararg elements: Pair<K, V>): MutableMap<K, V> {
     elements.forEach { result[it.first] = it.second }
     return result
 }
+
+operator fun IntIntPair.component1() = firstInt()
+operator fun IntIntPair.component2() = secondInt()

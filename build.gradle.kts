@@ -31,6 +31,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
+    implementation("it.unimi.dsi:fastutil:8.5.8")
+
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 }
