@@ -580,7 +580,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 
     private fun getBlockIndex(x: Int, y: Int, z: Int) = (y shl 8) + (z shl 4) + x
 
-    fun getBlock(x: Int, y: Int, z: Int) = data[getBlockIndex(x, y, z)] ?: Blocks.AIR
+    fun getBlock(x: Int, y: Int, z: Int) = data[getBlockIndex(x, y, z)]
 
     fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
@@ -597,13 +597,16 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         }
     }
 
-    internal fun toData() = SectionData(
-        blockCount,
-        data.getPaletteItems()
-            .map { it!!.toMap() }
-            .toList(),
-        data.storage
-    )
+    internal fun toData(): SectionData {
+        data.compact()
+        return SectionData(
+            blockCount,
+            data.getPaletteItems()
+                .map { it!!.toMap() }
+                .toList(),
+            data.storage
+        )
+    }
 
     internal fun fromData(input: SectionData) {
         blockCount = input.blockCount
