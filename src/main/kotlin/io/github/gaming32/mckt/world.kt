@@ -413,6 +413,8 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         try {
             regionFile.inputStream().use { fromData(world.meta.saveFormat.decodeFromStream(it, typeOf<RegionData>())) }
         } catch (_: FileNotFoundException) {
+        } catch (e: Exception) {
+            LOGGER.error("Failed to load region from file", e)
         }
     }
 
