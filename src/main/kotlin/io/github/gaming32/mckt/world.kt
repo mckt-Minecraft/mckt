@@ -358,7 +358,7 @@ class World(val server: MinecraftServer, val name: String) {
         while (true) {
             val check = BlockPosition(x, y, z)
             if (getBlockOrGenerate(check) == Blocks.AIR) {
-                if (getBlockOrGenerate(check.down()) == Blocks.AIR) {
+                if (getBlockOrGenerate(check.down()) != Blocks.AIR) {
                     if (getBlockOrGenerate(check.up()) == Blocks.AIR) {
                         meta.spawnPos = check
                         return check
@@ -578,7 +578,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
     var blockCount = 0
         private set
 
-    private fun getBlockIndex(x: Int, y: Int, z: Int) = (y shl 8) + (z shl 4) + 15 - x
+    private fun getBlockIndex(x: Int, y: Int, z: Int) = (y shl 8) + (z shl 4) + x
 
     fun getBlock(x: Int, y: Int, z: Int) = data[getBlockIndex(x, y, z)] ?: Blocks.AIR
 

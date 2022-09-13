@@ -7,7 +7,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 
 class PalettedStorage<V>(val size: Int, defaultValue: V, private val encoder: V.(out: MinecraftOutputStream) -> Unit) {
-    private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap)
+    private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
+        valueToKeyDefaultReturnValue = -1
+    }
     internal var storage = SimpleBitStorage(4, size)
     private val paletteCapacity get() = 1 shl storage.bits
 
@@ -32,6 +34,7 @@ class PalettedStorage<V>(val size: Int, defaultValue: V, private val encoder: V.
             repeat(size) { i ->
                 newStorage[i] = storage[i]
             }
+            storage = newStorage
         }
         palette[paletteIndex] = value
         storage[index] = paletteIndex
@@ -49,7 +52,9 @@ class PalettedStorage<V>(val size: Int, defaultValue: V, private val encoder: V.
     }
 
     private fun expandPalette() {
-        palette = palette.copyOf(::Int2ObjectOpenHashMap, ::Object2IntOpenHashMap)
+        palette = palette.copyOf(::Int2ObjectOpenHashMap, ::Object2IntOpenHashMap).apply {
+            valueToKeyDefaultReturnValue = -1
+        }
     }
 
     internal fun setPaletteItems(items: List<V>) {

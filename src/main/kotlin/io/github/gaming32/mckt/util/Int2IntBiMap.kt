@@ -22,8 +22,8 @@ class Int2IntBiMap(mapFactory: () -> Int2IntMap) {
     fun getKey(value: Int) = valueToKey[value]
 
     operator fun set(key: Int, value: Int) {
-        keyToValue[key] = value
-        valueToKey[value] = key
+        keyToValue.put(key, value)
+        valueToKey.put(value, key)
     }
 
     fun clear() {

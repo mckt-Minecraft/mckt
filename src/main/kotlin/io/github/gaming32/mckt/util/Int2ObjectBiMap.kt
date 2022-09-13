@@ -26,7 +26,7 @@ class Int2ObjectBiMap<V>(
     fun getKey(value: V) = valueToKey.getInt(value)
 
     operator fun set(key: Int, value: V) {
-        keyToValue[key] = value
+        keyToValue.put(key, value)
         valueToKey[value] = key
     }
 

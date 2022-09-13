@@ -16,7 +16,7 @@ class IntIntPair2ObjectMap<V>(
 
     operator fun get(x: Int, y: Int): V? = internal[join(x, y)]
     operator fun set(x: Int, y: Int, value: V) {
-        internal[join(x, y)] = value
+        internal.put(join(x, y), value)
     }
 
     operator fun get(key: IntIntPair) = this[key.firstInt(), key.secondInt()]
