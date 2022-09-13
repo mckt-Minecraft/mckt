@@ -431,7 +431,11 @@ class PlayClient(
                     )
 
                     is UseItemOnBlockPacket -> {
-                        val placePos = packet.location + packet.face.vector
+                        val placePos = if (server.world.getBlock(packet.location) == Blocks.AIR) {
+                            packet.location
+                        } else {
+                            packet.location + packet.face.vector
+                        }
                         val slot = if (packet.offhand) 45 else data.selectedInventorySlot
                         var itemStack = data.inventory[slot]
                         if (itemStack != null) {
