@@ -595,6 +595,14 @@ class PlayClient(
     }
 
     override suspend fun sendPacket(packet: Packet) {
+        if (socket.isClosed) {
+            if (LOGGER.isDebugEnabled) {
+                LOGGER.warn("Attempted to write to closed socket", Throwable())
+            } else {
+                LOGGER.warn("Attempted to write to closed socket")
+            }
+            return
+        }
         try {
             super.sendPacket(packet)
         } catch (e: IOException) {

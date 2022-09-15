@@ -111,9 +111,13 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
             }
             extraData?.write(out)
         }
+
+        override fun toString() =
+            "NodeData(flags=$flags, children=${children.contentToString()}, redirectNode=$redirectNode, " +
+                "extraData=$extraData)"
     }
 
-    class ArgumentExtraData(
+    data class ArgumentExtraData(
         val name: String,
         val type: ArgumentType<*>,
         val customSuggestions: Identifier? = null
@@ -128,7 +132,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
             out.writeString(name)
             out.writeVarInt(type.typeId?.let { id ->
                 ArgumentTypes.getNetworkId(id)
-            } ?: throw IllegalArgumentException("Unsupported networked argument type ${type.javaClass.simpleName}"))
+            } ?: throw IllegalArgumentException("Unsupported networked argument type $type"))
             type.networkSerialize(out)
             if (customSuggestions != null) {
                 out.writeIdentifier(customSuggestions)
@@ -136,7 +140,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
         }
     }
 
-    class LiteralExtraData(val literal: String) : MinecraftWritable {
+    data class LiteralExtraData(val literal: String) : MinecraftWritable {
         override fun write(out: MinecraftOutputStream) = out.writeString(literal)
     }
 
@@ -151,4 +155,6 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
         nodesList.forEach { it.write(out) }
         out.writeVarInt(rootNodeId)
     }
+
+    override fun toString() = "CommandTreePacket(nodesList=$nodesList, rootNodeId=$rootNodeId)"
 }

@@ -109,7 +109,7 @@ object ArgumentTypes {
 
     fun ArgumentType<*>.networkSerialize(out: MinecraftOutputStream) {
         val serializer = REGISTRY[javaClass]?.second
-            ?: throw IllegalArgumentException("Cannot serialize ${javaClass.simpleName}")
+            ?: throw IllegalArgumentException("Cannot serialize $this")
         serializer(out)
     }
 
