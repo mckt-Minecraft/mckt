@@ -14,9 +14,7 @@ private val DEFLATER = Deflater()
 private val BUFFER = ByteArray(8192)
 private val LOGGER = getLogger()
 
-abstract class Packet(val type: Int) {
-    abstract fun write(out: MinecraftOutputStream)
-
+abstract class Packet(val type: Int) : MinecraftWritable {
     suspend fun writePacket(channel: ByteWriteChannel, compression: Int) {
         LOGGER.debug("Sending packet {}", this)
         var output = ByteArrayOutputStream()

@@ -1,10 +1,14 @@
 package io.github.gaming32.mckt.commands
 
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.builder.ArgumentBuilder
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.getLogger
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import java.lang.Exception
 
 private val LOGGER = getLogger()
 
@@ -42,23 +46,40 @@ inline fun registerCommand(
 
 fun CommandSender.evaluateClient(name: String): PlayClient? = server.clients[name]
 
-suspend fun CommandSender.runCommand(command: String) {
+suspend fun CommandSender.runCommand(command: String, dispatcher: CommandDispatcher<CommandSender>) {
     val (baseCommand, rest) = if (' ' in command) {
         command.split(' ', limit = 2)
     } else {
         listOf(command, "")
     }
-    try {
-        COMMANDS[baseCommand]?.let { commandToRun ->
-            if (commandToRun.minPermission > operator) {
-                return@let null
-            }
-            if (commandToRun.call(this, rest)) Unit else null
-        } ?: reply(Component.translatable("commands.help.failed", NamedTextColor.RED))
-    } catch (e: Exception) {
-        LOGGER.error("Internal command error", e)
-        if (this !is ConsoleCommandSender) reply(
-            Component.text("Internal command error", NamedTextColor.DARK_RED)
-        )
+    if (!run {
+        try {
+            COMMANDS[baseCommand]?.let { commandToRun ->
+                if (commandToRun.minPermission > operator) {
+                    return@let false
+                }
+                commandToRun.call(this, rest)
+            } == true
+        } catch (e: Exception) {
+            LOGGER.error("Internal command error", e)
+            if (this !is ConsoleCommandSender) reply(
+                Component.text("Internal command error", NamedTextColor.DARK_RED)
+            )
+            false
+        }
+    }) {
+        try {
+            dispatcher.execute(command, this)
+        } catch (e: CommandSyntaxException) {
+            reply(Component.text(e.localizedMessage, NamedTextColor.RED))
+        } catch (e: Exception) {
+            LOGGER.error("Internal command error", e)
+            if (this !is ConsoleCommandSender) reply(
+                Component.text("Internal command error", NamedTextColor.DARK_RED)
+            )
+        }
     }
 }
+
+fun <S, T : ArgumentBuilder<S, T>> ArgumentBuilder<S, T>.executesSuspend(block: suspend CommandContext<S>.() -> Int) =
+    executes { ctx -> runBlocking { ctx.block() } }!!

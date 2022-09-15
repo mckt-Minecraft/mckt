@@ -2,8 +2,12 @@
 
 package io.github.gaming32.mckt
 
+import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import com.mojang.brigadier.tree.CommandNode
+import com.mojang.brigadier.tree.RootCommandNode
 import io.github.gaming32.mckt.commands.ClientCommandSender
 import io.github.gaming32.mckt.commands.CommandSender
+import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.Packet
@@ -213,10 +217,52 @@ class PlayClient(
         loadChunksAroundPlayer()
     }
 
-    internal suspend fun syncOpLevel() = sendPacket(EntityEventPacket(
-        entityId,
-        (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
-    ))
+    internal suspend fun syncOpLevel() {
+        sendPacket(EntityEventPacket(
+            entityId,
+            (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
+        ))
+        sendCommandTree()
+    }
+
+    private suspend fun sendCommandTree() {
+        val toNetwork = mutableMapOf<CommandNode<CommandSender>, CommandNode<CommandSender>>()
+        val rootNode = RootCommandNode<CommandSender>()
+        toNetwork[server.commandDispatcher.root] = rootNode
+        makeTreeForSource(server.commandDispatcher.root, rootNode, toNetwork)
+        sendPacket(CommandTreePacket(rootNode))
+    }
+
+    private fun makeTreeForSource(
+        tree: CommandNode<CommandSender>,
+        result: CommandNode<CommandSender>,
+        resultNodes: MutableMap<CommandNode<CommandSender>, CommandNode<CommandSender>>
+    ) {
+        tree.children.forEach { node ->
+            if (node.canUse(commandSender)) {
+                val builder = node.createBuilder()
+                builder.requires { true }
+                if (builder.command != null) {
+                    builder.executes { 0 }
+                }
+
+                if (builder is RequiredArgumentBuilder<CommandSender, *> && builder.suggestionsProvider != null) {
+                    builder.suggests(builder.suggestionsProvider.localProvider)
+                }
+
+                if (builder.redirect != null) {
+                    builder.redirect(resultNodes[builder.redirect])
+                }
+
+                val newNode = builder.build()
+                resultNodes[node] = newNode
+                result.addChild(newNode)
+                if (node.children.isNotEmpty()) {
+                    makeTreeForSource(node, newNode, resultNodes)
+                }
+            }
+        }
+    }
 
     private suspend fun loadChunk(x: Int, z: Int) {
         if (loadedChunks.add(x to z)) {
@@ -261,7 +307,7 @@ class PlayClient(
                         LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                     }
 
-                    is CommandPacket -> commandSender.runCommand(packet.command)
+                    is CommandPacket -> commandSender.runCommand(packet.command, server.commandDispatcher)
                     is ServerboundChatPacket -> {
                         LOGGER.info("CHAT: <{}> {}", username, packet.message)
                         server.broadcast(

@@ -1,8 +1,11 @@
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.commands.BuiltinCommands
-import io.github.gaming32.mckt.commands.ConsoleCommandSender
-import io.github.gaming32.mckt.commands.runCommand
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
+import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
@@ -54,6 +57,7 @@ class MinecraftServer {
 
     private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
     val serverCommandSender = ConsoleCommandSender(this, "Server")
+    internal val commandDispatcher = CommandDispatcher<CommandSender>()
 
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
@@ -64,7 +68,21 @@ class MinecraftServer {
 
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
+
         BuiltinCommands.register()
+        commandDispatcher.register(literal<CommandSender>("foo")
+            .executesSuspend {
+                source.reply(Component.text("Called foo with no arguments"))
+                0
+            }
+            .then(argument<CommandSender, Int>("bar", integer())
+                .executesSuspend {
+                    source.reply(Component.text("Bar is ${getInteger(this, "bar")}"))
+                    0
+                }
+            )
+        )
+
         world = World(this@MinecraftServer, "world")
         world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
         handleCommandsJob = launch { handleCommands() }
@@ -140,7 +158,8 @@ class MinecraftServer {
     private suspend fun handleCommands() {
         while (running) {
             consoleCommandSender.runCommand(
-                GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue
+                GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue,
+                commandDispatcher
             )
         }
     }

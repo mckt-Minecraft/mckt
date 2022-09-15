@@ -17,6 +17,9 @@ application {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://libraries.minecraft.net")
+    }
 }
 
 dependencies {
@@ -28,6 +31,8 @@ dependencies {
     implementation("net.kyori:adventure-text-serializer-plain:4.11.0")
 
     implementation("net.benwoodworth.knbt:knbt:0.11.2")
+
+    implementation("com.mojang:brigadier:1.0.18")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 

@@ -1,5 +1,7 @@
 package io.github.gaming32.mckt.commands
 
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.getLogger
@@ -15,6 +17,8 @@ abstract class CommandSender(val server: MinecraftServer) {
     abstract val operator: Int
 
     abstract suspend fun reply(message: Component)
+
+    fun getCompletions(ctx: CommandContext<CommandSender>) = Suggestions.empty()
 
     suspend fun replyBroadcast(message: Component) {
         reply(message)
