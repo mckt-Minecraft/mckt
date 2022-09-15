@@ -22,6 +22,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -149,6 +150,105 @@ class MinecraftServer {
     }
 
     private fun registerCommands() {
+        registerCommand(Component.text("Shows this help"), literal<CommandSource>("help")
+            .executesSuspend {
+                source.reply(Component.text("Here's a list of the commands you can use:\n")
+                    .append(Component.join(
+                        JoinConfiguration.newlines(),
+                        COMMANDS.asSequence()
+                            .filter { source.hasPermission(it.value.minPermission) }
+                            .map { (name, command) -> Component.text { builder ->
+                                builder.append(Component.text("  + /$name"))
+                                if (command.description != null) {
+                                    builder.append(Component.text(" -- ")).append(command.description)
+                                }
+                            } }
+                            .toList() +
+                        helpTexts.asSequence()
+                            .filter { it.key.canUse(source) }
+                            .map { (command, description) -> Component.text { builder ->
+                                builder.append(Component.text("  + /${command.usageText} -- "))
+                                if (description != null) {
+                                    builder.append(description)
+                                }
+                            } }
+                            .toList()
+                    ))
+                )
+                0
+            }
+            .then(argument<CommandSource, String>("command", greedyString())
+                .executesSuspend {
+                    val commandName = getString("command")
+                    var result = 0
+                    source.reply(if (commandName == "all") {
+                        Component.join(
+                            JoinConfiguration.newlines(),
+                            commandDispatcher.root.children
+                                .asSequence()
+                                .filter { it.canUse(source) }
+                                .flatMap { command ->
+                                    commandDispatcher.getAllUsage(command, source, true)
+                                        .map { "/${command.usageText} $it" }
+                                }
+                                .map(Component::text)
+                                .toList()
+                        )
+                    } else {
+                        val command = commandDispatcher.root.getChild(commandName)
+                        if (command == null || !command.canUse(source)) {
+                            val legacyCommand = COMMANDS[commandName]
+                            if (legacyCommand == null) {
+                                result = 1
+                                Component.translatable(
+                                    "commands.help.failed",
+                                    NamedTextColor.RED,
+                                    Component.text(commandName)
+                                )
+                            } else if (legacyCommand.description != null) {
+                                Component.text("/${legacyCommand.name} -- ").append(legacyCommand.description)
+                            } else {
+                                Component.text("/${legacyCommand.name}")
+                            }
+                        } else {
+                            Component.text { builder ->
+                                builder.append(Component.join(
+                                    JoinConfiguration.newlines(),
+                                    commandDispatcher.getAllUsage(command, source, true)
+                                        .map { Component.text("/${command.usageText} $it") }
+                                ))
+                                source.server.helpTexts[command]?.let { description ->
+                                    builder.append(Component.newline()).append(description)
+                                }
+                            }
+                        }
+                    })
+                    result
+                }
+                .suggests { ctx, builder ->
+                    if ("all".startsWith(builder.remainingLowerCase)) {
+                        builder.suggest("all")
+                    }
+                    COMMANDS.forEach { (name, command) ->
+                        if (
+                            ctx.source.hasPermission(command.minPermission) &&
+                            name.startsWith(builder.remainingLowerCase, ignoreCase = true)
+                        ) {
+                            builder.suggest(name)
+                        }
+                    }
+                    helpTexts.keys.forEach { node ->
+                        if (
+                            node.canUse(ctx.source) &&
+                            node.usageText.startsWith(builder.remainingLowerCase, ignoreCase = true)
+                        ) {
+                            builder.suggest(node.usageText)
+                        }
+                    }
+                    builder.buildFuture()
+                }
+            )
+        )
         registerCommand(Component.text("Send a message"), literal<CommandSource>("say")
             .then(argument<CommandSource, String>("message", greedyString())
                 .executesSuspend {

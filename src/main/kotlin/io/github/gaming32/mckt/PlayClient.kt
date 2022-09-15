@@ -2,6 +2,7 @@
 
 package io.github.gaming32.mckt
 
+import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.RootCommandNode
@@ -25,6 +26,8 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -321,6 +324,21 @@ class PlayClient(
                     }
 
                     is ClientOptionsPacket -> options = packet.options
+
+                    is CommandCompletionsRequestPacket -> {
+                        val reader = StringReader(packet.command)
+                        if (reader.canRead() && reader.peek() == '/') {
+                            reader.skip()
+                        }
+                        val parseResults = server.commandDispatcher.parse(reader, commandSource)
+                        server.commandDispatcher
+                            .getCompletionSuggestions(parseResults)
+                            .await()
+                            .let { suggestions ->
+                                sendPacket(CommandCompletionsResponsePacket(packet.requestId, suggestions))
+                            }
+                    }
+
                     is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                     is MovementPacket -> {
                         if (ignoreMovementPackets) continue

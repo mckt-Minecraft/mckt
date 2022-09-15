@@ -7,77 +7,11 @@ import io.github.gaming32.mckt.capitalize
 import io.github.gaming32.mckt.enumValueOfOrNull
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import kotlin.collections.asSequence
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.forEach
-import kotlin.collections.getOrNull
-import kotlin.collections.map
 import kotlin.math.min
 
 object BuiltinCommands {
-    val HELP = registerCommand("help", Component.text("Show this help")) { sender, args ->
-        val text = if (args.isEmpty()) {
-            Component.text { text ->
-                text.append(Component.text("Here's a list of the commands you can use:\n"))
-                COMMANDS.forEach { (name, command) ->
-                    if (sender.operator >= command.minPermission) {
-                        text.append(Component.text("  + /$name"))
-                        if (command.description != null) {
-                            text.append(Component.text(" -- ")).append(command.description)
-                        }
-                        text.append(Component.newline())
-                    }
-                }
-                sender.server.helpTexts.forEach { (command, description) ->
-                    if (command.canUse(sender)) {
-                        text.append(Component.text("  + /${command.usageText} -- "))
-                        if (description != null) {
-                            text.append(description)
-                        }
-                        text.append(Component.newline())
-                    }
-                }
-            }
-        } else {
-            val dispatcher = sender.server.commandDispatcher
-            if (args == "all") {
-                Component.join(
-                    JoinConfiguration.newlines(),
-                    dispatcher.root.children
-                        .asSequence()
-                        .filter { it.canUse(sender) }
-                        .flatMap { command ->
-                            dispatcher.getAllUsage(command, sender, true)
-                                .map { "/${command.usageText} $it" }
-                        }
-                        .map(Component::text)
-                        .toList()
-                )
-            } else {
-                val command = dispatcher.root.getChild(args)
-                if (command == null || !command.canUse(sender)) {
-                    Component.translatable("commands.help.failed", Component.text(args))
-                } else {
-                    Component.text { builder ->
-                        builder.append(Component.join(
-                            JoinConfiguration.newlines(),
-                            dispatcher.getAllUsage(command, sender, true)
-                                .map { Component.text("/${command.usageText} $it") }
-                        ))
-                        sender.server.helpTexts[command]?.let { description ->
-                            builder.append(Component.newline()).append(description)
-                        }
-                    }
-                }
-            }
-        }
-        sender.reply(text)
-    }
-
     val TELEPORT = registerCommand("tp", Component.text("Teleport a player"), 1) { sender, args ->
         val argv = args.split(" ")
         if (argv.size < 2) {
