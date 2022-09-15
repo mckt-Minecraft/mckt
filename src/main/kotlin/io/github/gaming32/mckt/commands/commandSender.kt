@@ -18,7 +18,7 @@ abstract class CommandSender(val server: MinecraftServer) {
 
     abstract suspend fun reply(message: Component)
 
-    fun getCompletions(ctx: CommandContext<CommandSender>) = Suggestions.empty()
+    open fun getCompletions(ctx: CommandContext<CommandSender>) = Suggestions.empty()!!
 
     suspend fun replyBroadcast(message: Component) {
         reply(message)
@@ -38,6 +38,8 @@ abstract class CommandSender(val server: MinecraftServer) {
             client.data.operatorLevel > 0 && client != skipClient
         }
     }
+
+    fun hasPermission(level: Int) = operator >= level
 
     override fun toString() = displayName.plainText()
 }

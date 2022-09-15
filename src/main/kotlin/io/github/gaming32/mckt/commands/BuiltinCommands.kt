@@ -78,17 +78,6 @@ object BuiltinCommands {
         sender.reply(text)
     }
 
-    val LIST = registerCommand("list", Component.text("List the players online")) { sender, _ ->
-        val playersText = Component.join(
-            JoinConfiguration.commas(true),
-            sender.server.clients.keys.map(Component::text)
-        )
-        sender.reply(
-            Component.text("There are ${sender.server.clients.size} player(s) online: ")
-                .append(playersText)
-        )
-    }
-
     val TELEPORT = registerCommand("tp", Component.text("Teleport a player"), 1) { sender, args ->
         val argv = args.split(" ")
         if (argv.size < 2) {
@@ -237,11 +226,6 @@ object BuiltinCommands {
             )
         }
         OP.call(sender, "${args.substringBefore(' ')} 0")
-    }
-
-    val STOP = registerCommand("stop", Component.text("Stops the server"), 4) { sender, _ ->
-        sender.replyBroadcast(Component.text("Stopping server..."))
-        sender.server.running = false
     }
 
     val SAVE = registerCommand("save", Component.text("Saves the world"), 4) { sender, _ ->

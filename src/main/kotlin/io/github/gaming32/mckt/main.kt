@@ -21,6 +21,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -161,6 +162,35 @@ class MinecraftServer {
                     0
                 }
             )
+        )
+        registerCommand(Component.text("List the players online"), literal<CommandSender>("list")
+            .executesSuspend {
+                source.reply(Component.translatable(
+                    "commands.list.players",
+                    Component.text(clients.size),
+                    Component.text(config.maxPlayers),
+                    Component.join(
+                        JoinConfiguration.commas(true),
+                        clients.keys.map(Component::text)
+                    )
+                ))
+                0
+            }
+        )
+        registerCommand(Component.text("Stops the server"), literal<CommandSender>("stop")
+            .requires { it.hasPermission(4) }
+            .executesSuspend {
+                source.replyBroadcast(Component.text("Stopping server..."))
+                running = false
+                0
+            }
+        )
+        registerCommand(Component.text("Saves the world"), literal<CommandSender>("save")
+            .requires { it.hasPermission(4) }
+            .executesSuspend {
+                world.saveAndLog(source)
+                0
+            }
         )
     }
 
