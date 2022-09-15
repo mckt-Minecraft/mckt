@@ -267,12 +267,11 @@ class PlayClient(
     private suspend fun loadChunk(x: Int, z: Int) {
         if (loadedChunks.add(x to z)) {
             val chunk = server.world.getChunkOrGenerate(x, z)
+            val chunkData = withContext(chunk.world.networkSerializationPool) {
+                encodeData(chunk::networkEncode)
+            }
             if (sendChannel.isClosedForWrite) return
-            sendPacket(ChunkAndLightDataPacket(
-                chunk.x, chunk.z, withContext(chunk.world.networkSerializationPool) {
-                    encodeData(chunk::networkEncode)
-                }
-            ))
+            sendPacket(ChunkAndLightDataPacket(chunk.x, chunk.z, chunkData))
         }
     }
 
