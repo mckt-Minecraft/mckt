@@ -5,7 +5,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
 import com.mojang.brigadier.tree.RootCommandNode
-import io.github.gaming32.mckt.commands.CommandSender
+import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.id
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes.networkSerialize
@@ -15,7 +15,7 @@ import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.MinecraftWritable
 import io.github.gaming32.mckt.packet.Packet
 
-class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE) {
+class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x0F
         private const val TYPE_MASK = 0x03
@@ -26,9 +26,9 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
         private const val FLAG_REDIRECT = 0x08
         private const val FLAG_CUSTOM_SUGGESTIONS = 0x10
 
-        private fun traverse(tree: RootCommandNode<CommandSender>): Map<CommandNode<CommandSender>, Int> {
-            val result = mutableMapOf<CommandNode<CommandSender>, Int>()
-            val queue = ArrayDeque<CommandNode<CommandSender>>(listOf(tree))
+        private fun traverse(tree: RootCommandNode<CommandSource>): Map<CommandNode<CommandSource>, Int> {
+            val result = mutableMapOf<CommandNode<CommandSource>, Int>()
+            val queue = ArrayDeque<CommandNode<CommandSource>>(listOf(tree))
 
             while (queue.isNotEmpty()) {
                 val node = queue.removeFirst()
@@ -42,7 +42,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
             return result
         }
 
-        private fun collect(nodes: Map<CommandNode<CommandSender>, Int>): List<NodeData> {
+        private fun collect(nodes: Map<CommandNode<CommandSource>, Int>): List<NodeData> {
             val result = arrayOfNulls<NodeData>(nodes.size)
             nodes.forEach { (key, value) ->
                 result[value] = key.convert(nodes)
@@ -51,7 +51,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
             return result.toList() as List<NodeData>
         }
 
-        private fun CommandNode<CommandSender>.convert(nodes: Map<CommandNode<CommandSender>, Int>): NodeData {
+        private fun CommandNode<CommandSource>.convert(nodes: Map<CommandNode<CommandSource>, Int>): NodeData {
             var flags = 0
             val redirectIndex = redirect?.let {
                 flags = FLAG_REDIRECT
@@ -68,7 +68,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
                     null
                 }
 
-                is ArgumentCommandNode<CommandSender, *> -> {
+                is ArgumentCommandNode<CommandSource, *> -> {
                     flags = flags or TYPE_ARGUMENT
                     if (customSuggestions != null) {
                         flags = flags or FLAG_CUSTOM_SUGGESTIONS
@@ -122,7 +122,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSender>) : Packet(TYPE)
         val type: ArgumentType<*>,
         val customSuggestions: Identifier? = null
     ) : MinecraftWritable {
-        constructor(node: ArgumentCommandNode<CommandSender, *>) : this(
+        constructor(node: ArgumentCommandNode<CommandSource, *>) : this(
             node.name,
             node.type,
             node.customSuggestions?.id

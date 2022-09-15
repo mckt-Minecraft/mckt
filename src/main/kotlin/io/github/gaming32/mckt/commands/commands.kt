@@ -17,7 +17,7 @@ val COMMANDS: Map<String, Command> get() =
     commands // Public getter gets immutable-type map. It's still mutable underneath, though
 
 abstract class Command(val name: String, val description: Component?, val minPermission: Int) {
-    abstract suspend fun call(sender: CommandSender, args: String): Boolean
+    abstract suspend fun call(sender: CommandSource, args: String): Boolean
 }
 
 fun registerCommand(command: Command) =
@@ -29,24 +29,24 @@ inline fun registerCommandPermCheck(
     name: String,
     description: Component? = null,
     permission: Int = 0,
-    crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Boolean
+    crossinline executor: suspend Command.(sender: CommandSource, args: String) -> Boolean
 ) = registerCommand(object : Command(name, description, permission) {
-    override suspend fun call(sender: CommandSender, args: String) = executor(sender, args)
+    override suspend fun call(sender: CommandSource, args: String) = executor(sender, args)
 })
 
 inline fun registerCommand(
     name: String,
     description: Component? = null,
     permission: Int = 0,
-    crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Unit
+    crossinline executor: suspend Command.(sender: CommandSource, args: String) -> Unit
 ) = registerCommandPermCheck(name, description, permission) { sender, args ->
     executor(sender, args)
     true
 }
 
-fun CommandSender.evaluateClient(name: String): PlayClient? = server.clients[name]
+fun CommandSource.evaluateClient(name: String): PlayClient? = server.clients[name]
 
-suspend fun CommandSender.runCommand(command: String, dispatcher: CommandDispatcher<CommandSender>) {
+suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatcher<CommandSource>) {
     val (baseCommand, rest) = if (' ' in command) {
         command.split(' ', limit = 2)
     } else {
@@ -62,7 +62,7 @@ suspend fun CommandSender.runCommand(command: String, dispatcher: CommandDispatc
             } == true
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
-            if (this !is ConsoleCommandSender) reply(
+            if (this !is ConsoleCommandSource) reply(
                 Component.text("Internal command error", NamedTextColor.DARK_RED)
             )
             true
@@ -74,7 +74,7 @@ suspend fun CommandSender.runCommand(command: String, dispatcher: CommandDispatc
             reply(Component.text(e.localizedMessage, NamedTextColor.RED))
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
-            if (this !is ConsoleCommandSender) reply(
+            if (this !is ConsoleCommandSource) reply(
                 Component.text("Internal command error", NamedTextColor.DARK_RED)
             )
         }

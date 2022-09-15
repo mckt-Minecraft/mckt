@@ -145,7 +145,7 @@ object BuiltinCommands {
             who = sender.evaluateClient(args.substringAfter(' '))
         } else {
             gamemodeString = args
-            who = (sender as? ClientCommandSender)?.client ?: return@registerCommand sender.reply(
+            who = (sender as? ClientCommandSource)?.client ?: return@registerCommand sender.reply(
                 Component.text("Usage: /op <gamemode> <player>", NamedTextColor.RED)
             )
         }

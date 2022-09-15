@@ -2,7 +2,7 @@
 
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.commands.CommandSender
+import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.objects.BitSetSerializer
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
@@ -374,17 +374,17 @@ class World(val server: MinecraftServer, val name: String) {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
+    suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
         while (isSaving) yield()
         isSaving = true
-        sender.replyBroadcast(Component.text("Saving world \"$name\""))
+        commandSource.replyBroadcast(Component.text("Saving world \"$name\""))
         val start = System.nanoTime()
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
         openRegions.values.map { region ->
             launch(saveLoadPool) { region.save() }
         }.joinAll()
         val duration = System.nanoTime() - start
-        sender.replyBroadcast(
+        commandSource.replyBroadcast(
             Component.text(
                 "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
             )

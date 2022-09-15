@@ -55,10 +55,10 @@ class MinecraftServer {
         private set
     internal var nextEntityId = 0
 
-    private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
-    val serverCommandSender = ConsoleCommandSender(this, "Server")
-    internal val commandDispatcher = CommandDispatcher<CommandSender>()
-    internal val helpTexts = mutableMapOf<CommandNode<CommandSender>, Component?>()
+    private val consoleCommandSender = ConsoleCommandSource(this, "CONSOLE")
+    val serverCommandSender = ConsoleCommandSource(this, "Server")
+    internal val commandDispatcher = CommandDispatcher<CommandSource>()
+    internal val helpTexts = mutableMapOf<CommandNode<CommandSource>, Component?>()
 
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
@@ -143,14 +143,14 @@ class MinecraftServer {
         LOGGER.info("Server stopped")
     }
 
-    fun registerCommand(description: Component?, command: LiteralArgumentBuilder<CommandSender>) {
+    fun registerCommand(description: Component?, command: LiteralArgumentBuilder<CommandSource>) {
         val registered = commandDispatcher.register(command)
         helpTexts[registered] = description
     }
 
     private fun registerCommands() {
-        registerCommand(Component.text("Send a message"), literal<CommandSender>("say")
-            .then(argument<CommandSender, String>("message", greedyString())
+        registerCommand(Component.text("Send a message"), literal<CommandSource>("say")
+            .then(argument<CommandSource, String>("message", greedyString())
                 .executesSuspend {
                     val message = getString("message")
                     LOGGER.info("CHAT: [{}] {}", source.displayName.plainText(), message)
@@ -163,7 +163,7 @@ class MinecraftServer {
                 }
             )
         )
-        registerCommand(Component.text("List the players online"), literal<CommandSender>("list")
+        registerCommand(Component.text("List the players online"), literal<CommandSource>("list")
             .executesSuspend {
                 source.reply(Component.translatable(
                     "commands.list.players",
@@ -177,7 +177,7 @@ class MinecraftServer {
                 0
             }
         )
-        registerCommand(Component.text("Stops the server"), literal<CommandSender>("stop")
+        registerCommand(Component.text("Stops the server"), literal<CommandSource>("stop")
             .requires { it.hasPermission(4) }
             .executesSuspend {
                 source.replyBroadcast(Component.text("Stopping server..."))
@@ -185,7 +185,7 @@ class MinecraftServer {
                 0
             }
         )
-        registerCommand(Component.text("Saves the world"), literal<CommandSender>("save")
+        registerCommand(Component.text("Saves the world"), literal<CommandSource>("save")
             .requires { it.hasPermission(4) }
             .executesSuspend {
                 world.saveAndLog(source)

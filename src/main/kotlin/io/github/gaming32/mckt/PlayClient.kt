@@ -5,8 +5,8 @@ package io.github.gaming32.mckt
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.RootCommandNode
-import io.github.gaming32.mckt.commands.ClientCommandSender
-import io.github.gaming32.mckt.commands.CommandSender
+import io.github.gaming32.mckt.commands.ClientCommandSource
+import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.objects.Identifier
@@ -83,7 +83,7 @@ class PlayClient(
         private set
     lateinit var data: PlayerData
         private set
-    lateinit var commandSender: CommandSender
+    lateinit var commandSource: CommandSource
         private set
     private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
     private var ignoreMovementPackets = true
@@ -151,7 +151,7 @@ class PlayClient(
             writeString("mckt")
         })
 
-        commandSender = ClientCommandSender(this@PlayClient)
+        commandSource = ClientCommandSource(this@PlayClient)
 
         sendPacket(ClientboundPlayerAbilitiesPacket(
             data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
@@ -226,27 +226,27 @@ class PlayClient(
     }
 
     private suspend fun sendCommandTree() {
-        val toNetwork = mutableMapOf<CommandNode<CommandSender>, CommandNode<CommandSender>>()
-        val rootNode = RootCommandNode<CommandSender>()
+        val toNetwork = mutableMapOf<CommandNode<CommandSource>, CommandNode<CommandSource>>()
+        val rootNode = RootCommandNode<CommandSource>()
         toNetwork[server.commandDispatcher.root] = rootNode
         makeTreeForSource(server.commandDispatcher.root, rootNode, toNetwork)
         sendPacket(CommandTreePacket(rootNode))
     }
 
     private fun makeTreeForSource(
-        tree: CommandNode<CommandSender>,
-        result: CommandNode<CommandSender>,
-        resultNodes: MutableMap<CommandNode<CommandSender>, CommandNode<CommandSender>>
+        tree: CommandNode<CommandSource>,
+        result: CommandNode<CommandSource>,
+        resultNodes: MutableMap<CommandNode<CommandSource>, CommandNode<CommandSource>>
     ) {
         tree.children.forEach { node ->
-            if (node.canUse(commandSender)) {
+            if (node.canUse(commandSource)) {
                 val builder = node.createBuilder()
                 builder.requires { true }
                 if (builder.command != null) {
                     builder.executes { 0 }
                 }
 
-                if (builder is RequiredArgumentBuilder<CommandSender, *> && builder.suggestionsProvider != null) {
+                if (builder is RequiredArgumentBuilder<CommandSource, *> && builder.suggestionsProvider != null) {
                     builder.suggests(builder.suggestionsProvider.localProvider)
                 }
 
@@ -306,7 +306,7 @@ class PlayClient(
                         LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                     }
 
-                    is CommandPacket -> commandSender.runCommand(packet.command, server.commandDispatcher)
+                    is CommandPacket -> commandSource.runCommand(packet.command, server.commandDispatcher)
                     is ServerboundChatPacket -> {
                         LOGGER.info("CHAT: <{}> {}", username, packet.message)
                         server.broadcast(
