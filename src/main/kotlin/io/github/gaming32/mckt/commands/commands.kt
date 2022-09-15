@@ -65,7 +65,7 @@ suspend fun CommandSender.runCommand(command: String, dispatcher: CommandDispatc
             if (this !is ConsoleCommandSender) reply(
                 Component.text("Internal command error", NamedTextColor.DARK_RED)
             )
-            false
+            true
         }
     }) {
         try {

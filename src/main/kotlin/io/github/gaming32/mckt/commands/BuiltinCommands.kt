@@ -1,42 +1,81 @@
 package io.github.gaming32.mckt.commands
 
 import com.google.gson.JsonSyntaxException
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.Gamemode
+import io.github.gaming32.mckt.PlayClient
+import io.github.gaming32.mckt.capitalize
+import io.github.gaming32.mckt.enumValueOfOrNull
 import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
-import io.github.gaming32.mckt.packet.play.s2c.SystemChatPacket
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import kotlin.collections.asSequence
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
+import kotlin.collections.getOrNull
+import kotlin.collections.map
 import kotlin.math.min
 
 object BuiltinCommands {
-    private val LOGGER = getLogger()
-
-    val HELP = registerCommand("help", Component.text("Show this help")) { sender, _ ->
-        val maxNameWidth = COMMANDS.keys.asSequence().map(String::length).max()
-        val text = Component.text { text ->
-            text.append(Component.text("Here's a list of the commands you can use:\n"))
-            COMMANDS.forEach { (name, command) ->
-                if (sender.operator >= command.minPermission) {
-                    text.append(Component.text("  + /${name.padEnd(maxNameWidth)}"))
-                    if (command.description != null) {
-                        text.append(Component.text(" -- ")).append(command.description)
+    val HELP = registerCommand("help", Component.text("Show this help")) { sender, args ->
+        val text = if (args.isEmpty()) {
+            Component.text { text ->
+                text.append(Component.text("Here's a list of the commands you can use:\n"))
+                COMMANDS.forEach { (name, command) ->
+                    if (sender.operator >= command.minPermission) {
+                        text.append(Component.text("  + /$name"))
+                        if (command.description != null) {
+                            text.append(Component.text(" -- ")).append(command.description)
+                        }
+                        text.append(Component.newline())
                     }
-                    text.append(Component.newline())
+                }
+                sender.server.helpTexts.forEach { (command, description) ->
+                    if (command.canUse(sender)) {
+                        text.append(Component.text("  + /${command.usageText} -- "))
+                        if (description != null) {
+                            text.append(description)
+                        }
+                        text.append(Component.newline())
+                    }
+                }
+            }
+        } else {
+            val dispatcher = sender.server.commandDispatcher
+            if (args == "all") {
+                Component.join(
+                    JoinConfiguration.newlines(),
+                    dispatcher.root.children
+                        .asSequence()
+                        .filter { it.canUse(sender) }
+                        .flatMap { command ->
+                            dispatcher.getAllUsage(command, sender, true)
+                                .map { "/${command.usageText} $it" }
+                        }
+                        .map(Component::text)
+                        .toList()
+                )
+            } else {
+                val command = dispatcher.root.getChild(args)
+                if (command == null || !command.canUse(sender)) {
+                    Component.text("Unknown command: $args")
+                } else {
+                    Component.text { builder ->
+                        builder.append(Component.join(
+                            JoinConfiguration.newlines(),
+                            dispatcher.getAllUsage(command, sender, true)
+                                .map { Component.text("/${command.usageText} $it") }
+                        ))
+                        sender.server.helpTexts[command]?.let { description ->
+                            builder.append(Component.newline()).append(description)
+                        }
+                    }
                 }
             }
         }
         sender.reply(text)
-    }
-
-    val SAY = registerCommand("say", Component.text("Send a message")) { sender, args ->
-        LOGGER.info("CHAT: <{}> {}", sender.displayName.plainText(), args)
-        sender.server.broadcast(SystemChatPacket(
-            Component.text('<')
-                .append(sender.displayName)
-                .append(Component.text("> $args"))
-        ))
     }
 
     val LIST = registerCommand("list", Component.text("List the players online")) { sender, _ ->

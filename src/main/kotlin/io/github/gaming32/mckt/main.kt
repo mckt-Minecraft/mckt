@@ -1,18 +1,17 @@
 package io.github.gaming32.mckt
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
-import com.mojang.brigadier.arguments.IntegerArgumentType.integer
+import com.mojang.brigadier.arguments.StringArgumentType.greedyString
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.mojang.brigadier.tree.CommandNode
 import io.github.gaming32.mckt.commands.*
+import io.github.gaming32.mckt.commands.arguments.getString
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayerListUpdatePacket
-import io.github.gaming32.mckt.packet.play.s2c.RemoveEntitiesPacket
-import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
+import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -58,6 +57,7 @@ class MinecraftServer {
     private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
     val serverCommandSender = ConsoleCommandSender(this, "Server")
     internal val commandDispatcher = CommandDispatcher<CommandSender>()
+    internal val helpTexts = mutableMapOf<CommandNode<CommandSender>, Component?>()
 
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
@@ -70,18 +70,7 @@ class MinecraftServer {
         LOGGER.info("Starting server...")
 
         BuiltinCommands.register()
-        commandDispatcher.register(literal<CommandSender>("foo")
-            .executesSuspend {
-                source.reply(Component.text("Called foo with no arguments"))
-                0
-            }
-            .then(argument<CommandSender, Int>("bar", integer())
-                .executesSuspend {
-                    source.reply(Component.text("Bar is ${getInteger(this, "bar")}"))
-                    0
-                }
-            )
-        )
+        registerCommands()
 
         world = World(this@MinecraftServer, "world")
         world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
@@ -151,6 +140,28 @@ class MinecraftServer {
             threadPoolContext.close()
         }
         LOGGER.info("Server stopped")
+    }
+
+    fun registerCommand(description: Component?, command: LiteralArgumentBuilder<CommandSender>) {
+        val registered = commandDispatcher.register(command)
+        helpTexts[registered] = description
+    }
+
+    private fun registerCommands() {
+        registerCommand(Component.text("Send a message"), literal<CommandSender>("say")
+            .then(argument<CommandSender, String>("message", greedyString())
+                .executesSuspend {
+                    val message = getString("message")
+                    LOGGER.info("CHAT: [{}] {}", source.displayName.plainText(), message)
+                    source.server.broadcast(SystemChatPacket(
+                        Component.text('[')
+                            .append(source.displayName)
+                            .append(Component.text("] $message"))
+                    ))
+                    0
+                }
+            )
+        )
     }
 
     @Suppress("RedundantAsync")
