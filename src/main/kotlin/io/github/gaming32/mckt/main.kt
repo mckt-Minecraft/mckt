@@ -126,7 +126,7 @@ class MinecraftServer {
         acceptConnectionsJob.cancel()
         for (client in clients.values) {
             client.sendPacket(PlayDisconnectPacket(
-                Component.text("Server closed")
+                Component.translatable("multiplayer.disconnect.server_shutdown")
             ))
             client.socket.dispose()
             client.close()
@@ -155,9 +155,7 @@ class MinecraftServer {
                     val message = getString("message")
                     LOGGER.info("CHAT: [{}] {}", source.displayName.plainText(), message)
                     source.server.broadcast(SystemChatPacket(
-                        Component.text('[')
-                            .append(source.displayName)
-                            .append(Component.text("] $message"))
+                        Component.translatable("chat.type.announcement", source.displayName, Component.text(message))
                     ))
                     0
                 }
@@ -180,7 +178,7 @@ class MinecraftServer {
         registerCommand(Component.text("Stops the server"), literal<CommandSource>("stop")
             .requires { it.hasPermission(4) }
             .executesSuspend {
-                source.replyBroadcast(Component.text("Stopping server..."))
+                source.replyBroadcast(Component.translatable("commands.stop.stopping"))
                 running = false
                 0
             }
@@ -296,7 +294,7 @@ class MinecraftServer {
                                         if (oldClient.receiveChannel.isClosedForRead) return@also
                                         LOGGER.info("Another client with that username was already online")
                                         oldClient.sendPacket(PlayDisconnectPacket(
-                                            Component.text("You logged in from another location")
+                                            Component.translatable("multiplayer.disconnect.duplicate_login")
                                         ))
                                         oldClient.socket.dispose()
                                     }

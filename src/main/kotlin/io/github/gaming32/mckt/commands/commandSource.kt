@@ -22,14 +22,7 @@ abstract class CommandSource(val server: MinecraftServer) {
 
     suspend fun replyBroadcast(message: Component) {
         reply(message)
-        val broadcastMessage = Component.text {
-            it.color(NamedTextColor.GRAY)
-            it.append(Component.text('['))
-            it.append(displayName)
-            it.append(Component.text(": "))
-            it.append(message)
-            it.append(Component.text(']'))
-        }
+        val broadcastMessage = Component.translatable("chat.type.admin", NamedTextColor.GRAY, displayName, message)
         if (this !is ConsoleCommandSource) {
             LOGGER.info(broadcastMessage.plainText())
         }

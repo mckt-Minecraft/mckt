@@ -14,11 +14,17 @@ import org.slf4j.helpers.Util
 import java.util.EnumMap
 import kotlin.math.max
 
-// Note: This does not handle translation args
 val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
     flattener(ComponentFlattener.basic().toBuilder().apply {
-        mapper(TranslatableComponent::class.java) { component ->
-            DEFAULT_TRANSLATIONS[component.key()] ?: component.key()
+        complexMapper(TranslatableComponent::class.java) { component, handler ->
+            val translation = DEFAULT_TRANSLATIONS[component.key()]
+                ?: return@complexMapper handler.accept(Component.text(component.key()))
+            val parts = translation.split("%s", limit = component.args().size + 1)
+            handler.accept(Component.text(parts[0].replace("%%", "%")))
+            for (i in 1 until parts.size) {
+                handler.accept(component.args()[i - 1])
+                handler.accept(Component.text(parts[i].replace("%%", "%")))
+            }
         }
     }.build())
 }.build()

@@ -60,7 +60,7 @@ object BuiltinCommands {
             } else {
                 val command = dispatcher.root.getChild(args)
                 if (command == null || !command.canUse(sender)) {
-                    Component.text("Unknown command: $args")
+                    Component.translatable("commands.help.failed", Component.text(args))
                 } else {
                     Component.text { builder ->
                         builder.append(Component.join(
@@ -93,7 +93,11 @@ object BuiltinCommands {
                 Component.text("Player ${argv[1]} not found", NamedTextColor.RED)
             )
             who.teleport(to)
-            sender.replyBroadcast(Component.text("Teleported ${who.username} to ${to.username}"))
+            sender.replyBroadcast(Component.translatable(
+                "commands.teleport.success.entity.single",
+                Component.text(who.username),
+                Component.text(to.username)
+            ))
         } else {
             val x = argv[1].toDoubleOrNull() ?: return@registerCommand sender.reply(
                 Component.text("Invalid number: ${argv[1]}", NamedTextColor.RED)
@@ -106,6 +110,11 @@ object BuiltinCommands {
             )
             who.teleport(x, y, z)
             sender.replyBroadcast(Component.text("Teleported ${who.username} to $x $y $z"))
+            sender.replyBroadcast(Component.translatable(
+                "commands.teleport.success.location.single",
+                Component.text(who.username),
+                Component.text(x), Component.text(y), Component.text(z)
+            ))
         }
     }
 
@@ -162,6 +171,15 @@ object BuiltinCommands {
             )
         who.setGamemode(gamemode)
         sender.reply(Component.text("Set ${who.username}'s gamemode to ${gamemode.name.capitalize()}"))
+        sender.reply(if (sender is ClientCommandSource && sender.client === who) {
+            Component.translatable("commands.gamemode.success.self", Component.text(gamemodeString))
+        } else {
+            Component.translatable(
+                "commands.gamemode.success.other",
+                Component.text(who.username),
+                Component.text(gamemodeString)
+            )
+        })
     }
 
     val KICK = registerCommand("kick", Component.text("Forcefully disconnect a player"), 2) { sender, args ->
@@ -176,7 +194,7 @@ object BuiltinCommands {
                 }
             )
         } else {
-            Pair(args, Component.text("Kicked by operator"))
+            Pair(args, Component.translatable("multiplayer.disconnect.kicked"))
         }
         val client = sender.evaluateClient(username)
         if (client == null || client.receiveChannel.isClosedForRead) {
@@ -185,6 +203,7 @@ object BuiltinCommands {
         client.sendPacket(PlayDisconnectPacket(reason))
         client.socket.dispose()
         sender.replyBroadcast(Component.text("Kicked $username for ").append(reason))
+        sender.replyBroadcast(Component.translatable("commands.kick.success", Component.text(username), reason))
     }
 
     val OP = registerCommand("op", Component.text("Sets a player's operator level"), 3) { sender, args ->

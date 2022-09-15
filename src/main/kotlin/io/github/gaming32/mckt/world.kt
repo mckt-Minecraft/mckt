@@ -377,18 +377,18 @@ class World(val server: MinecraftServer, val name: String) {
     suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
         while (isSaving) yield()
         isSaving = true
-        commandSource.replyBroadcast(Component.text("Saving world \"$name\""))
+        commandSource.replyBroadcast(Component.translatable("commands.save.saving", Component.text(name)))
         val start = System.nanoTime()
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
         openRegions.values.map { region ->
             launch(saveLoadPool) { region.save() }
         }.joinAll()
         val duration = System.nanoTime() - start
-        commandSource.replyBroadcast(
-            Component.text(
-                "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
-            )
-        )
+        commandSource.replyBroadcast(Component.translatable(
+            "commands.save.success",
+            Component.text(name),
+            Component.text(duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS))
+        ))
         isSaving = false
     }
 

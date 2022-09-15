@@ -63,7 +63,7 @@ suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatc
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
             if (this !is ConsoleCommandSource) reply(
-                Component.text("Internal command error", NamedTextColor.DARK_RED)
+                Component.translatable("command.failed", NamedTextColor.DARK_RED)
             )
             true
         }
@@ -75,7 +75,7 @@ suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatc
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
             if (this !is ConsoleCommandSource) reply(
-                Component.text("Internal command error", NamedTextColor.DARK_RED)
+                Component.translatable("command.failed", NamedTextColor.DARK_RED)
             )
         }
     }

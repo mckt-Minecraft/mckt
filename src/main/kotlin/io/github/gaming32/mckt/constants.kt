@@ -74,9 +74,13 @@ data class BlockState(
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-val DEFAULT_TRANSLATIONS = MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use { input ->
+val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use { input ->
     Json.decodeFromStream<Map<String, String>>(input)
-} ?: mapOf()
+} ?: mapOf()) + mapOf(
+    "commands.save.saving" to "Saving world \"%s\"",
+    "commands.save.success" to "Saved world \"%s\" in %sms",
+    "commands.help.failed" to "Unknown command: %s"
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 val GAME_VERSIONS = MinecraftServer::class.java.getResourceAsStream("/protocolVersions.json")?.use { input ->
