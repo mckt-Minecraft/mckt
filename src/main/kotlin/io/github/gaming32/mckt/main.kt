@@ -7,6 +7,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.tree.CommandNode
 import io.github.gaming32.mckt.commands.*
+import io.github.gaming32.mckt.commands.arguments.BlockPositionArgumentType
+import io.github.gaming32.mckt.commands.arguments.PositionArgument
+import io.github.gaming32.mckt.commands.arguments.getBlockPosition
 import io.github.gaming32.mckt.commands.arguments.getString
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
@@ -274,6 +277,20 @@ class MinecraftServer {
                 ))
                 0
             }
+        )
+        registerCommand(Component.text("Gets a block at a position"), literal<CommandSource>("getblock")
+            .requires { it.hasPermission(1) }
+            .then(argument<CommandSource, PositionArgument>("position", BlockPositionArgumentType)
+                .executesSuspend {
+                    val position = getBlockPosition("position")
+                    val block = world.getBlock(position)
+                    source.reply(
+                        Component.text("The block at ${position.x} ${position.y} ${position.z} is ")
+                            .append(Component.text(block.toString(), NamedTextColor.GREEN))
+                    )
+                    0
+                }
+            )
         )
         registerCommand(Component.text("Stops the server"), literal<CommandSource>("stop")
             .requires { it.hasPermission(4) }

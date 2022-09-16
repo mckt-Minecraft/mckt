@@ -44,7 +44,7 @@ abstract class CommandSource(val server: MinecraftServer) {
 
 class ConsoleCommandSource(server: MinecraftServer, name: String) : CommandSource(server) {
     override val displayName = Component.text(name)
-    override val operator = 4
+    override val operator get() = 4
 
     override suspend fun reply(message: Component) = LOGGER.info(message.plainText())
 }

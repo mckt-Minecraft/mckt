@@ -52,29 +52,6 @@ object BuiltinCommands {
         }
     }
 
-    val GETBLOCK = registerCommand("getblock", Component.text("Gets a block and a position"), 1) { sender, args ->
-        val argv = args.split(" ")
-        if (argv.size < 3) {
-            return@registerCommand sender.reply(
-                Component.text("Usage:\n  /getblock <x> <y> <z>", NamedTextColor.RED)
-            )
-        }
-        val x = argv[0].toIntOrNull() ?: return@registerCommand sender.reply(
-            Component.text("Invalid integer: ${argv[0]}", NamedTextColor.RED)
-        )
-        val y = argv[1].toIntOrNull() ?: return@registerCommand sender.reply(
-            Component.text("Invalid integer: ${argv[1]}", NamedTextColor.RED)
-        )
-        val z = argv[2].toIntOrNull() ?: return@registerCommand sender.reply(
-            Component.text("Invalid integer: ${argv[2]}", NamedTextColor.RED)
-        )
-        val block = sender.server.world.getBlock(x, y, z)
-        sender.replyBroadcast(
-            Component.text("The block at $x $y $z is ")
-                .append(Component.text(block.toString(), NamedTextColor.GREEN))
-        )
-    }
-
     val GAMEMODE = registerCommand("gamemode", Component.text("Set player gamemode"), 1) { sender, args ->
         if (args.isEmpty()) {
             return@registerCommand sender.reply(
