@@ -3,10 +3,7 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.commands.CommandSource
-import io.github.gaming32.mckt.objects.BitSetSerializer
-import io.github.gaming32.mckt.objects.BlockPosition
-import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.objects.ItemStack
+import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
@@ -658,6 +655,7 @@ class PlayerData(
         }
 
     var flags: Int = 0
+    var pose: EntityPose = EntityPose.STANDING
 
     var isSneaking: Boolean
         get() = (flags and EntityFlags.SNEAKING) != 0

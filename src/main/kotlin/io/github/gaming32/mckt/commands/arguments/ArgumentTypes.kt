@@ -90,6 +90,16 @@ object ArgumentTypes {
         register(Identifier("brigadier", "string"), StringArgumentType::class.java) { out ->
             out.writeVarInt(type.ordinal)
         }
+        register(Identifier("entity"), EntityArgumentType::class.java) { out ->
+            var flags = 0
+            if (singleTarget) {
+                flags = 0x01
+            }
+            if (playersOnly) {
+                flags = flags or 0x02
+            }
+            out.writeByte(flags)
+        }
         register(Identifier("block_pos"), BlockPositionArgumentType::class.java)
         register(Identifier("vec3"), Vector3ArgumentType::class.java)
     }

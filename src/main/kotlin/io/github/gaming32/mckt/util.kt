@@ -99,3 +99,16 @@ fun <K : Enum<K>, V> enumMapOf(vararg elements: Pair<K, V>): MutableMap<K, V> {
 
 operator fun IntIntPair.component1() = firstInt()
 operator fun IntIntPair.component2() = secondInt()
+
+inline infix fun <T> ((T) -> Boolean).and(crossinline other: (T) -> Boolean) = { it: T -> this(it) && other(it) }
+inline infix fun <T> ((T) -> Boolean).or(crossinline other: (T) -> Boolean) = { it: T -> this(it) || other(it) }
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun <T> ((T) -> Boolean).not() = { it: T -> !this(it) }
+
+fun Double.squared() = this * this
+
+fun wrapDegrees(degrees: Float) = (degrees % 360f).let { when {
+    it >= 180f -> it - 360f
+    it < -180f -> it + 360f
+    else -> it
+} }

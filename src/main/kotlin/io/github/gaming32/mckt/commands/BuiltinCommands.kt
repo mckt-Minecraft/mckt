@@ -149,14 +149,5 @@ object BuiltinCommands {
         sender.replyBroadcast(Component.text("Set ${who.username}'s operator level to $level"))
     }
 
-    val DEOP = registerCommand("deop", Component.text("Sets a player's operator level to 0"), 3) { sender, args ->
-        if (args.isEmpty()) {
-            return@registerCommand sender.reply(
-                Component.text("Usage: /op <player> [level]", NamedTextColor.RED)
-            )
-        }
-        OP.call(sender, "${args.substringBefore(' ')} 0")
-    }
-
     internal fun register() = Unit
 }

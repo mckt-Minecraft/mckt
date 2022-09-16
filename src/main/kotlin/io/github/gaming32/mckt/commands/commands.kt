@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.getLogger
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
 
 private val LOGGER = getLogger()
@@ -62,9 +63,11 @@ suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatc
             } == true
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
-            if (this !is ConsoleCommandSource) reply(
-                Component.translatable("command.failed", NamedTextColor.DARK_RED)
-            )
+            if (this !is ConsoleCommandSource) reply(Component.join(
+                JoinConfiguration.newlines(),
+                Component.translatable("command.failed", NamedTextColor.RED),
+                Component.text(e.toString(), NamedTextColor.RED)
+            ))
             true
         }
     }) {
@@ -74,9 +77,11 @@ suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatc
             reply(Component.text(e.localizedMessage, NamedTextColor.RED))
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
-            if (this !is ConsoleCommandSource) reply(
-                Component.translatable("command.failed", NamedTextColor.DARK_RED)
-            )
+            if (this !is ConsoleCommandSource) reply(Component.join(
+                JoinConfiguration.newlines(),
+                Component.translatable("command.failed", NamedTextColor.RED),
+                Component.text(e.toString(), NamedTextColor.RED)
+            ))
         }
     }
 }

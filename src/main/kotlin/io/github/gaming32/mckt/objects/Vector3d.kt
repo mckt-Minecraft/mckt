@@ -30,4 +30,10 @@ data class Vector3d(val x: Double, val y: Double, val z: Double) {
     )
 
     fun toBlockPosition() = BlockPosition(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
+
+    infix fun distanceTo(other: Vector3d) = sqrt(distanceToSquared(other))
+    infix fun distanceToSquared(other: Vector3d) =
+        (x - other.x) * (x - other.x) +
+        (y - other.y) * (y - other.y) +
+        (z - other.z) * (z - other.z)
 }

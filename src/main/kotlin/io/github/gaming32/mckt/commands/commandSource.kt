@@ -20,6 +20,7 @@ abstract class CommandSource(val server: MinecraftServer) {
 
     open val position get() = server.world.meta.spawnPos.toVector3d()
     open val rotation get() = Vector2f.ZERO
+    open val entity: PlayClient? get() = null
 
     abstract suspend fun reply(message: Component)
 
@@ -55,6 +56,7 @@ class ClientCommandSource(val client: PlayClient) : CommandSource(client.server)
 
     override val position get() = Vector3d(client.data.x, client.data.y, client.data.z)
     override val rotation get() = Vector2f(client.data.yaw, client.data.pitch)
+    override val entity get() = client
 
     override suspend fun reply(message: Component) = client.sendPacket(SystemChatPacket(message))
 }

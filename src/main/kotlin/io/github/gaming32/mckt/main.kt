@@ -7,10 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.tree.CommandNode
 import io.github.gaming32.mckt.commands.*
-import io.github.gaming32.mckt.commands.arguments.BlockPositionArgumentType
-import io.github.gaming32.mckt.commands.arguments.PositionArgument
-import io.github.gaming32.mckt.commands.arguments.getBlockPosition
-import io.github.gaming32.mckt.commands.arguments.getString
+import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
@@ -30,6 +27,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import java.util.UUID
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -103,6 +101,7 @@ class MinecraftServer {
                 }
                 if (world.meta.time % 20 == 0L) {
                     client.sendPacket(UpdateTimePacket(world.meta.time))
+                    client.syncPosition(toOthers = true, toSelf = false)
                     if (client.pingId == -1) {
                         client.pingId = client.nextPingId++
                         client.sendPacket(PlayPingPacket(client.pingId))
@@ -292,6 +291,17 @@ class MinecraftServer {
                 }
             )
         )
+        registerCommand(Component.text("Sets a player's operator level to 0"), literal<CommandSource>("deop")
+            .requires { it.hasPermission(3) }
+            .then(argument<CommandSource, EntitySelector>("players", players())
+                .executesSuspend {
+                    getPlayers("players").forEach { player ->
+                        source.runCommand("op ${player.username} 0", commandDispatcher)
+                    }
+                    0
+                }
+            )
+        )
         registerCommand(Component.text("Stops the server"), literal<CommandSource>("stop")
             .requires { it.hasPermission(4) }
             .executesSuspend {
@@ -308,6 +318,12 @@ class MinecraftServer {
             }
         )
     }
+
+    fun getPlayerByName(name: String) = clients[name]
+
+    fun getPlayerByUuid(uuid: UUID) = clients.values.firstOrNull { it.uuid == uuid }
+
+    inline fun getPlayers(predicate: (PlayClient) -> Boolean) = clients.values.filter(predicate)
 
     @Suppress("RedundantAsync")
     @OptIn(DelicateCoroutinesApi::class)
