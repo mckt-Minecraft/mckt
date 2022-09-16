@@ -710,3 +710,8 @@ object EntityFlags {
     const val GLOWING = 0x40
     const val FALL_FLYING = 0x80
 }
+
+val BlockPosition.isInBuildLimit get() = y in -2032 until 2032 && isValidHorizontally
+val BlockPosition.isValidForWorld get() = y in -20000000 until 20000000 && isValidHorizontally
+private val BlockPosition.isValidHorizontally inline get() =
+    x in -30000000 until 30000000 && z in -30000000 until 30000000

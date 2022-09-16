@@ -90,6 +90,8 @@ object ArgumentTypes {
         register(Identifier("brigadier", "string"), StringArgumentType::class.java) { out ->
             out.writeVarInt(type.ordinal)
         }
+        register(Identifier("block_pos"), BlockPositionArgumentType::class.java)
+        register(Identifier("vec3"), Vector3ArgumentType::class.java)
     }
 
     fun <T : ArgumentType<*>> register(
