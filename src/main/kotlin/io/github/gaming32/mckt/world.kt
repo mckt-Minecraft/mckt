@@ -294,7 +294,7 @@ class World(val server: MinecraftServer, val name: String) {
     val playersDir = File(worldDir, "players").apply { mkdirs() }
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
-    private val openRegions = IntIntPair2ObjectMap<WorldRegion>()
+    internal val openRegions = IntIntPair2ObjectMap<WorldRegion>()
     var isSaving = false
         private set
 
@@ -624,6 +624,7 @@ class WorldMeta() {
     var spawnPos = BlockPosition.ZERO
     var worldGenerator = WorldGenerator.NORMAL
     var saveFormat = SaveFormat.NBT
+    var autosave = true
 
     constructor(config: ServerConfig) : this() {
         seed = config.seed ?: Random.nextLong()

@@ -62,7 +62,7 @@ inline fun spiralLoop(w: Int, h: Int, action: (x: Int, y: Int) -> Unit) {
     var dx = 0
     var dy = -1
     repeat(max(w, h).squared()) {
-        if (-w / 2 < x && x <= w / 2 && -h / 2 < y && y <= h / 2) {
+        if (-w / 2.0 < x && x <= w / 2.0 && -h / 2.0 < y && y <= h / 2.0) {
             action(x, y)
         }
         if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y)) {

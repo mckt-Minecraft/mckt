@@ -101,7 +101,7 @@ class PlayClient(
         private set
     lateinit var commandSource: CommandSource
         private set
-    private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
+    internal val loadedChunks = mutableSetOf<Pair<Int, Int>>()
     private var ignoreMovementPackets = true
 
     var options = ClientOptions(this)
@@ -305,7 +305,7 @@ class PlayClient(
     }
 
     @Suppress("SuspendFunctionOnCoroutineScope")
-    private suspend fun CoroutineScope.loadChunksAroundPlayer(range: Int = server.config.viewDistance * 2): List<Job> {
+    internal suspend fun CoroutineScope.loadChunksAroundPlayer(range: Int = server.config.viewDistance * 2): List<Job> {
         val (playerX, playerZ) = chunkPos
         sendPacket(SetCenterChunkPacket(playerX, playerZ))
         val jobs = mutableListOf<Job>()

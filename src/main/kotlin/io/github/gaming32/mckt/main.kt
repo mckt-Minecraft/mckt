@@ -34,6 +34,8 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.UUID
 import kotlin.concurrent.thread
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.forEachDirectoryEntry
 import kotlin.math.min
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -88,7 +90,7 @@ class MinecraftServer {
         while (running) {
             val startTime = System.nanoTime()
             world.meta.time++
-            if (world.meta.time % config.autosavePeriod == 0L) {
+            if (world.meta.autosave && world.meta.time % config.autosavePeriod == 0L) {
                 launch { world.saveAndLog() }
                 clients.values.forEach(PlayClient::save)
             }
@@ -502,6 +504,32 @@ class MinecraftServer {
                     registerCommands()
                     clients.values.forEach { it.sendCommandTree() }
                     source.replyBroadcast(Component.text("Reloaded commands", NamedTextColor.GREEN))
+                    0
+                }
+            )
+            .then(literal<CommandSource>("regenerate-world")
+                .executesSuspend {
+                    source.replyBroadcast(Component.text("Regenerating world..."))
+                    val autosave = world.meta.autosave
+                    world.meta.autosave = false
+                    clients.values.forEach {
+                        it.loadedChunks.forEach { (x, z) ->
+                            it.sendPacket(UnloadChunkPacket(x, z))
+                        }
+                        it.loadedChunks.clear()
+                    }
+                    world.regionsDir.toPath().forEachDirectoryEntry("region_*_*.nbt") {
+                        it.deleteIfExists()
+                    }
+                    world.openRegions.clear()
+                    delay(500)
+                    coroutineScope {
+                        clients.values.forEach { it.apply {
+                            loadChunksAroundPlayer(3)
+                        } }
+                    }
+                    world.meta.autosave = autosave
+                    source.replyBroadcast(Component.text("Regenerated world", NamedTextColor.GREEN))
                     0
                 }
             )
