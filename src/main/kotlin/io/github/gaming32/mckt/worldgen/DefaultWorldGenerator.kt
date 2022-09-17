@@ -14,6 +14,7 @@ class DefaultWorldGenerator(val seed: Long) {
         groundPhase,
         CavesPhase(this),
         SkyIslandsPhase(this),
+        StonePatchesPhase(this),
         TreeDecorationPhase(this),
         BottomPhase(this)
     )

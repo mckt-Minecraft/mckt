@@ -46,9 +46,41 @@ class PerlinNoise(seed: Long?) {
                        lerp(u, grad2d(perm[a + 1], x3, y3 - 1), grad2d(perm[b + 1], x3 - 1, y3 - 1)))
     }
 
+    fun noise3d(x: Double, y: Double, z: Double): Double {
+        val x2 = floor(x).toInt() and 0xff
+        val y2 = floor(y).toInt() and 0xff
+        val z2 = floor(z).toInt() and 0xff
+        val x3 = x - floor(x)
+        val y3 = y - floor(y)
+        val z3 = z - floor(z)
+        val u = fade(x3)
+        val v = fade(y3)
+        val w = fade(z3)
+        val a = (perm[x2] + y2) and 0xff
+        val b = (perm[x2 + 1] + y2) and 0xff
+        val aa = (perm[a] + z2) and 0xff
+        val ba = (perm[b] + z2) and 0xff
+        val ab = (perm[a + 1] + z2) and 0xff
+        val bb = (perm[b + 1] + z2) and 0xff
+        return lerp(w, lerp(v, lerp(u, grad3d(perm[aa], x3, y3, z3), grad3d(perm[ba], x3 - 1, y3, z3)),
+                               lerp(u, grad3d(perm[ab], x3, y3 - 1, z3), grad3d(perm[bb], x3 - 1, y3 - 1, z3))),
+                       lerp(v, lerp(u, grad3d(perm[aa + 1], x3, y3, z3 - 1), grad3d(perm[ba + 1], x3 - 1, y3, z3 - 1)),
+                               lerp(u,
+                                   grad3d(perm[ab + 1], x3, y3 - 1, z3 - 1),
+                                   grad3d(perm[bb + 1], x3 - 1, y3 - 1, z3 - 1)
+                               ))
+        )
+//        return lerp(w, lerp(v, lerp(u, grad3d(perm[aa  ], x3, y3  , z3  ), grad3d(perm[ba  ], x3-1, y3  , z3  )),
+//            lerp(u, grad3d(perm[ab  ], x3, y3-1, z3  ), grad3d(perm[bb  ], x3-1, y3-1, z3  ))),
+//            lerp(v, lerp(u, grad3d(perm[aa+1], x3, y3  , z3-1), grad3d(perm[ba+1], x3-1, y3  , z3-1)),
+//                lerp(u, grad3d(perm[ab+1], x3, y3-1, z3-1), grad3d(perm[bb+1], x3-1, y3-1, z3-1))));
+    }
+
     fun fbm1d(x: Double, octave: Int) = fbm(octave, x) { noise1d(it[0]) }
 
     fun fbm2d(x: Double, y: Double, octave: Int) = fbm(octave, x, y) { noise2d(it[0], it[1]) }
+
+    fun fbm3d(x: Double, y: Double, z: Double, octave: Int) = fbm(octave, x, y, z) { noise3d(it[0], it[1], it[2]) }
 
     private inline fun fbm(octave: Int, vararg coords: Double, noise: (x: DoubleArray) -> Double): Double {
         var f = 0.0
@@ -71,4 +103,11 @@ class PerlinNoise(seed: Long?) {
 
     private fun grad2d(hash: Int, x: Double, y: Double) =
         (if ((hash and 1) != 0) x else -x) + (if ((hash and 2) != 0) y else -y)
+
+    private fun grad3d(hash: Int, x: Double, y: Double, z: Double): Double {
+        val h = hash and 15
+        val u = if (h < 8) x else y
+        val v = if (h < 4) y else if (h == 12 || h == 14) x else z
+        return (if ((h and 1) == 0) u else -u) + (if ((h and 2) == 0) v else -v)
+    }
 }

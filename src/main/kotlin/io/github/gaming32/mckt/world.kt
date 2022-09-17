@@ -262,6 +262,9 @@ object Blocks {
     val LAVA = getBlock("lava")
     val WOOD = getBlock("oak_log")
     val LEAVES = getBlock("oak_leaves")
+    val DIORITE = getBlock("diorite")
+    val ANDESITE = getBlock("andesite")
+    val GRANITE = getBlock("granite")
 }
 
 @Serializable
