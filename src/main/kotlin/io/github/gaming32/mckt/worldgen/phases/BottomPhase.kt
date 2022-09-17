@@ -15,7 +15,7 @@ class BottomPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
                 if (rand.nextBoolean()) chunk.setBlock(x, -2030, z, Blocks.BEDROCK)
                 if (rand.nextInt(4) == 0) chunk.setBlock(x, -2029, z, Blocks.BEDROCK)
                 for (y in -2028..-2017) {
-                    if (chunk.getBlock(x, y, z) == null) {
+                    if (chunk.getBlock(x, y, z) == Blocks.AIR) {
                         chunk.setBlock(x, y, z, Blocks.LAVA)
                     }
                 }

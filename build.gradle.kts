@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val applicationMainClassName: String by project
 val log4jVersion: String by project
 
 plugins {
@@ -12,7 +13,13 @@ group = "io.github.gaming32"
 version = "1.0-SNAPSHOT"
 
 application {
-    mainClass.set("io.github.gaming32.mckt.MainKt")
+    mainClass.set(applicationMainClassName)
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = applicationMainClassName
+    }
 }
 
 repositories {
