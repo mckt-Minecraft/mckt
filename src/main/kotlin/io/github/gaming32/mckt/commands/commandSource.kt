@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt.commands
 
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
@@ -12,7 +13,15 @@ import io.github.gaming32.mckt.plainText
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
+
 private val LOGGER = getLogger()
+
+val REQUIRES_PLAYER_EXCEPTION = SimpleCommandExceptionType(
+    Component.translatable("permissions.requires.player").wrap()
+)
+val REQUIRES_ENTITY_EXCEPTION = SimpleCommandExceptionType(
+    Component.translatable("permissions.requires.entity").wrap()
+)
 
 abstract class CommandSource(val server: MinecraftServer) {
     abstract val displayName: Component
@@ -20,7 +29,9 @@ abstract class CommandSource(val server: MinecraftServer) {
 
     open val position get() = server.world.meta.spawnPos.toVector3d()
     open val rotation get() = Vector2f.ZERO
-    open val entity: PlayClient? get() = null
+
+    open val entity: PlayClient get() = throw REQUIRES_ENTITY_EXCEPTION.create()
+    open val player: PlayClient get() = throw REQUIRES_PLAYER_EXCEPTION.create()
 
     abstract suspend fun reply(message: Component)
 
@@ -57,6 +68,7 @@ class ClientCommandSource(val client: PlayClient) : CommandSource(client.server)
     override val position get() = Vector3d(client.data.x, client.data.y, client.data.z)
     override val rotation get() = Vector2f(client.data.yaw, client.data.pitch)
     override val entity get() = client
+    override val player get() = client
 
     override suspend fun reply(message: Component) = client.sendPacket(SystemChatPacket(message))
 }

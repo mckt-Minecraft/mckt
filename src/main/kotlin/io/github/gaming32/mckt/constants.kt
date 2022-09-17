@@ -79,7 +79,8 @@ val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en
 } ?: mapOf()) + mapOf(
     "commands.save.saving" to "Saving world \"%s\"",
     "commands.save.success" to "Saved world \"%s\" in %sms",
-    "commands.help.failed" to "Unknown command: %s"
+    "commands.help.failed" to "Unknown command: %s",
+    "commands.op.success" to "Made %s a server operator (level %s)"
 )
 
 @OptIn(ExperimentalSerializationApi::class)

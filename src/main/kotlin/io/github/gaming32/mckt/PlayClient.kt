@@ -233,6 +233,11 @@ class PlayClient(
         loadChunksAroundPlayer()
     }
 
+    suspend fun setOperatorLevel(level: Int) {
+        data.operatorLevel = level
+        syncOpLevel()
+    }
+
     internal suspend fun syncOpLevel() {
         sendPacket(EntityEventPacket(
             entityId,

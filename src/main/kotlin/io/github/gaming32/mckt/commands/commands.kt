@@ -74,7 +74,7 @@ suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatc
         try {
             dispatcher.execute(command, this)
         } catch (e: CommandSyntaxException) {
-            reply(Component.text(e.localizedMessage, NamedTextColor.RED))
+            reply(e.textMessage)
         } catch (e: Exception) {
             LOGGER.error("Internal command error", e)
             if (this !is ConsoleCommandSource) reply(Component.join(

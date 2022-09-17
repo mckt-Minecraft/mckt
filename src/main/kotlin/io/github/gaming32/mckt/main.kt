@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
@@ -29,6 +30,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.UUID
 import kotlin.concurrent.thread
+import kotlin.math.min
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
@@ -291,12 +293,80 @@ class MinecraftServer {
                 }
             )
         )
+        registerCommand(Component.text("Set player gamemode"), literal<CommandSource>("gamemode").also { command ->
+            command.requires { it.hasPermission(1) }
+            Gamemode.values().forEach { gamemode ->
+                val gamemodeText = Component.text(gamemode.name.capitalize())
+                command.then(literal<CommandSource>(gamemode.name.lowercase())
+                    .executesSuspend {
+                        source.player.setGamemode(gamemode)
+                        source.replyBroadcast(Component.translatable("commands.gamemode.success.self", gamemodeText))
+                        0
+                    }
+                    .then(argument<CommandSource, EntitySelector>("player", players())
+                        .executesSuspend {
+                            getPlayers("player").forEach { player ->
+                                player.setGamemode(gamemode)
+                                source.replyBroadcast(Component.translatable(
+                                    "commands.gamemode.success.other",
+                                    Component.text(player.username),
+                                    gamemodeText
+                                ))
+                            }
+                            0
+                        }
+                    )
+                )
+            }
+        })
+        registerCommand(Component.text("Sets a player's operator level"), literal<CommandSource>("op")
+            .requires { it.hasPermission(3) }
+            .then(argument<CommandSource, EntitySelector>("player", players())
+                .executesSuspend {
+                    val level = min(2, source.operator)
+                    getPlayers("player").forEach { player ->
+                        player.setOperatorLevel(level)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.op.success",
+                            Component.text(player.username),
+                            Component.text(level)
+                        ))
+                    }
+                    0
+                }
+                .then(argument<CommandSource, Int>("level", integer(0))
+                    .executesSuspend {
+                        val level = getInteger("level")
+                        if (level > source.operator) {
+                            source.reply(Component.text(
+                                "Cannot give player a higher operator level than you",
+                                NamedTextColor.RED
+                            ))
+                            return@executesSuspend 1
+                        }
+                        getPlayers("player").forEach { player ->
+                            player.setOperatorLevel(level)
+                            source.replyBroadcast(Component.translatable(
+                                "commands.op.success",
+                                Component.text(player.username),
+                                Component.text(level)
+                            ))
+                        }
+                        0
+                    }
+                )
+            )
+        )
         registerCommand(Component.text("Sets a player's operator level to 0"), literal<CommandSource>("deop")
             .requires { it.hasPermission(3) }
-            .then(argument<CommandSource, EntitySelector>("players", players())
+            .then(argument<CommandSource, EntitySelector>("player", players())
                 .executesSuspend {
-                    getPlayers("players").forEach { player ->
-                        source.runCommand("op ${player.username} 0", commandDispatcher)
+                    getPlayers("player").forEach { player ->
+                        player.setOperatorLevel(0)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.deop.success",
+                            Component.text(player.username)
+                        ))
                     }
                     0
                 }
