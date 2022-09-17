@@ -13,10 +13,13 @@ jobs:
           distribution: zulu
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Upload build artifacts
+      - name: Upload build distributions
         uses: actions/upload-artifact@v2.3.1
         with:
-          name: build-artifacts
-          path: |
-            build/distributions/*
-            build/libs/*
+          name: build-distributions
+          path: build/distributions/*.zip
+      - name: Upload build JARs
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: build-jars
+          path: build/libs/*.jar
