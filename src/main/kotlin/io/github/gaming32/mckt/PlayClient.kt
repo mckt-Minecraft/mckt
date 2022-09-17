@@ -166,6 +166,7 @@ class PlayClient(
         sendPacket(PlayPluginPacket(Identifier("brand")) {
             writeString("mckt")
         })
+        sendPacket(SyncTagsPacket(DEFAULT_TAGS))
 
         commandSource = ClientCommandSource(this@PlayClient)
 

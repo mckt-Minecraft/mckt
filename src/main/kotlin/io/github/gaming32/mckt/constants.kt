@@ -133,3 +133,8 @@ val ITEM_ID_TO_PROTOCOL = REGISTRIES_DATA[Identifier("item")]?.entrySet()?.assoc
     Identifier.parse(name) to data.asJsonObject["protocol_id"].asInt
 } ?: mapOf()
 val ITEM_PROTOCOL_TO_ID = ITEM_ID_TO_PROTOCOL.inverted()
+
+@OptIn(ExperimentalSerializationApi::class)
+val DEFAULT_TAGS = MinecraftServer::class.java.getResourceAsStream("/defaultTags.json")?.use { input ->
+    Json.decodeFromStream<Map<Identifier, Map<Identifier, IntArray>>>(input)
+} ?: mapOf()

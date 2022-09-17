@@ -12,7 +12,7 @@ import net.kyori.adventure.text.flattener.ComponentFlattener
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
-import java.util.EnumMap
+import java.util.*
 import kotlin.math.max
 
 val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
