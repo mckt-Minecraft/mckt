@@ -159,6 +159,15 @@ class MinecraftServer {
         return registered
     }
 
+    fun registerCommandAliases(command: String, vararg aliases: String) {
+        val commandNode = commandDispatcher.root.getChild(command)
+            ?: throw IllegalArgumentException("Command $command must be registered before setting aliases")
+        val description = helpTexts[commandNode]
+        for (alias in aliases) {
+            registerCommand(description, literal<CommandSource>(alias).redirect(commandNode))
+        }
+    }
+
     private fun registerCommands() {
         registerCommand(Component.text("Shows this help"), literal<CommandSource>("help")
             .executesSuspend {
@@ -309,83 +318,80 @@ class MinecraftServer {
                 }
             )
         )
-        val tpCommand = registerCommand(
-            Component.text("Teleport a player"),
-            literal<CommandSource>("tp").also { command ->
-                suspend fun CommandContext<CommandSource>.teleport(
-                    entities: List<PlayClient>, destination: PlayClient
-                ) {
-                    entities.forEach { it.teleport(destination) }
-                    source.replyBroadcast(
-                        if (entities.size == 1) {
-                            Component.translatable(
-                                "commands.teleport.success.entity.single",
-                                Component.text(entities[0].username),
-                                Component.text(destination.username)
-                            )
-                        } else {
-                            Component.translatable(
-                                "commands.teleport.success.entity.multiple",
-                                Component.text(entities.size),
-                                Component.text(destination.username)
-                            )
-                        }
-                    )
-                }
-                suspend fun CommandContext<CommandSource>.teleport(
-                    entities: List<PlayClient>, destination: Vector3d
-                ) {
-                    entities.forEach { it.teleport(destination.x, destination.y, destination.z) }
-                    source.replyBroadcast(
-                        if (entities.size == 1) {
-                            Component.translatable(
-                                "commands.teleport.success.location.single",
-                                Component.text(entities[0].username),
-                                Component.text(destination.x),
-                                Component.text(destination.y),
-                                Component.text(destination.z)
-                            )
-                        } else {
-                            Component.translatable(
-                                "commands.teleport.success.location.multiple",
-                                Component.text(entities.size),
-                                Component.text(destination.x),
-                                Component.text(destination.y),
-                                Component.text(destination.z)
-                            )
-                        }
-                    )
-                }
-                command.requires { it.hasPermission(1) }
-                command.then(argument<CommandSource, EntitySelector>("target", entities())
-                    .then(argument<CommandSource, EntitySelector>("destination", entity())
-                        .executesSuspend {
-                            teleport(getEntities("target"), getEntity("destination"))
-                            0
-                        }
-                    )
-                    .then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
-                        .executesSuspend {
-                            teleport(getEntities("target"), getVec3("location"))
-                            0
-                        }
-                    )
-                )
-                command.then(argument<CommandSource, EntitySelector>("destination", entity())
-                    .executesSuspend {
-                        teleport(listOf(source.entity), getEntity("destination"))
-                        0
-                    }
-                )
-                command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
-                    .executesSuspend {
-                        teleport(listOf(source.entity), getVec3("location"))
-                        0
+        registerCommand(Component.text("Teleport a player"), literal<CommandSource>("tp").also { command ->
+            suspend fun CommandContext<CommandSource>.teleport(
+                entities: List<PlayClient>, destination: PlayClient
+            ) {
+                entities.forEach { it.teleport(destination) }
+                source.replyBroadcast(
+                    if (entities.size == 1) {
+                        Component.translatable(
+                            "commands.teleport.success.entity.single",
+                            Component.text(entities[0].username),
+                            Component.text(destination.username)
+                        )
+                    } else {
+                        Component.translatable(
+                            "commands.teleport.success.entity.multiple",
+                            Component.text(entities.size),
+                            Component.text(destination.username)
+                        )
                     }
                 )
             }
-        )
-        registerCommand(helpTexts[tpCommand], literal<CommandSource>("teleport").redirect(tpCommand))
+            suspend fun CommandContext<CommandSource>.teleport(
+                entities: List<PlayClient>, destination: Vector3d
+            ) {
+                entities.forEach { it.teleport(destination.x, destination.y, destination.z) }
+                source.replyBroadcast(
+                    if (entities.size == 1) {
+                        Component.translatable(
+                            "commands.teleport.success.location.single",
+                            Component.text(entities[0].username),
+                            Component.text(destination.x),
+                            Component.text(destination.y),
+                            Component.text(destination.z)
+                        )
+                    } else {
+                        Component.translatable(
+                            "commands.teleport.success.location.multiple",
+                            Component.text(entities.size),
+                            Component.text(destination.x),
+                            Component.text(destination.y),
+                            Component.text(destination.z)
+                        )
+                    }
+                )
+            }
+            command.requires { it.hasPermission(1) }
+            command.then(argument<CommandSource, EntitySelector>("target", entities())
+                .then(argument<CommandSource, EntitySelector>("destination", entity())
+                    .executesSuspend {
+                        teleport(getEntities("target"), getEntity("destination"))
+                        0
+                    }
+                )
+                .then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                    .executesSuspend {
+                        teleport(getEntities("target"), getVec3("location"))
+                        0
+                    }
+                )
+            )
+            command.then(argument<CommandSource, EntitySelector>("destination", entity())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getEntity("destination"))
+                    0
+                }
+            )
+            command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getVec3("location"))
+                    0
+                }
+            )
+        })
+        registerCommandAliases("tp", "teleport")
         registerCommand(Component.text("Set player gamemode"), literal<CommandSource>("gamemode").also { command ->
             command.requires { it.hasPermission(1) }
             Gamemode.values().forEach { gamemode ->
