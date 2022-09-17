@@ -9,6 +9,7 @@ import io.github.gaming32.mckt.and
 import io.github.gaming32.mckt.commands.arguments.EntityArgumentType
 import io.github.gaming32.mckt.objects.AABB
 import io.github.gaming32.mckt.objects.Vector3d
+import io.github.gaming32.mckt.toText
 import io.github.gaming32.mckt.wrapDegrees
 import net.kyori.adventure.text.Component
 import java.util.*
@@ -108,7 +109,7 @@ class EntitySelectorReader(val reader: StringReader, private val atAllowed: Bool
             Component.translatable("argument.entity.invalid").wrap()
         )
         val UNKNOWN_SELECTOR_EXCEPTION = DynamicCommandExceptionType { selectorType ->
-            Component.translatable("argument.entity.selector.unknown", Component.text(selectorType.toString())).wrap()
+            Component.translatable("argument.entity.selector.unknown", selectorType.toText()).wrap()
         }
         val NOT_ALLOWED_EXCEPTION = SimpleCommandExceptionType(
             Component.translatable("argument.entity.selector.not_allowed").wrap()
@@ -120,7 +121,7 @@ class EntitySelectorReader(val reader: StringReader, private val atAllowed: Bool
             Component.translatable("argument.entity.options.unterminated").wrap()
         )
         val VALUELESS_EXCEPTION = DynamicCommandExceptionType { option ->
-            Component.translatable("argument.entity.options.valueless", Component.text(option.toString())).wrap()
+            Component.translatable("argument.entity.options.valueless", option.toText()).wrap()
         }
         val ARBITRARY: EntitySorter = { _, _ -> }
         val NEAREST: EntitySorter = { origin, entities ->
@@ -365,11 +366,11 @@ object EntitySelectorOptions {
 
     val UNKNOWN_OPTION_EXCEPTION = DynamicCommandExceptionType { option -> Component.translatable(
         "argument.entity.options.unknown",
-        Component.text(option.toString())
+        option.toText()
     ).wrap() }
     val INAPPLICABLE_OPTION_EXCEPTION = DynamicCommandExceptionType { option -> Component.translatable(
         "argument.entity.options.inapplicable",
-        Component.text(option.toString())
+        option.toText()
     ).wrap() }
 
     private val OPTIONS = mapOf<String, SelectorOption>()

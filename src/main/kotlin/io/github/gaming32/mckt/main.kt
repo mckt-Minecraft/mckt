@@ -11,6 +11,7 @@ import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
+import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
@@ -133,10 +134,7 @@ class MinecraftServer {
         handleCommandsJob.cancel()
         acceptConnectionsJob.cancel()
         for (client in clients.values) {
-            client.sendPacket(PlayDisconnectPacket(
-                Component.translatable("multiplayer.disconnect.server_shutdown")
-            ))
-            client.socket.dispose()
+            client.kick(Component.translatable("multiplayer.disconnect.server_shutdown"))
             client.close()
         }
         clients.clear()
@@ -319,6 +317,7 @@ class MinecraftServer {
             )
         )
         registerCommand(Component.text("Teleport a player"), literal<CommandSource>("tp").also { command ->
+            command.requires { it.hasPermission(1) }
             suspend fun CommandContext<CommandSource>.teleport(
                 entities: List<PlayClient>, destination: PlayClient
             ) {
@@ -363,7 +362,6 @@ class MinecraftServer {
                     }
                 )
             }
-            command.requires { it.hasPermission(1) }
             command.then(argument<CommandSource, EntitySelector>("target", entities())
                 .then(argument<CommandSource, EntitySelector>("destination", entity())
                     .executesSuspend {
@@ -418,6 +416,36 @@ class MinecraftServer {
                 )
             }
         })
+        registerCommand(Component.text("Forcefully disconnect a player"), literal<CommandSource>("kick")
+            .then(argument<CommandSource, EntitySelector>("player", players())
+                .executesSuspend {
+                    val reason = Component.translatable("multiplayer.disconnect.kicked")
+                    getPlayers("player").forEach { player ->
+                        player.kick(reason)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.kick.success",
+                            Component.text(player.username),
+                            reason
+                        ))
+                    }
+                    0
+                }
+                .then(argument<CommandSource, Component>("reason", TextArgumentType)
+                    .executesSuspend {
+                        val reason = getTextComponent("reason")
+                        getPlayers("player").forEach { player ->
+                            player.kick(reason)
+                            source.replyBroadcast(Component.translatable(
+                                "commands.kick.success",
+                                Component.text(player.username),
+                                reason
+                            ))
+                        }
+                        0
+                    }
+                )
+            )
+        )
         registerCommand(Component.text("Sets a player's operator level"), literal<CommandSource>("op")
             .requires { it.hasPermission(3) }
             .then(argument<CommandSource, EntitySelector>("player", players())
@@ -595,10 +623,9 @@ class MinecraftServer {
                                     clients.put(client.username, client)?.also { oldClient ->
                                         if (oldClient.receiveChannel.isClosedForRead) return@also
                                         LOGGER.info("Another client with that username was already online")
-                                        oldClient.sendPacket(PlayDisconnectPacket(
+                                        oldClient.kick(
                                             Component.translatable("multiplayer.disconnect.duplicate_login")
-                                        ))
-                                        oldClient.socket.dispose()
+                                        )
                                     }
                                     client.postHandshake()
                                 }

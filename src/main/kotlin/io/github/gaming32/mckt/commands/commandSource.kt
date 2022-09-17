@@ -70,5 +70,9 @@ class ClientCommandSource(val client: PlayClient) : CommandSource(client.server)
     override val entity get() = client
     override val player get() = client
 
-    override suspend fun reply(message: Component) = client.sendPacket(SystemChatPacket(message))
+    override suspend fun reply(message: Component) = try {
+        client.sendPacket(SystemChatPacket(message))
+    } catch (_: Exception) {
+        // If the client is disconnected, just swallow the exception (just to be safe)
+    }
 }

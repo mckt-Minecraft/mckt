@@ -102,6 +102,7 @@ object ArgumentTypes {
         }
         register(Identifier("block_pos"), BlockPositionArgumentType::class.java)
         register(Identifier("vec3"), Vector3ArgumentType::class.java)
+        register(Identifier("component"), TextArgumentType::class.java)
     }
 
     fun <T : ArgumentType<*>> register(

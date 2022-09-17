@@ -238,7 +238,13 @@ class PlayClient(
         syncOpLevel()
     }
 
-    internal suspend fun syncOpLevel() {
+    suspend fun kick(reason: Component) {
+        sendPacket(PlayDisconnectPacket(reason))
+        ended = true
+        socket.dispose()
+    }
+
+    private suspend fun syncOpLevel() {
         sendPacket(EntityEventPacket(
             entityId,
             (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()

@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.commands
 import com.mojang.brigadier.Message
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.gaming32.mckt.plainText
+import io.github.gaming32.mckt.toText
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
@@ -22,3 +23,5 @@ val CommandSyntaxException.textMessage get() =
             builder.append(Component.text(" at position $cursor: $it"))
         }
     }
+
+val Throwable.textMessage get() = if (this is CommandSyntaxException) textMessage else localizedMessage.toText()
