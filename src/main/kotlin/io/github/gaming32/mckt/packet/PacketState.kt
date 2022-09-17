@@ -29,6 +29,7 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         /* 0x04 */ CommandPacket.TYPE to ::CommandPacket,
         /* 0x05 */ ServerboundChatPacket.TYPE to ::ServerboundChatPacket,
         /* 0x08 */ ClientOptionsPacket.TYPE to ::ClientOptionsPacket,
+        /* 0x09 */ CommandCompletionsRequestPacket.TYPE to ::CommandCompletionsRequestPacket,
         /* 0x0D */ PlayPluginPacket.C2S_TYPE to ::PlayPluginPacket,
         /* 0x14 */ PlayerPositionPacket.TYPE to ::PlayerPositionPacket,
         /* 0x15 */ PlayerPositionAndRotationPacket.TYPE to ::PlayerPositionAndRotationPacket,

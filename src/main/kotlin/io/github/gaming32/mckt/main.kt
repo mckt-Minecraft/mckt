@@ -1,15 +1,22 @@
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.commands.BuiltinCommands
-import io.github.gaming32.mckt.commands.ConsoleCommandSender
-import io.github.gaming32.mckt.commands.runCommand
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
+import com.mojang.brigadier.arguments.StringArgumentType.greedyString
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.tree.CommandNode
+import com.mojang.brigadier.tree.LiteralCommandNode
+import io.github.gaming32.mckt.commands.*
+import io.github.gaming32.mckt.commands.arguments.*
+import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
+import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayDisconnectPacket
-import io.github.gaming32.mckt.packet.play.s2c.PlayerListUpdatePacket
-import io.github.gaming32.mckt.packet.play.s2c.RemoveEntitiesPacket
-import io.github.gaming32.mckt.packet.play.s2c.UpdateTimePacket
+import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -19,11 +26,15 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.JoinConfiguration
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import java.util.UUID
 import kotlin.concurrent.thread
+import kotlin.math.min
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
@@ -31,7 +42,7 @@ private val LOGGER = getLogger()
 class MinecraftServer {
     var running = true
     private val handshakeJobs = mutableSetOf<Job>()
-    val clients = mutableMapOf<String, PlayClient>()
+    @PublishedApi internal val clients = mutableMapOf<String, PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
@@ -52,8 +63,10 @@ class MinecraftServer {
         private set
     internal var nextEntityId = 0
 
-    private val consoleCommandSender = ConsoleCommandSender(this, "CONSOLE")
-    val serverCommandSender = ConsoleCommandSender(this, "Server")
+    private val consoleCommandSender = ConsoleCommandSource(this, "CONSOLE")
+    val serverCommandSender = ConsoleCommandSource(this, "Server")
+    internal val commandDispatcher = CommandDispatcher<CommandSource>()
+    internal val helpTexts = mutableMapOf<CommandNode<CommandSource>, Component?>()
 
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
@@ -64,7 +77,9 @@ class MinecraftServer {
 
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
-        BuiltinCommands.register()
+
+        registerCommands()
+
         world = World(this@MinecraftServer, "world")
         world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
         handleCommandsJob = launch { handleCommands() }
@@ -91,6 +106,7 @@ class MinecraftServer {
                 }
                 if (world.meta.time % 20 == 0L) {
                     client.sendPacket(UpdateTimePacket(world.meta.time))
+                    client.syncPosition(toOthers = true, toSelf = false)
                     if (client.pingId == -1) {
                         client.pingId = client.nextPingId++
                         client.sendPacket(PlayPingPacket(client.pingId))
@@ -117,10 +133,7 @@ class MinecraftServer {
         handleCommandsJob.cancel()
         acceptConnectionsJob.cancel()
         for (client in clients.values) {
-            client.sendPacket(PlayDisconnectPacket(
-                Component.text("Server closed")
-            ))
-            client.socket.dispose()
+            client.kick(Component.translatable("multiplayer.disconnect.server_shutdown"))
             client.close()
         }
         clients.clear()
@@ -135,12 +148,362 @@ class MinecraftServer {
         LOGGER.info("Server stopped")
     }
 
+    fun registerCommand(
+        description: Component?, command: LiteralArgumentBuilder<CommandSource>
+    ): LiteralCommandNode<CommandSource> {
+        val registered = commandDispatcher.register(command)
+        helpTexts[registered] = description
+        return registered
+    }
+
+    fun registerCommandAliases(command: String, vararg aliases: String) {
+        val commandNode = commandDispatcher.root.getChild(command)
+            ?: throw IllegalArgumentException("Command $command must be registered before setting aliases")
+        val description = helpTexts[commandNode]
+        for (alias in aliases) {
+            registerCommand(description, literal<CommandSource>(alias).redirect(commandNode))
+        }
+    }
+
+    private fun registerCommands() {
+        registerCommand(Component.text("Shows this help"), literal<CommandSource>("help")
+            .executesSuspend {
+                source.reply(Component.text("Here's a list of the commands you can use:\n")
+                    .append(Component.join(
+                        JoinConfiguration.newlines(),
+                        helpTexts.asSequence()
+                            .filter { it.key.canUse(source) }
+                            .map { (command, description) -> Component.text { builder ->
+                                builder.append(Component.text("  + /${command.usageText} -- "))
+                                if (description != null) {
+                                    builder.append(description)
+                                }
+                            } }
+                            .toList()
+                    ))
+                )
+                0
+            }
+            .then(argument<CommandSource, String>("command", greedyString())
+                .executesSuspend {
+                    val commandName = getString("command")
+                    var result = 0
+                    source.reply(if (commandName == "all") {
+                        Component.join(
+                            JoinConfiguration.newlines(),
+                            commandDispatcher.root.children
+                                .asSequence()
+                                .filter { it.canUse(source) }
+                                .flatMap { command ->
+                                    commandDispatcher.getAllUsage(command, source, true)
+                                        .map {
+                                            if (it.startsWith("${command.usageText} ->")) {
+                                                "/$it" // Command alias
+                                            } else {
+                                                "/${command.usageText} $it"
+                                            }
+                                        }
+                                }
+                                .map(Component::text)
+                                .toList()
+                        )
+                    } else {
+                        val command = commandDispatcher.root.getChild(commandName)
+                        if (command == null || !command.canUse(source)) {
+                            result = 1
+                            Component.translatable(
+                                "commands.help.failed",
+                                NamedTextColor.RED,
+                                Component.text(commandName)
+                            )
+                        } else {
+                            var commandForUsage = command
+                            while (commandForUsage.redirect != null) {
+                                commandForUsage = commandForUsage.redirect
+                            }
+                            Component.text { builder ->
+                                builder.append(Component.join(
+                                    JoinConfiguration.newlines(),
+                                    commandDispatcher.getAllUsage(commandForUsage, source, true)
+                                        .map { Component.text("/${command.usageText} $it") }
+                                ))
+                                source.server.helpTexts[command]?.let { description ->
+                                    builder.append(Component.newline()).append(description)
+                                }
+                            }
+                        }
+                    })
+                    result
+                }
+                .suggests { ctx, builder ->
+                    if ("all".startsWith(builder.remainingLowerCase)) {
+                        builder.suggest("all")
+                    }
+                    helpTexts.keys.forEach { node ->
+                        if (
+                            node.canUse(ctx.source) &&
+                            node.usageText.startsWith(builder.remainingLowerCase, ignoreCase = true)
+                        ) {
+                            builder.suggest(node.usageText)
+                        }
+                    }
+                    builder.buildFuture()
+                }
+            )
+        )
+        registerCommand(Component.text("Send a message"), literal<CommandSource>("say")
+            .then(argument<CommandSource, String>("message", greedyString())
+                .executesSuspend {
+                    val message = getString("message")
+                    LOGGER.info("CHAT: [{}] {}", source.displayName.plainText(), message)
+                    source.server.broadcast(SystemChatPacket(
+                        Component.translatable("chat.type.announcement", source.displayName, Component.text(message))
+                    ))
+                    0
+                }
+            )
+        )
+        registerCommand(Component.text("List the players online"), literal<CommandSource>("list")
+            .executesSuspend {
+                source.reply(Component.translatable(
+                    "commands.list.players",
+                    Component.text(clients.size),
+                    Component.text(config.maxPlayers),
+                    Component.join(
+                        JoinConfiguration.commas(true),
+                        clients.keys.map(Component::text)
+                    )
+                ))
+                0
+            }
+        )
+        registerCommand(Component.text("Gets a block at a position"), literal<CommandSource>("getblock")
+            .requires { it.hasPermission(1) }
+            .then(argument<CommandSource, PositionArgument>("position", BlockPositionArgumentType)
+                .executesSuspend {
+                    val position = getBlockPosition("position")
+                    val block = world.getBlock(position)
+                    source.reply(
+                        Component.text("The block at ${position.x} ${position.y} ${position.z} is ")
+                            .append(Component.text(block.toString(), NamedTextColor.GREEN))
+                    )
+                    0
+                }
+            )
+        )
+        registerCommand(Component.text("Teleport a player"), literal<CommandSource>("tp").also { command ->
+            command.requires { it.hasPermission(1) }
+            suspend fun CommandContext<CommandSource>.teleport(
+                entities: List<PlayClient>, destination: PlayClient
+            ) {
+                entities.forEach { it.teleport(destination) }
+                source.replyBroadcast(
+                    if (entities.size == 1) {
+                        Component.translatable(
+                            "commands.teleport.success.entity.single",
+                            Component.text(entities[0].username),
+                            Component.text(destination.username)
+                        )
+                    } else {
+                        Component.translatable(
+                            "commands.teleport.success.entity.multiple",
+                            Component.text(entities.size),
+                            Component.text(destination.username)
+                        )
+                    }
+                )
+            }
+            suspend fun CommandContext<CommandSource>.teleport(
+                entities: List<PlayClient>, destination: Vector3d
+            ) {
+                entities.forEach { it.teleport(destination.x, destination.y, destination.z) }
+                source.replyBroadcast(
+                    if (entities.size == 1) {
+                        Component.translatable(
+                            "commands.teleport.success.location.single",
+                            Component.text(entities[0].username),
+                            Component.text(destination.x),
+                            Component.text(destination.y),
+                            Component.text(destination.z)
+                        )
+                    } else {
+                        Component.translatable(
+                            "commands.teleport.success.location.multiple",
+                            Component.text(entities.size),
+                            Component.text(destination.x),
+                            Component.text(destination.y),
+                            Component.text(destination.z)
+                        )
+                    }
+                )
+            }
+            command.then(argument<CommandSource, EntitySelector>("target", entities())
+                .then(argument<CommandSource, EntitySelector>("destination", entity())
+                    .executesSuspend {
+                        teleport(getEntities("target"), getEntity("destination"))
+                        0
+                    }
+                )
+                .then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                    .executesSuspend {
+                        teleport(getEntities("target"), getVec3("location"))
+                        0
+                    }
+                )
+            )
+            command.then(argument<CommandSource, EntitySelector>("destination", entity())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getEntity("destination"))
+                    0
+                }
+            )
+            command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getVec3("location"))
+                    0
+                }
+            )
+        })
+        registerCommandAliases("tp", "teleport")
+        registerCommand(Component.text("Set player gamemode"), literal<CommandSource>("gamemode").also { command ->
+            command.requires { it.hasPermission(1) }
+            Gamemode.values().forEach { gamemode ->
+                val gamemodeText = Component.text(gamemode.name.capitalize())
+                command.then(literal<CommandSource>(gamemode.name.lowercase())
+                    .executesSuspend {
+                        source.player.setGamemode(gamemode)
+                        source.replyBroadcast(Component.translatable("commands.gamemode.success.self", gamemodeText))
+                        0
+                    }
+                    .then(argument<CommandSource, EntitySelector>("player", players())
+                        .executesSuspend {
+                            getPlayers("player").forEach { player ->
+                                player.setGamemode(gamemode)
+                                source.replyBroadcast(Component.translatable(
+                                    "commands.gamemode.success.other",
+                                    Component.text(player.username),
+                                    gamemodeText
+                                ))
+                            }
+                            0
+                        }
+                    )
+                )
+            }
+        })
+        registerCommand(Component.text("Forcefully disconnect a player"), literal<CommandSource>("kick")
+            .then(argument<CommandSource, EntitySelector>("player", players())
+                .executesSuspend {
+                    val reason = Component.translatable("multiplayer.disconnect.kicked")
+                    getPlayers("player").forEach { player ->
+                        player.kick(reason)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.kick.success",
+                            Component.text(player.username),
+                            reason
+                        ))
+                    }
+                    0
+                }
+                .then(argument<CommandSource, Component>("reason", TextArgumentType)
+                    .executesSuspend {
+                        val reason = getTextComponent("reason")
+                        getPlayers("player").forEach { player ->
+                            player.kick(reason)
+                            source.replyBroadcast(Component.translatable(
+                                "commands.kick.success",
+                                Component.text(player.username),
+                                reason
+                            ))
+                        }
+                        0
+                    }
+                )
+            )
+        )
+        registerCommand(Component.text("Sets a player's operator level"), literal<CommandSource>("op")
+            .requires { it.hasPermission(3) }
+            .then(argument<CommandSource, EntitySelector>("player", players())
+                .executesSuspend {
+                    val level = min(2, source.operator)
+                    getPlayers("player").forEach { player ->
+                        player.setOperatorLevel(level)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.op.success",
+                            Component.text(player.username),
+                            Component.text(level)
+                        ))
+                    }
+                    0
+                }
+                .then(argument<CommandSource, Int>("level", integer(0))
+                    .executesSuspend {
+                        val level = getInteger("level")
+                        if (level > source.operator) {
+                            source.reply(Component.text(
+                                "Cannot give player a higher operator level than you",
+                                NamedTextColor.RED
+                            ))
+                            return@executesSuspend 1
+                        }
+                        getPlayers("player").forEach { player ->
+                            player.setOperatorLevel(level)
+                            source.replyBroadcast(Component.translatable(
+                                "commands.op.success",
+                                Component.text(player.username),
+                                Component.text(level)
+                            ))
+                        }
+                        0
+                    }
+                )
+            )
+        )
+        registerCommand(Component.text("Sets a player's operator level to 0"), literal<CommandSource>("deop")
+            .requires { it.hasPermission(3) }
+            .then(argument<CommandSource, EntitySelector>("player", players())
+                .executesSuspend {
+                    getPlayers("player").forEach { player ->
+                        player.setOperatorLevel(0)
+                        source.replyBroadcast(Component.translatable(
+                            "commands.deop.success",
+                            Component.text(player.username)
+                        ))
+                    }
+                    0
+                }
+            )
+        )
+        registerCommand(Component.text("Stops the server"), literal<CommandSource>("stop")
+            .requires { it.hasPermission(4) }
+            .executesSuspend {
+                source.replyBroadcast(Component.translatable("commands.stop.stopping"))
+                running = false
+                0
+            }
+        )
+        registerCommand(Component.text("Saves the world"), literal<CommandSource>("save")
+            .requires { it.hasPermission(4) }
+            .executesSuspend {
+                world.saveAndLog(source)
+                0
+            }
+        )
+    }
+
+    fun getPlayerByName(name: String) = clients[name]
+
+    fun getPlayerByUuid(uuid: UUID) = clients.values.firstOrNull { it.uuid == uuid }
+
+    inline fun getPlayers(predicate: (PlayClient) -> Boolean) = clients.values.filter(predicate)
+
     @Suppress("RedundantAsync")
     @OptIn(DelicateCoroutinesApi::class)
     private suspend fun handleCommands() {
         while (running) {
             consoleCommandSender.runCommand(
-                GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue
+                GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue,
+                commandDispatcher
             )
         }
     }
@@ -235,10 +598,9 @@ class MinecraftServer {
                                     clients.put(client.username, client)?.also { oldClient ->
                                         if (oldClient.receiveChannel.isClosedForRead) return@also
                                         LOGGER.info("Another client with that username was already online")
-                                        oldClient.sendPacket(PlayDisconnectPacket(
-                                            Component.text("You logged in from another location")
-                                        ))
-                                        oldClient.socket.dispose()
+                                        oldClient.kick(
+                                            Component.translatable("multiplayer.disconnect.duplicate_login")
+                                        )
                                     }
                                     client.postHandshake()
                                 }

@@ -6,6 +6,7 @@ import net.benwoodworth.knbt.Nbt
 import net.benwoodworth.knbt.NbtCompression
 import net.benwoodworth.knbt.NbtVariant
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.flattener.ComponentFlattener
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -14,11 +15,17 @@ import org.slf4j.helpers.Util
 import java.util.EnumMap
 import kotlin.math.max
 
-// Note: This does not handle translation args
 val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
     flattener(ComponentFlattener.basic().toBuilder().apply {
-        mapper(TranslatableComponent::class.java) { component ->
-            DEFAULT_TRANSLATIONS[component.key()] ?: component.key()
+        complexMapper(TranslatableComponent::class.java) { component, handler ->
+            val translation = DEFAULT_TRANSLATIONS[component.key()]
+                ?: return@complexMapper handler.accept(Component.text(component.key()))
+            val parts = translation.split("%s", limit = component.args().size + 1)
+            handler.accept(Component.text(parts[0].replace("%%", "%")))
+            for (i in 1 until parts.size) {
+                handler.accept(component.args()[i - 1])
+                handler.accept(Component.text(parts[i].replace("%%", "%")))
+            }
         }
     }.build())
 }.build()
@@ -93,3 +100,18 @@ fun <K : Enum<K>, V> enumMapOf(vararg elements: Pair<K, V>): MutableMap<K, V> {
 
 operator fun IntIntPair.component1() = firstInt()
 operator fun IntIntPair.component2() = secondInt()
+
+inline infix fun <T> ((T) -> Boolean).and(crossinline other: (T) -> Boolean) = { it: T -> this(it) && other(it) }
+inline infix fun <T> ((T) -> Boolean).or(crossinline other: (T) -> Boolean) = { it: T -> this(it) || other(it) }
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun <T> ((T) -> Boolean).not() = { it: T -> !this(it) }
+
+fun Double.squared() = this * this
+
+fun wrapDegrees(degrees: Float) = (degrees % 360f).let { when {
+    it >= 180f -> it - 360f
+    it < -180f -> it + 360f
+    else -> it
+} }
+
+fun Any?.toText() = if (this is ComponentLike) asComponent() else Component.text(toString())

@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
+import io.github.gaming32.mckt.getLogger
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import net.benwoodworth.knbt.buildNbtCompound
@@ -11,10 +12,11 @@ data class ChunkAndLightDataPacket(
     val chunk: ByteArray
 ) : Packet(TYPE) {
     companion object {
-        val TYPE = 0x21
+        const val TYPE = 0x21
         private val EMPTY_BIT_SET = BitSet(256)
         private val FULL_BIT_SET = BitSet.valueOf(LongArray(4) { -1L })
         private val HEIGHTMAP = LongArray(52)
+        private val LOGGER = getLogger()
     }
 
     override fun write(out: MinecraftOutputStream) {

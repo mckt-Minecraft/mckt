@@ -1,64 +1,31 @@
 package io.github.gaming32.mckt.commands
 
-import io.github.gaming32.mckt.PlayClient
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.builder.ArgumentBuilder
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.gaming32.mckt.getLogger
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
-import java.lang.Exception
 
 private val LOGGER = getLogger()
 
-private val commands = mutableMapOf<String, Command>()
-val COMMANDS: Map<String, Command> get() =
-    commands // Public getter gets immutable-type map. It's still mutable underneath, though
-
-abstract class Command(val name: String, val description: Component?, val minPermission: Int) {
-    abstract suspend fun call(sender: CommandSender, args: String): Boolean
-}
-
-fun registerCommand(command: Command) =
-    commands.putIfAbsent(command.name, command)?.let { existing ->
-        throw IllegalArgumentException("Command ${existing.name} already exists")
-    }.let { command }
-
-inline fun registerCommandPermCheck(
-    name: String,
-    description: Component? = null,
-    permission: Int = 0,
-    crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Boolean
-) = registerCommand(object : Command(name, description, permission) {
-    override suspend fun call(sender: CommandSender, args: String) = executor(sender, args)
-})
-
-inline fun registerCommand(
-    name: String,
-    description: Component? = null,
-    permission: Int = 0,
-    crossinline executor: suspend Command.(sender: CommandSender, args: String) -> Unit
-) = registerCommandPermCheck(name, description, permission) { sender, args ->
-    executor(sender, args)
-    true
-}
-
-fun CommandSender.evaluateClient(name: String): PlayClient? = server.clients[name]
-
-suspend fun CommandSender.runCommand(command: String) {
-    val (baseCommand, rest) = if (' ' in command) {
-        command.split(' ', limit = 2)
-    } else {
-        listOf(command, "")
-    }
+suspend fun CommandSource.runCommand(command: String, dispatcher: CommandDispatcher<CommandSource>) {
     try {
-        COMMANDS[baseCommand]?.let { commandToRun ->
-            if (commandToRun.minPermission > operator) {
-                return@let null
-            }
-            if (commandToRun.call(this, rest)) Unit else null
-        } ?: reply(Component.translatable("commands.help.failed", NamedTextColor.RED))
+        dispatcher.execute(command, this)
+    } catch (e: CommandSyntaxException) {
+        reply(e.textMessage)
     } catch (e: Exception) {
         LOGGER.error("Internal command error", e)
-        if (this !is ConsoleCommandSender) reply(
-            Component.text("Internal command error", NamedTextColor.DARK_RED)
-        )
+        if (this !is ConsoleCommandSource) reply(Component.join(
+            JoinConfiguration.newlines(),
+            Component.translatable("command.failed", NamedTextColor.RED),
+            Component.text(e.toString(), NamedTextColor.RED)
+        ))
     }
 }
+
+fun <S, T : ArgumentBuilder<S, T>> ArgumentBuilder<S, T>.executesSuspend(block: suspend CommandContext<S>.() -> Int) =
+    executes { ctx -> runBlocking { ctx.block() } }!!

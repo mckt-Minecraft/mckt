@@ -2,11 +2,8 @@
 
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.commands.CommandSender
-import io.github.gaming32.mckt.objects.BitSetSerializer
-import io.github.gaming32.mckt.objects.BlockPosition
-import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.objects.ItemStack
+import io.github.gaming32.mckt.commands.CommandSource
+import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
@@ -374,21 +371,21 @@ class World(val server: MinecraftServer, val name: String) {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    suspend fun saveAndLog(sender: CommandSender = server.serverCommandSender) = coroutineScope {
+    suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
         while (isSaving) yield()
         isSaving = true
-        sender.replyBroadcast(Component.text("Saving world \"$name\""))
+        commandSource.replyBroadcast(Component.translatable("commands.save.saving", Component.text(name)))
         val start = System.nanoTime()
         metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
         openRegions.values.map { region ->
             launch(saveLoadPool) { region.save() }
         }.joinAll()
         val duration = System.nanoTime() - start
-        sender.replyBroadcast(
-            Component.text(
-                "Saved world \"$name\" in ${duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS)}ms"
-            )
-        )
+        commandSource.replyBroadcast(Component.translatable(
+            "commands.save.success",
+            Component.text(name),
+            Component.text(duration.nanoseconds.toDouble(DurationUnit.MILLISECONDS))
+        ))
         isSaving = false
     }
 
@@ -658,6 +655,7 @@ class PlayerData(
         }
 
     var flags: Int = 0
+    var pose: EntityPose = EntityPose.STANDING
 
     var isSneaking: Boolean
         get() = (flags and EntityFlags.SNEAKING) != 0
@@ -710,3 +708,8 @@ object EntityFlags {
     const val GLOWING = 0x40
     const val FALL_FLYING = 0x80
 }
+
+val BlockPosition.isInBuildLimit get() = y in -2032 until 2032 && isValidHorizontally
+val BlockPosition.isValidForWorld get() = y in -20000000 until 20000000 && isValidHorizontally
+private val BlockPosition.isValidHorizontally inline get() =
+    x in -30000000 until 30000000 && z in -30000000 until 30000000

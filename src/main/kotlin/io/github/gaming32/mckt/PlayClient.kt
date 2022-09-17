@@ -2,10 +2,18 @@
 
 package io.github.gaming32.mckt
 
-import io.github.gaming32.mckt.commands.ClientCommandSender
-import io.github.gaming32.mckt.commands.CommandSender
+import com.mojang.brigadier.StringReader
+import com.mojang.brigadier.builder.RequiredArgumentBuilder
+import com.mojang.brigadier.tree.CommandNode
+import com.mojang.brigadier.tree.RootCommandNode
+import io.github.gaming32.mckt.commands.ClientCommandSource
+import io.github.gaming32.mckt.commands.CommandSource
+import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
+import io.github.gaming32.mckt.objects.EntityDimensions
+import io.github.gaming32.mckt.objects.EntityPose
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.encodeData
@@ -21,6 +29,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.future.await
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -43,6 +52,17 @@ class PlayClient(
 ) : Client(server, socket, receiveChannel, sendChannel) {
     companion object {
         private val LOGGER = getLogger()
+        val STANDING_DIMENSIONS = EntityDimensions(0.6, 1.8)
+        val SLEEPING_DIMENSIONS = EntityDimensions(0.2, 0.2)
+        val POSE_DIMENSIONS = mapOf(
+            EntityPose.STANDING to STANDING_DIMENSIONS,
+            EntityPose.SLEEPING to SLEEPING_DIMENSIONS,
+            EntityPose.FALL_FLYING to EntityDimensions(0.6, 0.6),
+            EntityPose.SWIMMING to EntityDimensions(0.6, 0.6),
+            EntityPose.SPIN_ATTACK to EntityDimensions(0.6, 0.6),
+            EntityPose.CROUCHING to EntityDimensions(0.6, 1.5),
+            EntityPose.DYING to EntityDimensions(0.2, 0.2),
+        )
     }
 
     data class ClientOptions(
@@ -79,7 +99,7 @@ class PlayClient(
         private set
     lateinit var data: PlayerData
         private set
-    lateinit var commandSender: CommandSender
+    lateinit var commandSource: CommandSource
         private set
     private val loadedChunks = mutableSetOf<Pair<Int, Int>>()
     private var ignoreMovementPackets = true
@@ -135,7 +155,7 @@ class PlayClient(
             dimensionName = Identifier("overworld"),
             hashedSeed = 0L,
             maxPlayers = server.config.maxPlayers,
-            viewDistance = server.config.viewDistance,
+            viewDistance = server.config.viewDistance * 2,
             simulationDistance = server.config.simulationDistance,
             reducedDebugInfo = false,
             enableRespawnScreen = false,
@@ -147,7 +167,7 @@ class PlayClient(
             writeString("mckt")
         })
 
-        commandSender = ClientCommandSender(this@PlayClient)
+        commandSource = ClientCommandSource(this@PlayClient)
 
         sendPacket(ClientboundPlayerAbilitiesPacket(
             data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
@@ -181,7 +201,7 @@ class PlayClient(
         sendPacket(ClientboundSetHeldItemPacket(data.selectedHotbarSlot))
 
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
-        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags, data.flying)
+        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags, data.pose)
         val equipment = data.getEquipment()
         val setEquipmentPacket = if (equipment.isNotEmpty()) {
             SetEquipmentPacket(entityId, *equipment.toList().toTypedArray())
@@ -200,7 +220,7 @@ class PlayClient(
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
             ))
-            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags, data.flying))
+            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags, data.pose))
             val otherEquipment = client.data.getEquipment()
             if (otherEquipment.isNotEmpty()) {
                 sendPacket(SetEquipmentPacket(client.entityId, *otherEquipment.toList().toTypedArray()))
@@ -213,26 +233,79 @@ class PlayClient(
         loadChunksAroundPlayer()
     }
 
-    internal suspend fun syncOpLevel() = sendPacket(EntityEventPacket(
-        entityId,
-        (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
-    ))
+    suspend fun setOperatorLevel(level: Int) {
+        data.operatorLevel = level
+        syncOpLevel()
+    }
+
+    suspend fun kick(reason: Component) {
+        sendPacket(PlayDisconnectPacket(reason))
+        ended = true
+        socket.dispose()
+    }
+
+    private suspend fun syncOpLevel() {
+        sendPacket(EntityEventPacket(
+            entityId,
+            (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
+        ))
+        sendCommandTree()
+    }
+
+    private suspend fun sendCommandTree() {
+        val toNetwork = mutableMapOf<CommandNode<CommandSource>, CommandNode<CommandSource>>()
+        val rootNode = RootCommandNode<CommandSource>()
+        toNetwork[server.commandDispatcher.root] = rootNode
+        makeTreeForSource(server.commandDispatcher.root, rootNode, toNetwork)
+        sendPacket(CommandTreePacket(rootNode))
+    }
+
+    private fun makeTreeForSource(
+        tree: CommandNode<CommandSource>,
+        result: CommandNode<CommandSource>,
+        resultNodes: MutableMap<CommandNode<CommandSource>, CommandNode<CommandSource>>
+    ) {
+        tree.children.forEach { node ->
+            if (node.canUse(commandSource)) {
+                val builder = node.createBuilder()
+                builder.requires { true }
+                if (builder.command != null) {
+                    builder.executes { 0 }
+                }
+
+                if (builder is RequiredArgumentBuilder<CommandSource, *> && builder.suggestionsProvider != null) {
+                    builder.suggests(builder.suggestionsProvider.localProvider)
+                }
+
+                if (builder.redirect != null) {
+                    builder.redirect(resultNodes[builder.redirect])
+                }
+
+                val newNode = builder.build()
+                resultNodes[node] = newNode
+                result.addChild(newNode)
+                if (node.children.isNotEmpty()) {
+                    makeTreeForSource(node, newNode, resultNodes)
+                }
+            }
+        }
+    }
 
     private suspend fun loadChunk(x: Int, z: Int) {
         if (loadedChunks.add(x to z)) {
             val chunk = server.world.getChunkOrGenerate(x, z)
+            val chunkData = withContext(chunk.world.networkSerializationPool) {
+                encodeData(chunk::networkEncode)
+            }
             if (sendChannel.isClosedForWrite) return
-            sendPacket(ChunkAndLightDataPacket(
-                chunk.x, chunk.z, withContext(chunk.world.networkSerializationPool) {
-                    encodeData(chunk::networkEncode)
-                }
-            ))
+//            LOGGER.info("{}, {}, {}, {}, {}, {}", x, z, chunk.x, chunk.z, chunk.xInRegion, chunk.zInRegion)
+            sendPacket(ChunkAndLightDataPacket(chunk.x, chunk.z, chunkData))
         }
     }
 
     @Suppress("SuspendFunctionOnCoroutineScope")
     private suspend fun CoroutineScope.loadChunksAroundPlayer(range: Int = server.config.viewDistance * 2): List<Job> {
-        val (playerX, playerZ) = getChunkPos()
+        val (playerX, playerZ) = chunkPos
         sendPacket(SetCenterChunkPacket(playerX, playerZ))
         val jobs = mutableListOf<Job>()
         spiralLoop(range, range) { x, z ->
@@ -241,7 +314,11 @@ class PlayClient(
         return jobs
     }
 
-    fun getChunkPos() = floor(data.x / 16).toInt() to floor(data.z / 16).toInt()
+    val chunkPos get() = floor(data.x / 16).toInt() to floor(data.z / 16).toInt()
+
+    val position get() = Vector3d(data.x, data.y, data.z)
+
+    val boundingBox get() = (POSE_DIMENSIONS[data.pose] ?: STANDING_DIMENSIONS).toAabb().offset(data.x, data.y, data.z)
 
     suspend fun handlePackets() = coroutineScope {
         while (server.running && !ended) {
@@ -261,7 +338,7 @@ class PlayClient(
                         LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                     }
 
-                    is CommandPacket -> commandSender.runCommand(packet.command)
+                    is CommandPacket -> commandSource.runCommand(packet.command, server.commandDispatcher)
                     is ServerboundChatPacket -> {
                         LOGGER.info("CHAT: <{}> {}", username, packet.message)
                         server.broadcast(
@@ -276,6 +353,21 @@ class PlayClient(
                     }
 
                     is ClientOptionsPacket -> options = packet.options
+
+                    is CommandCompletionsRequestPacket -> {
+                        val reader = StringReader(packet.command)
+                        if (reader.canRead() && reader.peek() == '/') {
+                            reader.skip()
+                        }
+                        val parseResults = server.commandDispatcher.parse(reader, commandSource)
+                        server.commandDispatcher
+                            .getCompletionSuggestions(parseResults)
+                            .await()
+                            .let { suggestions ->
+                                sendPacket(CommandCompletionsResponsePacket(packet.requestId, suggestions))
+                            }
+                    }
+
                     is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
                     is MovementPacket -> {
                         if (ignoreMovementPackets) continue
@@ -346,21 +438,40 @@ class PlayClient(
                         }
                         if (data.onGround && data.isFallFlying) {
                             data.isFallFlying = false
-                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.flying))
+                            data.pose = if (data.isSneaking) EntityPose.CROUCHING else EntityPose.STANDING
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
                         }
                     }
 
-                    is ServerboundPlayerAbilitiesPacket -> data.flying = packet.flying
+                    is ServerboundPlayerAbilitiesPacket -> {
+                        data.flying = packet.flying
+                        data.isFallFlying = false
+                        data.pose = EntityPose.STANDING
+                        server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
+                    }
+
                     is PlayerCommandPacket -> {
                         var syncTracker = false
                         when (packet.action) {
                             PlayerCommandPacket.START_SNEAKING -> {
                                 data.isSneaking = true
+                                data.pose = if (data.flying) {
+                                    EntityPose.STANDING
+                                } else if (data.isFallFlying) {
+                                    EntityPose.FALL_FLYING
+                                } else {
+                                    EntityPose.CROUCHING
+                                }
                                 syncTracker = true
                             }
 
                             PlayerCommandPacket.STOP_SNEAKING -> {
                                 data.isSneaking = false
+                                data.pose = if (data.isFallFlying) {
+                                    EntityPose.FALL_FLYING
+                                } else {
+                                    EntityPose.STANDING
+                                }
                                 syncTracker = true
                             }
 
@@ -376,6 +487,7 @@ class PlayClient(
 
                             PlayerCommandPacket.START_FALL_FLYING -> {
                                 data.isFallFlying = true
+                                data.pose = EntityPose.FALL_FLYING
                                 syncTracker = true
                             }
 
@@ -385,7 +497,7 @@ class PlayClient(
                             )
                         }
                         if (syncTracker) {
-                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.flying))
+                            server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
                         }
                     }
 
@@ -509,15 +621,17 @@ class PlayClient(
         }
     }
 
-    private suspend fun syncPosition(toOthers: Boolean) {
-        sendPacket(PlayerPositionSyncPacket(
-            nextTeleportId++,
-            data.x,
-            data.y,
-            data.z,
-            data.yaw,
-            data.pitch
-        ))
+    internal suspend fun syncPosition(toOthers: Boolean, toSelf: Boolean = true) {
+        if (toSelf) {
+            sendPacket(PlayerPositionSyncPacket(
+                nextTeleportId++,
+                data.x,
+                data.y,
+                data.z,
+                data.yaw,
+                data.pitch
+            ))
+        }
         if (toOthers) {
             server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
                 entityId,
@@ -549,6 +663,14 @@ class PlayClient(
     }
 
     override suspend fun sendPacket(packet: Packet) {
+        if (socket.isClosed) {
+            if (LOGGER.isDebugEnabled) {
+                LOGGER.warn("Attempted to write to closed socket", Throwable())
+            } else {
+                LOGGER.warn("Attempted to write to closed socket")
+            }
+            return
+        }
         try {
             super.sendPacket(packet)
         } catch (e: IOException) {

@@ -15,7 +15,7 @@ fun NbtTag.toBaseKotlin(): Any = when (this) {
     is NbtLongArray -> toBaseKotlin()
     is NbtList<*> -> toBaseKotlin()
     is NbtCompound -> toBaseKotlin()
-    else -> TODO(this::class.java.simpleName)
+    else -> throw AssertionError()
 }
 
 fun NbtByte.toBaseKotlin() = value

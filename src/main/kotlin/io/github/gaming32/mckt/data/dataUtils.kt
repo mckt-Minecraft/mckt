@@ -157,6 +157,10 @@ open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
     }
 }
 
+interface MinecraftWritable {
+    fun write(out: MinecraftOutputStream)
+}
+
 suspend fun ByteWriteChannel.writeVarInt(i: Int) {
     var value = i
     while (true) {
