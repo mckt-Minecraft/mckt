@@ -253,7 +253,7 @@ class PlayClient(
         sendCommandTree()
     }
 
-    private suspend fun sendCommandTree() {
+    internal suspend fun sendCommandTree() {
         val toNetwork = mutableMapOf<CommandNode<CommandSource>, CommandNode<CommandSource>>()
         val rootNode = RootCommandNode<CommandSource>()
         toNetwork[server.commandDispatcher.root] = rootNode
@@ -661,6 +661,12 @@ class PlayClient(
         server.broadcast(PlayerListUpdatePacket(
             PlayerListUpdatePacket.UpdateGamemode(uuid, new)
         ))
+        if (new == Gamemode.SPECTATOR) {
+            data.flags = data.flags or EntityFlags.INVISIBLE
+        } else {
+            data.flags = data.flags and EntityFlags.INVISIBLE.inv()
+        }
+        server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
     }
 
     override suspend fun sendPacket(packet: Packet) {

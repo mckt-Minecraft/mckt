@@ -161,7 +161,10 @@ class MinecraftServer {
             ?: throw IllegalArgumentException("Command $command must be registered before setting aliases")
         val description = helpTexts[commandNode]
         for (alias in aliases) {
-            registerCommand(description, literal<CommandSource>(alias).redirect(commandNode))
+            registerCommand(description, literal<CommandSource>(alias)
+                .requires(commandNode.requirement)
+                .redirect(commandNode)
+            )
         }
     }
 
@@ -337,6 +340,18 @@ class MinecraftServer {
                     }
                 )
             }
+            command.then(argument<CommandSource, EntitySelector>("destination", entity())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getEntity("destination"))
+                    0
+                }
+            )
+            command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                .executesSuspend {
+                    teleport(listOf(source.entity), getVec3("location"))
+                    0
+                }
+            )
             command.then(argument<CommandSource, EntitySelector>("target", entities())
                 .then(argument<CommandSource, EntitySelector>("destination", entity())
                     .executesSuspend {
@@ -350,18 +365,6 @@ class MinecraftServer {
                         0
                     }
                 )
-            )
-            command.then(argument<CommandSource, EntitySelector>("destination", entity())
-                .executesSuspend {
-                    teleport(listOf(source.entity), getEntity("destination"))
-                    0
-                }
-            )
-            command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
-                .executesSuspend {
-                    teleport(listOf(source.entity), getVec3("location"))
-                    0
-                }
             )
         })
         registerCommandAliases("tp", "teleport")
@@ -392,6 +395,7 @@ class MinecraftServer {
             }
         })
         registerCommand(Component.text("Forcefully disconnect a player"), literal<CommandSource>("kick")
+            .requires { it.hasPermission(2) }
             .then(argument<CommandSource, EntitySelector>("player", players())
                 .executesSuspend {
                     val reason = Component.translatable("multiplayer.disconnect.kicked")
@@ -488,6 +492,19 @@ class MinecraftServer {
                 world.saveAndLog(source)
                 0
             }
+        )
+        registerCommand(Component.text("Debug tools"), literal<CommandSource>("debug")
+            .requires { it.hasPermission(5) }
+            .then(literal<CommandSource>("reload-commands")
+                .executesSuspend {
+                    source.replyBroadcast(Component.text("Reloading commands..."))
+                    commandDispatcher.root.children.clear()
+                    registerCommands()
+                    clients.values.forEach { it.sendCommandTree() }
+                    source.replyBroadcast(Component.text("Reloaded commands", NamedTextColor.GREEN))
+                    0
+                }
+            )
         )
     }
 
