@@ -6,9 +6,12 @@ import com.mojang.brigadier.arguments.StringArgumentType.greedyString
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
+import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
+import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.*
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
@@ -38,7 +41,7 @@ private val LOGGER = getLogger()
 class MinecraftServer {
     var running = true
     private val handshakeJobs = mutableSetOf<Job>()
-    val clients = mutableMapOf<String, PlayClient>()
+    @PublishedApi internal val clients = mutableMapOf<String, PlayClient>()
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
@@ -148,9 +151,12 @@ class MinecraftServer {
         LOGGER.info("Server stopped")
     }
 
-    fun registerCommand(description: Component?, command: LiteralArgumentBuilder<CommandSource>) {
+    fun registerCommand(
+        description: Component?, command: LiteralArgumentBuilder<CommandSource>
+    ): LiteralCommandNode<CommandSource> {
         val registered = commandDispatcher.register(command)
         helpTexts[registered] = description
+        return registered
     }
 
     private fun registerCommands() {
@@ -193,7 +199,13 @@ class MinecraftServer {
                                 .filter { it.canUse(source) }
                                 .flatMap { command ->
                                     commandDispatcher.getAllUsage(command, source, true)
-                                        .map { "/${command.usageText} $it" }
+                                        .map {
+                                            if (it.startsWith("${command.usageText} ->")) {
+                                                "/$it" // Command alias
+                                            } else {
+                                                "/${command.usageText} $it"
+                                            }
+                                        }
                                 }
                                 .map(Component::text)
                                 .toList()
@@ -215,10 +227,14 @@ class MinecraftServer {
                                 Component.text("/${legacyCommand.name}")
                             }
                         } else {
+                            var commandForUsage = command
+                            while (commandForUsage.redirect != null) {
+                                commandForUsage = commandForUsage.redirect
+                            }
                             Component.text { builder ->
                                 builder.append(Component.join(
                                     JoinConfiguration.newlines(),
-                                    commandDispatcher.getAllUsage(command, source, true)
+                                    commandDispatcher.getAllUsage(commandForUsage, source, true)
                                         .map { Component.text("/${command.usageText} $it") }
                                 ))
                                 source.server.helpTexts[command]?.let { description ->
@@ -293,6 +309,83 @@ class MinecraftServer {
                 }
             )
         )
+        val tpCommand = registerCommand(
+            Component.text("Teleport a player"),
+            literal<CommandSource>("tp").also { command ->
+                suspend fun CommandContext<CommandSource>.teleport(
+                    entities: List<PlayClient>, destination: PlayClient
+                ) {
+                    entities.forEach { it.teleport(destination) }
+                    source.replyBroadcast(
+                        if (entities.size == 1) {
+                            Component.translatable(
+                                "commands.teleport.success.entity.single",
+                                Component.text(entities[0].username),
+                                Component.text(destination.username)
+                            )
+                        } else {
+                            Component.translatable(
+                                "commands.teleport.success.entity.multiple",
+                                Component.text(entities.size),
+                                Component.text(destination.username)
+                            )
+                        }
+                    )
+                }
+                suspend fun CommandContext<CommandSource>.teleport(
+                    entities: List<PlayClient>, destination: Vector3d
+                ) {
+                    entities.forEach { it.teleport(destination.x, destination.y, destination.z) }
+                    source.replyBroadcast(
+                        if (entities.size == 1) {
+                            Component.translatable(
+                                "commands.teleport.success.location.single",
+                                Component.text(entities[0].username),
+                                Component.text(destination.x),
+                                Component.text(destination.y),
+                                Component.text(destination.z)
+                            )
+                        } else {
+                            Component.translatable(
+                                "commands.teleport.success.location.multiple",
+                                Component.text(entities.size),
+                                Component.text(destination.x),
+                                Component.text(destination.y),
+                                Component.text(destination.z)
+                            )
+                        }
+                    )
+                }
+                command.requires { it.hasPermission(1) }
+                command.then(argument<CommandSource, EntitySelector>("target", entities())
+                    .then(argument<CommandSource, EntitySelector>("destination", entity())
+                        .executesSuspend {
+                            teleport(getEntities("target"), getEntity("destination"))
+                            0
+                        }
+                    )
+                    .then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                        .executesSuspend {
+                            teleport(getEntities("target"), getVec3("location"))
+                            0
+                        }
+                    )
+                )
+                command.then(argument<CommandSource, EntitySelector>("destination", entity())
+                    .executesSuspend {
+                        teleport(listOf(source.entity), getEntity("destination"))
+                        0
+                    }
+                )
+                command.then(argument<CommandSource, PositionArgument>("location", Vector3ArgumentType())
+                    .executesSuspend {
+                        teleport(listOf(source.entity), getVec3("location"))
+                        0
+                    }
+                )
+            }
+        )
+        registerCommand(helpTexts[tpCommand], literal<CommandSource>("teleport").redirect(tpCommand))
         registerCommand(Component.text("Set player gamemode"), literal<CommandSource>("gamemode").also { command ->
             command.requires { it.hasPermission(1) }
             Gamemode.values().forEach { gamemode ->

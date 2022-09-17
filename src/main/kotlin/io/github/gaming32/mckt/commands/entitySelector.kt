@@ -31,7 +31,7 @@ data class EntitySelector(
     val usesAt: Boolean
 ) {
     private fun checkPermission(source: CommandSource) {
-        if (usesAt && !source.hasPermission(2)) {
+        if (usesAt && !source.hasPermission(1)) {
             throw EntityArgumentType.NOT_ALLOWED_EXCEPTION.create()
         }
     }
@@ -47,11 +47,8 @@ data class EntitySelector(
         if (!includesNonPlayers) {
             return getPlayers(source)
         }
-        if (playerName != null) {
-            val player = source.server.getPlayerByName(playerName)
-            return if (player == null) listOf() else listOf(player)
-        }
-        TODO("Implement non-player entities")
+        // TODO: Implement non-player entities
+        return getPlayers(source)
     }
 
     fun getPlayer(source: CommandSource) = getPlayers(source).let { players ->
