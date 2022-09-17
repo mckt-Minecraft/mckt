@@ -78,7 +78,6 @@ class MinecraftServer {
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
 
-        BuiltinCommands.register()
         registerCommands()
 
         world = World(this@MinecraftServer, "world")
@@ -172,15 +171,6 @@ class MinecraftServer {
                 source.reply(Component.text("Here's a list of the commands you can use:\n")
                     .append(Component.join(
                         JoinConfiguration.newlines(),
-                        COMMANDS.asSequence()
-                            .filter { source.hasPermission(it.value.minPermission) }
-                            .map { (name, command) -> Component.text { builder ->
-                                builder.append(Component.text("  + /$name"))
-                                if (command.description != null) {
-                                    builder.append(Component.text(" -- ")).append(command.description)
-                                }
-                            } }
-                            .toList() +
                         helpTexts.asSequence()
                             .filter { it.key.canUse(source) }
                             .map { (command, description) -> Component.text { builder ->
@@ -220,19 +210,12 @@ class MinecraftServer {
                     } else {
                         val command = commandDispatcher.root.getChild(commandName)
                         if (command == null || !command.canUse(source)) {
-                            val legacyCommand = COMMANDS[commandName]
-                            if (legacyCommand == null) {
-                                result = 1
-                                Component.translatable(
-                                    "commands.help.failed",
-                                    NamedTextColor.RED,
-                                    Component.text(commandName)
-                                )
-                            } else if (legacyCommand.description != null) {
-                                Component.text("/${legacyCommand.name} -- ").append(legacyCommand.description)
-                            } else {
-                                Component.text("/${legacyCommand.name}")
-                            }
+                            result = 1
+                            Component.translatable(
+                                "commands.help.failed",
+                                NamedTextColor.RED,
+                                Component.text(commandName)
+                            )
                         } else {
                             var commandForUsage = command
                             while (commandForUsage.redirect != null) {
@@ -255,14 +238,6 @@ class MinecraftServer {
                 .suggests { ctx, builder ->
                     if ("all".startsWith(builder.remainingLowerCase)) {
                         builder.suggest("all")
-                    }
-                    COMMANDS.forEach { (name, command) ->
-                        if (
-                            ctx.source.hasPermission(command.minPermission) &&
-                            name.startsWith(builder.remainingLowerCase, ignoreCase = true)
-                        ) {
-                            builder.suggest(name)
-                        }
                     }
                     helpTexts.keys.forEach { node ->
                         if (
