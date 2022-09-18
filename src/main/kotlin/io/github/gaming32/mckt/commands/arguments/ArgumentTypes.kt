@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.commands.arguments
 
 import com.mojang.brigadier.arguments.*
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream

@@ -12,11 +12,16 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
+import io.github.gaming32.mckt.data.readShort
+import io.github.gaming32.mckt.data.readString
+import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.objects.Vector3d
-import io.github.gaming32.mckt.packet.*
+import io.github.gaming32.mckt.packet.Packet
+import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.*
+import io.github.gaming32.mckt.packet.sendPacket
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -32,7 +37,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
-import java.util.UUID
+import java.util.*
 import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
@@ -591,11 +596,10 @@ class MinecraftServer {
                         }
                         val packet = ByteArray(packetLength - packetIdLength)
                         receiveChannel.readFully(packet, 0, packet.size)
-                        val packetInput = MinecraftInputStream(ByteArrayInputStream(packet))
+                        val packetInput = ByteArrayInputStream(packet)
                         val protocolVersion = packetInput.readVarInt()
                         packetInput.readString(255) // Server address
-                        @Suppress("BlockingMethodInNonBlockingContext")
-                        packetInput.readUnsignedShort() // Server port
+                        packetInput.readShort() // Server port
                         val nextStateInt = packetInput.readVarInt()
                         val nextState = try {
                             PacketState.values()[nextStateInt]

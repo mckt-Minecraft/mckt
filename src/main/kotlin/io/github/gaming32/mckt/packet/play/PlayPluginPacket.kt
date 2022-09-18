@@ -1,10 +1,11 @@
 package io.github.gaming32.mckt.packet.play
 
+import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.encodeData
+import io.github.gaming32.mckt.data.readIdentifier
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.encodeData
+import java.io.InputStream
 
 data class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
     companion object {
@@ -12,7 +13,7 @@ data class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Pack
         const val C2S_TYPE = 0x0D
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readIdentifier(),
         inp.readBytes()
     )

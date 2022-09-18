@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.getLogger
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import net.benwoodworth.knbt.buildNbtCompound
 import net.benwoodworth.knbt.put

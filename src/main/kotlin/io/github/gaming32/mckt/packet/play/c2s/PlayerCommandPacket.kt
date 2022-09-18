@@ -1,9 +1,9 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 
 data class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJumpBoost: Int = 0) : Packet(TYPE) {
     companion object {
@@ -19,7 +19,7 @@ data class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJump
         const val START_FALL_FLYING = 8
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readVarInt(),
         inp.readVarInt(),
         inp.readVarInt()

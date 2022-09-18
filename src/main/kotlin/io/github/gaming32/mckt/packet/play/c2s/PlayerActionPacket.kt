@@ -1,11 +1,10 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Direction
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 
 data class PlayerActionPacket(
     val action: Action,
@@ -27,10 +26,10 @@ data class PlayerActionPacket(
         SWAP_OFFHAND
     }
 
-    constructor(inp: MinecraftInputStream) : this(
-        Action.values()[inp.readVarInt()],
+    constructor(inp: InputStream) : this(
+        inp.readVarIntEnum(),
         inp.readBlockPosition(),
-        Direction.values()[inp.readUnsignedByte()],
+        inp.readUByteEnum(),
         inp.readVarInt()
     )
 

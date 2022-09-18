@@ -3,8 +3,8 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.commands.CommandSource
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.objects.*
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage

@@ -10,13 +10,13 @@ import io.github.gaming32.mckt.commands.ClientCommandSource
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
+import io.github.gaming32.mckt.data.encodeData
 import io.github.gaming32.mckt.objects.EntityDimensions
 import io.github.gaming32.mckt.objects.EntityPose
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
-import io.github.gaming32.mckt.packet.encodeData
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket

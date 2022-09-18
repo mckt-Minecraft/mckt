@@ -1,11 +1,10 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Direction
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 
 data class UseItemOnBlockPacket(
     val offhand: Boolean,
@@ -21,10 +20,10 @@ data class UseItemOnBlockPacket(
         const val TYPE = 0x31
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readBoolean(),
         inp.readBlockPosition(),
-        Direction.values()[inp.readVarInt()],
+        inp.readVarIntEnum(),
         inp.readFloat(),
         inp.readFloat(),
         inp.readFloat(),

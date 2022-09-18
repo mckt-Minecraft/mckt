@@ -1,9 +1,8 @@
 package io.github.gaming32.mckt.packet.login.c2s
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 import java.util.*
 
 data class LoginStartPacket(
@@ -17,7 +16,7 @@ data class LoginStartPacket(
 
     class SignatureInfo(val timestamp: Long, val publicKey: ByteArray, val signature: ByteArray)
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readString(16),
         if (!inp.readBoolean()) null else inp.run { SignatureInfo(
             readLong(),

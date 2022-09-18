@@ -1,8 +1,11 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.readBoolean
+import io.github.gaming32.mckt.data.readDouble
+import io.github.gaming32.mckt.data.readFloat
 import io.github.gaming32.mckt.packet.Packet
+import java.io.InputStream
 
 sealed class MovementPacket(
     type: Int,
@@ -33,7 +36,7 @@ class PlayerPositionPacket(
         const val TYPE = 0x14
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readDouble(),
         inp.readDouble(),
         inp.readDouble(),
@@ -55,7 +58,7 @@ class PlayerPositionAndRotationPacket(
         const val TYPE = 0x15
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readDouble(),
         inp.readDouble(),
         inp.readDouble(),
@@ -77,7 +80,7 @@ class PlayerRotationPacket(
         const val TYPE = 0x16
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readFloat(),
         inp.readFloat(),
         inp.readBoolean()
@@ -93,7 +96,7 @@ class PlayerOnGroundPacket(
         const val TYPE = 0x17
     }
 
-    constructor(inp: MinecraftInputStream) : this(inp.readBoolean())
+    constructor(inp: InputStream) : this(inp.readBoolean())
 
     override fun toString() = "PlayerOnGroundPacket(onGround=$onGround)"
 }

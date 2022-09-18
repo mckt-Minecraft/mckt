@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.packet
 
+import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.getLogger
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
@@ -15,7 +16,7 @@ import java.util.zip.Inflater
 
 private val INFLATER = Inflater()
 
-enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> Packet>) {
+enum class PacketState(private val packets: Map<Int, (InputStream) -> Packet>) {
     HANDSHAKE(mapOf()),
     STATUS(mapOf(
         /* 0x00 */ StatusRequestPacket.TYPE to ::StatusRequestPacket,
@@ -80,7 +81,7 @@ enum class PacketState(private val packets: Map<Int, (MinecraftInputStream) -> P
         val reader = packets[packetId] ?: throw IllegalArgumentException(
             "Unknown packet ID for state $this: 0x${packetId.toString(16).padStart(2, '0')}"
         )
-        return reader(MinecraftInputStream(packetInput)).also { LOGGER.debug("Received packet {}", it) }
+        return reader(packetInput).also { LOGGER.debug("Received packet {}", it) }
     }
 
     @JvmName("readSpecificPacketWithTimeout")

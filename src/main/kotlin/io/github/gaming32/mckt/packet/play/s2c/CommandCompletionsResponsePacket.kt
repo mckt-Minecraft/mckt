@@ -2,7 +2,7 @@ package io.github.gaming32.mckt.packet.play.s2c
 
 import com.mojang.brigadier.suggestion.Suggestions
 import io.github.gaming32.mckt.commands.unwrap
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
 data class CommandCompletionsResponsePacket(val requestId: Int, val suggestions: Suggestions) : Packet(TYPE) {

@@ -1,16 +1,17 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.readString
+import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 
 data class CommandCompletionsRequestPacket(val requestId: Int, val command: String) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x09
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readVarInt(),
         inp.readString(32500)
     )

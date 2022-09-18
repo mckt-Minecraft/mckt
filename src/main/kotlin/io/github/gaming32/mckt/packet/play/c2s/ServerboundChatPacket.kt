@@ -1,9 +1,8 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.packet.MinecraftInputStream
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.readVarInt
+import java.io.InputStream
 
 data class ServerboundChatPacket(
     val message: String,
@@ -16,11 +15,11 @@ data class ServerboundChatPacket(
         const val TYPE = 0x05
     }
 
-    constructor(inp: MinecraftInputStream) : this(
+    constructor(inp: InputStream) : this(
         inp.readString(256),
         inp.readLong(),
         inp.readLong(),
-        ByteArray(inp.readVarInt()).also { inp.readFully(it) },
+        inp.readByteArray(),
         inp.readBoolean()
     )
 

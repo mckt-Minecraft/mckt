@@ -4,13 +4,13 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonArray as JsonArrayGson
 import com.google.gson.JsonElement as JsonElementGson
 import com.google.gson.JsonNull as JsonNullGson
-import com.google.gson.JsonPrimitive as JsonPrimitiveGson
 import com.google.gson.JsonObject as JsonObjectGson
+import com.google.gson.JsonPrimitive as JsonPrimitiveGson
 import kotlinx.serialization.json.JsonArray as JsonArrayKotlinx
 import kotlinx.serialization.json.JsonElement as JsonElementKotlinx
 import kotlinx.serialization.json.JsonNull as JsonNullKotlinx
-import kotlinx.serialization.json.JsonPrimitive as JsonPrimitiveKotlinx
 import kotlinx.serialization.json.JsonObject as JsonObjectKotlinx
+import kotlinx.serialization.json.JsonPrimitive as JsonPrimitiveKotlinx
 
 fun JsonElementGson.toKotlinx(): JsonElementKotlinx = when (this) {
     is JsonNullGson -> JsonNullKotlinx

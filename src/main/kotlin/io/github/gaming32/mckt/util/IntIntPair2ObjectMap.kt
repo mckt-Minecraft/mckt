@@ -1,7 +1,6 @@
 package io.github.gaming32.mckt.util
 
 import it.unimi.dsi.fastutil.ints.IntIntPair
-import it.unimi.dsi.fastutil.longs.Long2ObjectFunction
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 

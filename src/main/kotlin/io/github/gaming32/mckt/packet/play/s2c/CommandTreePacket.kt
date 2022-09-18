@@ -10,9 +10,9 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.id
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes.networkSerialize
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes.typeId
+import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.MinecraftWritable
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
-import io.github.gaming32.mckt.packet.MinecraftWritable
 import io.github.gaming32.mckt.packet.Packet
 
 class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE) {

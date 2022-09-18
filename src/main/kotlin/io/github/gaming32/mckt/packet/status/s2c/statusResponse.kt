@@ -3,9 +3,9 @@
 package io.github.gaming32.mckt.packet.status.s2c
 
 import io.github.gaming32.mckt.PlayClient
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.objects.TextSerializer
 import io.github.gaming32.mckt.objects.UUIDSerializer
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json

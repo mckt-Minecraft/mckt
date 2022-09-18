@@ -1,4 +1,4 @@
-package io.github.gaming32.mckt.packet
+package io.github.gaming32.mckt.data
 
 import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
 import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
@@ -95,72 +95,154 @@ open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
     }
 }
 
-open class MinecraftInputStream(inp: InputStream) : DataInputStream(inp) {
-    fun readString(maxLength: Int = 32767): String {
-        val length = readVarInt()
-        if (length > maxLength) {
-            throw IllegalArgumentException("String exceeds maxLength ($maxLength bytes)")
-        }
-        val result = ByteArray(length)
-        readFully(result)
-        return result.decodeToString()
-    }
-
-    fun readText() = GsonComponentSerializer.gson().deserialize(readString(262144))
-
-    fun readIdentifier() = Identifier.parse(readString(32767))
-
-    fun readVarLong(): Long {
-        var value = 0L
-        var position = 0
-
-        while (true) {
-            val currentByte = readByte().toUByte().toInt()
-            value = value or ((currentByte and VARINT_SEGMENT_BITS).toLong() shl position)
-
-            if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
-
-            position += 7
-
-            if (position >= 64) throw RuntimeException("VarLong is too big")
-        }
-
-        return value
-    }
-
-    fun readItemStack(): ItemStack? {
-        if (!readBoolean()) return null
-        val intItemId = readVarInt()
-        return ItemStack(
-            ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
-            readUnsignedByte(),
-            readNbtTag() as NbtCompound?
-        )
-    }
-
-    fun readNbtTag() = NETWORK_NBT.decodeFromStream<NbtTag>(this)
-
-    fun readBlockPosition() = BlockPosition.decodeFromLong(readLong())
-
-    fun readDegrees() = readByte().toFloat() / 256.0 * 360.0
-
-    fun readRadians() = readByte().toFloat() / 256.0 * 2 * PI
-
-    fun readUuid() = UUID(readLong(), readLong())
-
-    fun readBitSet(): BitSet {
-        val result = LongArray(readVarInt())
-        for (i in result.indices) {
-            result[i] = readLong()
-        }
-        return BitSet.valueOf(result)
-    }
-}
-
 interface MinecraftWritable {
     fun write(out: MinecraftOutputStream)
 }
 
+//region Readers
+fun InputStream.readFully(b: ByteArray) = readFully(b, 0, b.size)
+
+fun InputStream.readFully(b: ByteArray, off: Int, len: Int) {
+    if (len < 0) throw IndexOutOfBoundsException()
+    var n = 0
+    while (n < len) {
+        val count: Int = read(b, off + n, len - n)
+        if (count < 0) throw EOFException()
+        n += count
+    }
+}
+
+fun InputStream.readByte(): Byte {
+    val result = read()
+    if (result < 0) {
+        throw EOFException()
+    }
+    return result.toByte()
+}
+
+fun InputStream.readUByte() = readByte().toUByte()
+
+fun InputStream.readBoolean() = readByte() != 0.toByte()
+
+fun InputStream.readShort(): Short {
+    val ch1: Int = read()
+    val ch2: Int = read()
+    if (ch1 or ch2 < 0) throw EOFException()
+    return ((ch1 shl 8) + (ch2 shl 0)).toShort()
+}
+
+fun InputStream.readUShort() = readShort().toUShort()
+
+fun InputStream.readInt(): Int {
+    val ch1: Int = read()
+    val ch2: Int = read()
+    val ch3: Int = read()
+    val ch4: Int = read()
+    if (ch1 or ch2 or ch3 or ch4 < 0) throw EOFException()
+    return (ch1 shl 24) + (ch2 shl 16) + (ch3 shl 8) + (ch4 shl 0)
+}
+
+fun InputStream.readFloat() = Float.fromBits(readInt())
+
+fun InputStream.readLong() = if (this is DataInputStream) {
+    readLong()
+} else {
+    val buffer = ByteArray(8)
+    readFully(buffer)
+    (buffer[0].toLong() shl 56) +
+        ((buffer[1].toInt() and 255).toLong() shl 48) +
+        ((buffer[2].toInt() and 255).toLong() shl 40) +
+        ((buffer[3].toInt() and 255).toLong() shl 32) +
+        ((buffer[4].toInt() and 255).toLong() shl 24) +
+        (buffer[5].toInt() and 255 shl 16) +
+        (buffer[6].toInt() and 255 shl 8) +
+        (buffer[7].toInt() and 255 shl 0)
+}
+
+fun InputStream.readDouble() = Double.fromBits(readLong())
+
+fun InputStream.readVarInt(): Int {
+    var value = 0
+    var position = 0
+
+    while (true) {
+        val currentByte = readUByte().toInt()
+        value = value or (currentByte and VARINT_SEGMENT_BITS shl position)
+
+        if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
+
+        position += 7
+
+        if (position >= 32) throw RuntimeException("VarInt is too big")
+    }
+
+    return value
+}
+
+fun InputStream.readVarLong(): Long {
+    var value = 0L
+    var position = 0
+
+    while (true) {
+        val currentByte = readUByte().toInt()
+        value = value or ((currentByte and VARINT_SEGMENT_BITS).toLong() shl position)
+
+        if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
+
+        position += 7
+
+        if (position >= 64) throw RuntimeException("VarLong is too big")
+    }
+
+    return value
+}
+
+fun InputStream.readByteArray() = ByteArray(readVarInt()).also { readFully(it) }
+
+fun InputStream.readLongArray() = LongArray(readVarInt()) { readLong() }
+
+fun InputStream.readString(maxLength: Int = 32767): String {
+    val length = readVarInt()
+    if (length > maxLength) {
+        throw IllegalArgumentException("String exceeds maxLength ($maxLength bytes)")
+    }
+    val result = ByteArray(length)
+    readFully(result)
+    return result.decodeToString()
+}
+
+fun InputStream.readText() = GsonComponentSerializer.gson().deserialize(readString(262144))
+
+fun InputStream.readIdentifier() = Identifier.parse(readString(32767))
+
+inline fun <reified T : Enum<T>> InputStream.readVarIntEnum() = enumValues<T>()[readVarInt()]
+
+inline fun <reified T : Enum<T>> InputStream.readUByteEnum() = enumValues<T>()[readUByte().toInt()]
+
+fun InputStream.readItemStack(): ItemStack? {
+    if (!readBoolean()) return null
+    val intItemId = readVarInt()
+    return ItemStack(
+        ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
+        readUByte().toInt(),
+        readNbtTag() as NbtCompound?
+    )
+}
+
+fun InputStream.readNbtTag() = NETWORK_NBT.decodeFromStream<NbtTag>(this)
+
+fun InputStream.readBlockPosition() = BlockPosition.decodeFromLong(readLong())
+
+fun InputStream.readDegrees() = readUByte().toFloat() / 256f * 360f
+
+fun InputStream.readRadians() = readUByte().toFloat() / 128f * PI.toFloat()
+
+fun InputStream.readUuid() = UUID(readLong(), readLong())
+
+fun InputStream.readBitSet(): BitSet = BitSet.valueOf(readLongArray())
+//endregion
+
+//region Ktor IO extensions
 suspend fun ByteWriteChannel.writeVarInt(i: Int) {
     var value = i
     while (true) {
@@ -172,27 +254,6 @@ suspend fun ByteWriteChannel.writeVarInt(i: Int) {
 
         value = value ushr 7
     }
-}
-
-fun InputStream.readVarInt(): Int {
-    var value = 0
-    var position = 0
-
-    while (true) {
-        val currentByte = read()
-        if (currentByte < 0) {
-            throw EOFException()
-        }
-        value = value or (currentByte and VARINT_SEGMENT_BITS shl position)
-
-        if ((currentByte and VARINT_CONTINUE_BIT) == 0) break
-
-        position += 7
-
-        if (position >= 32) throw RuntimeException("VarInt is too big")
-    }
-
-    return value
 }
 
 suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
@@ -213,6 +274,7 @@ suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
 
     return value
 }
+//endregion
 
 inline fun encodeData(builder: MinecraftOutputStream.() -> Unit): ByteArray =
     ByteArrayOutputStream().also { MinecraftOutputStream(it).builder() }.toByteArray()

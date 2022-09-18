@@ -1,9 +1,9 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.GLOBAL_PALETTE_OLD
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
 data class SetBlockPacket(val location: BlockPosition, val id: Identifier?) : Packet(TYPE) {

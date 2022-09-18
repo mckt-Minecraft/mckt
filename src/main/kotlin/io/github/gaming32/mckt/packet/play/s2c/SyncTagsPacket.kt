@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
+import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.packet.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 
 class SyncTagsPacket(val tags: Map<Identifier, Map<Identifier, IntArray>>) : Packet(TYPE) {
