@@ -126,7 +126,7 @@ class MinecraftServer {
             if (tickTime >= 1000) {
                 LOGGER.warn(
                     "Is the server overloaded? Running {} seconds ({} ticks) behind.",
-                    tickTime / 1000.0, tickTime / 50.0
+                    (tickTime - 50) / 1000.0, (tickTime - 50) / 50.0
                 )
             }
             val sleepTime = 50 - tickTime

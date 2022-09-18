@@ -58,14 +58,19 @@ data class BlockState(
     }
 
     override fun toString() = buildString {
-        append("BlockState(blockId=", blockId)
-        if (defaultForId) {
-            append(", defaultForId=true")
-        }
+        append(blockId)
         if (properties.isNotEmpty()) {
-            append(", ", properties.entries.joinToString { "${it.key}=${it.value}" })
+            append('[')
+            properties.entries.forEachIndexed { index, (name, value) ->
+                if (index > 0) {
+                    append(',')
+                }
+                append(name)
+                append('=')
+                append(value)
+            }
+            append(']')
         }
-        append(')')
     }
 
     fun canonicalize(): BlockState {
@@ -112,15 +117,6 @@ val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE
 
 val ID_TO_BLOCKSTATE = GLOBAL_PALETTE.associateBy { it.globalId }
 val BLOCKSTATE_TO_ID = ID_TO_BLOCKSTATE.inverted()
-
-@OptIn(ExperimentalSerializationApi::class)
-val GLOBAL_PALETTE_OLD = (MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
-    Json.decodeFromStream<JsonObject>(input)
-}?.asSequence()?.associate { (id, data) ->
-    Identifier.parse(id) to data.toGson().asJsonObject["states"].asJsonArray.first {
-        it.asJsonObject["default"]?.asBoolean ?: false
-    }.asJsonObject["id"].asInt
-} ?: mapOf()) + mapOf(null to 0)
 
 @OptIn(ExperimentalSerializationApi::class)
 private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->

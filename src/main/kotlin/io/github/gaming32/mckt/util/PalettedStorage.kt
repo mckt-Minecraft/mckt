@@ -63,6 +63,7 @@ class PalettedStorage<V>(
     }
 
     internal fun setPaletteItems(items: List<V>) {
+        palette.clear()
         if (items.size > 16) {
             expandPalette()
         }

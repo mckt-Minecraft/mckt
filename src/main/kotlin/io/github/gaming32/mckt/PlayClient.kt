@@ -343,19 +343,16 @@ class PlayClient(
                     is CommandPacket -> commandSource.runCommand(packet.command, server.commandDispatcher)
                     is ServerboundChatPacket -> {
                         LOGGER.info("CHAT: <{}> {}", username, packet.message)
-                        server.broadcast(
-                            SystemChatPacket(
-                                Component.translatable(
-                                    "chat.type.text",
-                                    Component.text(username),
-                                    Component.text(packet.message)
-                                )
+                        server.broadcast(SystemChatPacket(
+                            Component.translatable(
+                                "chat.type.text",
+                                Component.text(username),
+                                Component.text(packet.message)
                             )
-                        ) { it.options.chatMode == 0 }
+                        )) { it.options.chatMode == 0 }
                     }
 
                     is ClientOptionsPacket -> options = packet.options
-
                     is CommandCompletionsRequestPacket -> {
                         val reader = StringReader(packet.command)
                         if (reader.canRead() && reader.peek() == '/') {
@@ -554,8 +551,9 @@ class PlayClient(
                         var itemStack = data.inventory[slot]
                         if (itemStack != null) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            server.world.setBlock(placePos, DEFAULT_BLOCKSTATES[itemStack.itemId] ?: Blocks.STONE)
-                            server.broadcast(SetBlockPacket(placePos, itemStack.itemId))
+                            val blockState = DEFAULT_BLOCKSTATES[itemStack.itemId] ?: Blocks.STONE
+                            server.world.setBlock(placePos, blockState)
+                            server.broadcast(SetBlockPacket(placePos, blockState))
                             if (!data.gamemode.defaultAbilities.creativeMode) {
                                 if (--itemStack.count == 0) {
                                     itemStack = null
@@ -589,7 +587,7 @@ class PlayClient(
                                     entityId, EntityAnimationPacket.SWING_MAINHAND
                                 )
                             )
-                            server.broadcast(SetBlockPacket(packet.location, null))
+                            server.broadcast(SetBlockPacket(packet.location, Blocks.AIR))
                         }
                     }
 

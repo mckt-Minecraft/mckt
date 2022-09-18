@@ -27,10 +27,10 @@ class Int2ObjectBiMap<V>(
 
     operator fun set(key: Int, value: V) {
         keyToValue.put(key, value)
-        valueToKey[value] = key
+        valueToKey.put(value, key)
     }
 
-    val values: Set<V> = valueToKey.keys
+    val values: Set<V> get() = valueToKey.keys
 
     fun clear() {
         keyToValue.clear()
