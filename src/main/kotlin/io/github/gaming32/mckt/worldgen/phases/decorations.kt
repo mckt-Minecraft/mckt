@@ -11,9 +11,11 @@ import kotlin.random.Random
 class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
         private const val REQUIREMENT = 0.2
-        private const val REQUIREMENT_2 = 0.5
+        private const val REQUIREMENT_2 = 0.4
+        private const val REQUIREMENT_3 = 0.6
         private const val FLIP_CONSTANT = 4009383296558120008L
         private const val SCALE = 200.0
+        private const val MAX_TRIES = 40
     }
 
     private val perlin = PerlinNoise(generator.seed xor FLIP_CONSTANT)
@@ -22,30 +24,53 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
         val cx = chunk.x shl 4
         val cz = chunk.z shl 4
         val noise = perlin.noise2d(cx / SCALE, cz / SCALE)
-        if (noise > REQUIREMENT) {
-            val offsetX = rand.nextInt(12)
-            val offsetZ = rand.nextInt(12)
-            val absX = cx + offsetX
-            val absZ = cz + offsetZ
-            draw(chunk, rand, offsetX, generator.groundPhase.getHeight(absX + 2, absZ + 2) + 1, offsetZ)
-            if (noise > REQUIREMENT_2) {
-                var offsetX2 = rand.nextInt(12)
-                if (offsetX2 in offsetX..offsetX + 4) {
-                    offsetX2 = (offsetX + 5).mod(12)
-                } else if (offsetX2 in offsetX - 4 until offsetX) {
-                    offsetX2 = (offsetX - 5).mod(12)
-                }
-                var offsetZ2 = rand.nextInt(12)
-                if (offsetZ2 in offsetZ..offsetZ + 4) {
-                    offsetZ2 = (offsetZ + 5).mod(12)
-                } else if (offsetZ2 in offsetZ - 4 until offsetZ) {
-                    offsetZ2 = (offsetZ - 5).mod(12)
-                }
-                val absX2 = cx + offsetX2
-                val absZ2 = cz + offsetZ2
-                draw(chunk, rand, offsetX2, generator.groundPhase.getHeight(absX2 + 2, absZ2 + 2) + 1, offsetZ2)
-            }
-        }
+        if (noise < REQUIREMENT) return
+        val offsetX = rand.nextInt(12)
+        val offsetZ = rand.nextInt(12)
+        draw(
+            chunk, rand,
+            offsetX,
+            generator.groundPhase.getHeight(cx + offsetX + 2, cz + offsetZ + 2) + 1,
+            offsetZ
+        )
+        if (noise < REQUIREMENT_2) return
+        var offsetX2: Int
+        var i = 0
+        do {
+            offsetX2 = rand.nextInt(12)
+            if (i++ > MAX_TRIES) return
+        } while (offsetX2 in offsetX - 4..offsetX + 4)
+        var offsetZ2: Int
+        i = 0
+        do {
+            offsetZ2 = rand.nextInt(12)
+            if (i++ > MAX_TRIES) return
+        } while (offsetZ2 in offsetZ - 4..offsetZ + 4)
+        draw(
+            chunk, rand,
+            offsetX2,
+            generator.groundPhase.getHeight(cx + offsetX2 + 2, cz + offsetZ2 + 2) + 1,
+            offsetZ2
+        )
+        if (noise < REQUIREMENT_3) return
+        var offsetX3: Int
+        i = 0
+        do {
+            offsetX3 = rand.nextInt(12)
+            if (i++ > MAX_TRIES) return
+        } while (offsetX3 in offsetX - 4..offsetX + 4 || offsetX3 in offsetX2 - 4..offsetX2 + 4)
+        var offsetZ3: Int
+        i = 0
+        do {
+            offsetZ3 = rand.nextInt(12)
+            if (i++ > MAX_TRIES) return
+        } while (offsetZ3 in offsetZ - 4..offsetZ + 4 || offsetZ3 in offsetZ2 - 4..offsetZ2 + 4)
+        draw(
+            chunk, rand,
+            offsetX3,
+            generator.groundPhase.getHeight(cx + offsetX3 + 2, cz + offsetZ3 + 2) + 1,
+            offsetZ3
+        )
     }
 
     private fun draw(chunk: WorldChunk, rand: Random, x: Int, y: Int, z: Int) {
@@ -80,9 +105,7 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
         chunk.setBlockIf(x + 2, endY + 1, z + 1, Blocks.LEAVES)
         chunk.setBlockIf(x + 2, endY + 1, z + 3, Blocks.LEAVES)
         chunk.setBlockIf(x + 2, endY + 1, z + 2, Blocks.LEAVES)
-        if (x + 2 in 0..15 && z + 2 in 0..15) {
-            chunk.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
-        }
+        chunk.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
     }
 
     private fun WorldChunk.setBlockIf(x: Int, y: Int, z: Int, block: BlockState) {
