@@ -10,10 +10,10 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.id
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes.networkSerialize
 import io.github.gaming32.mckt.commands.arguments.ArgumentTypes.typeId
-import io.github.gaming32.mckt.data.MinecraftOutputStream
-import io.github.gaming32.mckt.data.MinecraftWritable
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE) {
     companion object {
@@ -100,9 +100,9 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE)
         val flags: Int,
         val children: IntArray,
         val redirectNode: Int,
-        val extraData: MinecraftWritable? = null
-    ) : MinecraftWritable {
-        override fun write(out: MinecraftOutputStream) {
+        val extraData: Writable? = null
+    ) : Writable {
+        override fun write(out: OutputStream) {
             out.writeByte(flags)
             out.writeVarInt(children.size)
             children.forEach { out.writeVarInt(it) }
@@ -121,14 +121,14 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE)
         val name: String,
         val type: ArgumentType<*>,
         val customSuggestions: Identifier? = null
-    ) : MinecraftWritable {
+    ) : Writable {
         constructor(node: ArgumentCommandNode<CommandSource, *>) : this(
             node.name,
             node.type,
             node.customSuggestions?.id
         )
 
-        override fun write(out: MinecraftOutputStream) {
+        override fun write(out: OutputStream) {
             out.writeString(name)
             out.writeVarInt(type.typeId?.let { id ->
                 ArgumentTypes.getNetworkId(id)
@@ -140,8 +140,8 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE)
         }
     }
 
-    data class LiteralExtraData(val literal: String) : MinecraftWritable {
-        override fun write(out: MinecraftOutputStream) = out.writeString(literal)
+    data class LiteralExtraData(val literal: String) : Writable {
+        override fun write(out: OutputStream) = out.writeString(literal)
     }
 
     val rootNodeId: Int
@@ -150,7 +150,7 @@ class CommandTreePacket(rootNode: RootCommandNode<CommandSource>) : Packet(TYPE)
         collect(nodes)
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(nodesList.size)
         nodesList.forEach { it.write(out) }
         out.writeVarInt(rootNodeId)

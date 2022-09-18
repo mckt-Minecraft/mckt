@@ -1,7 +1,9 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeFloat
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 data class GameEventPacket(val event: UByte, val value: Float) : Packet(TYPE) {
     companion object {
@@ -20,7 +22,7 @@ data class GameEventPacket(val event: UByte, val value: Float) : Packet(TYPE) {
         const val TOGGLE_RESPAWN_SCREEN: UByte = 11u
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeByte(event.toInt())
         out.writeFloat(value)
     }

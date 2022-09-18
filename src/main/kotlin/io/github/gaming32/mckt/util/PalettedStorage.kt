@@ -1,15 +1,18 @@
 package io.github.gaming32.mckt.util
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeLong
+import io.github.gaming32.mckt.data.writeVarInt
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
+import java.io.OutputStream
 
 class PalettedStorage<V>(
     val size: Int,
     private val defaultValue: V,
-    private val encoder: V.(out: MinecraftOutputStream) -> Unit
+    private val encoder: V.(out: OutputStream) -> Unit
 ) {
     private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
         valueToKeyDefaultReturnValue = -1
@@ -46,7 +49,7 @@ class PalettedStorage<V>(
 
     fun getPaletteItems() = (0 until palette.size).asSequence().map { palette.getValue(it) }
 
-    fun encode(out: MinecraftOutputStream) {
+    fun encode(out: OutputStream) {
         out.writeByte(storage.bits)
         out.writeVarInt(palette.size)
         palette.values.forEach { it.encoder(out) }

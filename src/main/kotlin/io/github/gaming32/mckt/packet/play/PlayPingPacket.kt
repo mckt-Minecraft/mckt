@@ -1,9 +1,10 @@
 package io.github.gaming32.mckt.packet.play
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.data.readInt
+import io.github.gaming32.mckt.data.writeInt
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class PlayPingPacket(val id: Int) : Packet(S2C_TYPE) {
     companion object {
@@ -13,5 +14,5 @@ data class PlayPingPacket(val id: Int) : Packet(S2C_TYPE) {
 
     constructor(inp: InputStream) : this(inp.readInt())
 
-    override fun write(out: MinecraftOutputStream) = out.writeInt(id)
+    override fun write(out: OutputStream) = out.writeInt(id)
 }

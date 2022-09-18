@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.packet.play.c2s
 import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class ServerboundChatPacket(
     val message: String,
@@ -23,7 +24,7 @@ data class ServerboundChatPacket(
         inp.readBoolean()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeString(message, 256)
         out.writeLong(timestamp)
         out.writeLong(salt)

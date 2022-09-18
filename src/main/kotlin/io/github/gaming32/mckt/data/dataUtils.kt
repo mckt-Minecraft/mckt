@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package io.github.gaming32.mckt.data
 
 import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
@@ -15,88 +17,16 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.io.*
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.PI
 
 private const val VARINT_SEGMENT_BITS = 0x7f
 private const val VARINT_CONTINUE_BIT = 0x80
 
-open class MinecraftOutputStream(out: OutputStream) : DataOutputStream(out) {
-    fun writeString(s: String, maxLength: Int = 32767) {
-        val encoded = s.encodeToByteArray()
-        if (encoded.size > maxLength) {
-            throw IllegalArgumentException("String exceeds maxLength ($maxLength bytes)")
-        }
-        writeVarInt(encoded.size)
-        write(encoded)
-    }
-
-    fun writeText(text: Component) = writeString(GsonComponentSerializer.gson().serialize(text), 262144)
-
-    fun writeIdentifier(id: Identifier) = writeString(id.toString(), 32767)
-
-    fun writeVarInt(i: Int) {
-        var value = i
-        while (true) {
-            if ((value and VARINT_SEGMENT_BITS.inv()) == 0) {
-                return write(value)
-            }
-
-            write(value and VARINT_SEGMENT_BITS or VARINT_CONTINUE_BIT)
-
-            value = value ushr 7
-        }
-    }
-
-    fun writeVarLong(l: Long) {
-        var value = l
-        while (true) {
-            if ((value and VARINT_SEGMENT_BITS.toLong().inv()) == 0L) {
-                return write(value.toInt())
-            }
-
-            write((value and VARINT_SEGMENT_BITS.toLong() or VARINT_CONTINUE_BIT.toLong()).toInt())
-
-            value = value ushr 7
-        }
-    }
-
-    fun writeItemStack(item: ItemStack?) {
-        writeBoolean(item != null && item.count > 0)
-        if (item != null && item.count > 0) {
-            writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
-            writeVarInt(item.count)
-            if (item.extraNbt.isNullOrEmpty()) {
-                writeByte(0) // TAG_End
-            } else {
-                writeNbtTag(item.extraNbt)
-            }
-        }
-    }
-
-    fun writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(NbtTag.serializer(), tag, this)
-
-    fun writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
-
-    fun writeDegrees(degrees: Float) = write((degrees / 360.0 * 256.0).toInt())
-
-    fun writeRadians(radians: Float) = write((radians / 2.0 / PI * 256.0).toInt())
-
-    fun writeUuid(uuid: UUID) {
-        writeLong(uuid.mostSignificantBits)
-        writeLong(uuid.leastSignificantBits)
-    }
-
-    fun writeBitSet(bits: BitSet) {
-        val data = bits.toLongArray()
-        writeVarInt(data.size)
-        for (l in data) {
-            writeLong(l)
-        }
-    }
-}
-
-interface MinecraftWritable {
-    fun write(out: MinecraftOutputStream)
+interface Writable {
+    fun write(out: OutputStream)
 }
 
 //region Readers
@@ -217,7 +147,7 @@ fun InputStream.readIdentifier() = Identifier.parse(readString(32767))
 
 inline fun <reified T : Enum<T>> InputStream.readVarIntEnum() = enumValues<T>()[readVarInt()]
 
-inline fun <reified T : Enum<T>> InputStream.readUByteEnum() = enumValues<T>()[readUByte().toInt()]
+inline fun <reified T : Enum<T>> InputStream.readByteEnum() = enumValues<T>()[readUByte().toInt()]
 
 fun InputStream.readItemStack(): ItemStack? {
     if (!readBoolean()) return null
@@ -240,6 +170,162 @@ fun InputStream.readRadians() = readUByte().toFloat() / 128f * PI.toFloat()
 fun InputStream.readUuid() = UUID(readLong(), readLong())
 
 fun InputStream.readBitSet(): BitSet = BitSet.valueOf(readLongArray())
+//endregion
+
+//region Writers
+@Suppress("NOTHING_TO_INLINE")
+inline fun OutputStream.writeByte(b: Int) = write(b)
+
+fun OutputStream.writeBoolean(b: Boolean) = write(if (b) 1 else 0)
+
+fun OutputStream.writeShort(i: Int) {
+    write(i ushr 8 and 0xFF)
+    write(i ushr 0 and 0xFF)
+}
+
+fun OutputStream.writeInt(i: Int) {
+    write(i ushr 24 and 0xFF)
+    write(i ushr 16 and 0xFF)
+    write(i ushr 8 and 0xFF)
+    write(i ushr 0 and 0xFF)
+}
+
+fun OutputStream.writeFloat(f: Float) = writeInt(f.toRawBits())
+
+fun OutputStream.writeLong(l: Long) = if (this is DataOutputStream) {
+    writeLong(l)
+} else {
+    val buffer = ByteArray(8)
+    buffer[0] = (l ushr 56).toByte()
+    buffer[1] = (l ushr 48).toByte()
+    buffer[2] = (l ushr 40).toByte()
+    buffer[3] = (l ushr 32).toByte()
+    buffer[4] = (l ushr 24).toByte()
+    buffer[5] = (l ushr 16).toByte()
+    buffer[6] = (l ushr 8).toByte()
+    buffer[7] = (l ushr 0).toByte()
+    write(buffer, 0, 8)
+}
+
+fun OutputStream.writeDouble(d: Double) = writeLong(d.toRawBits())
+
+fun OutputStream.writeVarInt(i: Int) {
+    var value = i
+    while (true) {
+        if ((value and VARINT_SEGMENT_BITS.inv()) == 0) {
+            return write(value)
+        }
+
+        write(value and VARINT_SEGMENT_BITS or VARINT_CONTINUE_BIT)
+
+        value = value ushr 7
+    }
+}
+
+fun OutputStream.writeVarLong(l: Long) {
+    var value = l
+    while (true) {
+        if ((value and VARINT_SEGMENT_BITS.toLong().inv()) == 0L) {
+            return write(value.toInt())
+        }
+
+        write((value and VARINT_SEGMENT_BITS.toLong() or VARINT_CONTINUE_BIT.toLong()).toInt())
+
+        value = value ushr 7
+    }
+}
+
+fun OutputStream.writeLongArray(array: LongArray) {
+    writeVarInt(array.size)
+    array.forEach { writeLong(it) }
+}
+
+fun OutputStream.writeVarIntArray(array: IntArray) {
+    writeVarInt(array.size)
+    array.forEach { writeVarInt(it) }
+}
+
+inline fun <T> OutputStream.writeArray(array: Array<T>, writer: OutputStream.(T) -> Unit) {
+    writeVarInt(array.size)
+    array.forEach { writer(it) }
+}
+
+inline fun <T> OutputStream.writeArray(array: List<T>, writer: OutputStream.(T) -> Unit) {
+    writeVarInt(array.size)
+    array.forEach { writer(it) }
+}
+
+inline fun <K, V> OutputStream.writeArray(array: Map<K, V>, writer: OutputStream.(K, V) -> Unit) {
+    writeVarInt(array.size)
+    array.forEach { writer(it.key, it.value) }
+}
+
+inline fun <T> OutputStream.writeOptional(v: T?, writer: OutputStream.(T) -> Unit) {
+    contract {
+        callsInPlace(writer, InvocationKind.AT_MOST_ONCE)
+    }
+    writeBoolean(v != null)
+    v?.let { writer(it) }
+}
+
+fun OutputStream.writeString(s: String, maxLength: Int = 32767) {
+    val encoded = s.encodeToByteArray()
+    if (encoded.size > maxLength) {
+        throw IllegalArgumentException("String exceeds maxLength ($maxLength bytes)")
+    }
+    writeVarInt(encoded.size)
+    write(encoded)
+}
+
+fun OutputStream.writeOptionalString(s: String?, maxLength: Int = 32767) {
+    writeBoolean(s != null)
+    s?.let { writeString(it, maxLength) }
+}
+
+fun OutputStream.writeText(text: Component) = writeString(GsonComponentSerializer.gson().serialize(text), 262144)
+
+fun OutputStream.writeOptionalText(text: Component?) {
+    writeBoolean(text != null)
+    text?.let { writeText(it) }
+}
+
+fun OutputStream.writeIdentifier(id: Identifier) = writeString(id.toString(), 32767)
+
+fun OutputStream.writeIdentifierArray(ids: List<Identifier>) = writeArray(ids) { writeIdentifier(it) }
+
+fun <T : Enum<T>> OutputStream.writeVarIntEnum(v: T) = writeVarInt(v.ordinal)
+
+fun <T : Enum<T>> OutputStream.writeByteEnum(v: T) = write(v.ordinal)
+
+fun OutputStream.writeItemStack(item: ItemStack?) {
+    writeBoolean(item != null && item.count > 0)
+    if (item != null && item.count > 0) {
+        writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
+        writeVarInt(item.count)
+        if (item.extraNbt.isNullOrEmpty()) {
+            write(0) // TAG_End
+        } else {
+            writeNbtTag(item.extraNbt)
+        }
+    }
+}
+
+fun OutputStream.writeItemStackArray(items: Array<out ItemStack?>) = writeArray(items) { writeItemStack(it) }
+
+fun OutputStream.writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(NbtTag.serializer(), tag, this)
+
+fun OutputStream.writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
+
+fun OutputStream.writeDegrees(degrees: Float) = write((degrees / 360f * 256f).toInt())
+
+fun OutputStream.writeRadians(radians: Float) = write((radians * 128f / PI.toFloat()).toInt())
+
+fun OutputStream.writeUuid(uuid: UUID) {
+    writeLong(uuid.mostSignificantBits)
+    writeLong(uuid.leastSignificantBits)
+}
+
+fun OutputStream.writeBitSet(bits: BitSet) = writeLongArray(bits.toLongArray())
 //endregion
 
 //region Ktor IO extensions
@@ -276,5 +362,5 @@ suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
 }
 //endregion
 
-inline fun encodeData(builder: MinecraftOutputStream.() -> Unit): ByteArray =
-    ByteArrayOutputStream().also { MinecraftOutputStream(it).builder() }.toByteArray()
+inline fun encodeData(builder: OutputStream.() -> Unit): ByteArray =
+    ByteArrayOutputStream().also { it.builder() }.toByteArray()

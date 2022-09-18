@@ -5,6 +5,7 @@ import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class UseItemOnBlockPacket(
     val offhand: Boolean,
@@ -31,7 +32,7 @@ data class UseItemOnBlockPacket(
         inp.readVarInt()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeBoolean(offhand)
         out.writeBlockPosition(location)
         out.writeVarInt(face.ordinal)

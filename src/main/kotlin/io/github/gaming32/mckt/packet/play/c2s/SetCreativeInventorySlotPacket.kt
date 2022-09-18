@@ -1,11 +1,13 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.data.readItemStack
 import io.github.gaming32.mckt.data.readUShort
+import io.github.gaming32.mckt.data.writeItemStack
+import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class SetCreativeInventorySlotPacket(val slot: Int, val item: ItemStack?) : Packet(TYPE) {
     companion object {
@@ -17,7 +19,7 @@ data class SetCreativeInventorySlotPacket(val slot: Int, val item: ItemStack?) :
         inp.readItemStack()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeShort(slot)
         out.writeItemStack(item)
     }

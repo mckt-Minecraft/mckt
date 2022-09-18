@@ -1,9 +1,10 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJumpBoost: Int = 0) : Packet(TYPE) {
     companion object {
@@ -25,7 +26,7 @@ data class PlayerCommandPacket(val entityId: Int, val action: Int, val horseJump
         inp.readVarInt()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(entityId)
         out.writeVarInt(action)
         out.writeVarInt(horseJumpBoost)

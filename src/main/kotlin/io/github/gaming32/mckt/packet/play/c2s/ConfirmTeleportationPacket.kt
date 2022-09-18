@@ -1,9 +1,10 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class ConfirmTeleportationPacket(val teleportId: Int) : Packet(TYPE) {
     companion object {
@@ -12,5 +13,5 @@ data class ConfirmTeleportationPacket(val teleportId: Int) : Packet(TYPE) {
 
     constructor(inp: InputStream) : this(inp.readVarInt())
 
-    override fun write(out: MinecraftOutputStream) = out.writeVarInt(teleportId)
+    override fun write(out: OutputStream) = out.writeVarInt(teleportId)
 }

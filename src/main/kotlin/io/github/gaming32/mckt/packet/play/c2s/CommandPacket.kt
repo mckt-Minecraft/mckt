@@ -1,11 +1,9 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
-import io.github.gaming32.mckt.data.readLong
-import io.github.gaming32.mckt.data.readString
-import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class CommandPacket(val command: String, val timestamp: Long) : Packet(TYPE) {
     companion object {
@@ -20,7 +18,7 @@ data class CommandPacket(val command: String, val timestamp: Long) : Packet(TYPE
         }
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeString(command)
         out.writeLong(timestamp)
         out.writeLong(0L) // Salt

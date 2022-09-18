@@ -1,7 +1,11 @@
 package io.github.gaming32.mckt.packet.login.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeArray
+import io.github.gaming32.mckt.data.writeBoolean
+import io.github.gaming32.mckt.data.writeString
+import io.github.gaming32.mckt.data.writeUuid
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 import java.util.*
 
 data class LoginSuccessPacket(
@@ -15,15 +19,14 @@ data class LoginSuccessPacket(
 
     class Property(val name: String, val value: String, val signature: String? = null)
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeUuid(uuid)
         out.writeString(username, 16)
-        out.writeVarInt(properties.size)
-        properties.forEach { property ->
-            out.writeString(property.name)
-            out.writeString(property.value)
-            out.writeBoolean(property.signature != null)
-            property.signature?.let { out.writeString(it) }
+        out.writeArray(properties) { property ->
+            writeString(property.name)
+            writeString(property.value)
+            writeBoolean(property.signature != null)
+            property.signature?.let { writeString(it) }
         }
     }
 }

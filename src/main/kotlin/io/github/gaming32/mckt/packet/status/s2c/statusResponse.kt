@@ -3,13 +3,14 @@
 package io.github.gaming32.mckt.packet.status.s2c
 
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeString
 import io.github.gaming32.mckt.objects.TextSerializer
 import io.github.gaming32.mckt.objects.UUIDSerializer
 import io.github.gaming32.mckt.packet.Packet
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import net.kyori.adventure.text.Component
+import java.io.OutputStream
 import java.util.*
 
 @Serializable
@@ -48,5 +49,5 @@ data class StatusResponsePacket(val status: StatusResponse) : Packet(TYPE) {
         const val TYPE = 0x00
     }
 
-    override fun write(out: MinecraftOutputStream) = out.writeString(Json.encodeToString(status))
+    override fun write(out: OutputStream) = out.writeString(Json.encodeToString(status))
 }

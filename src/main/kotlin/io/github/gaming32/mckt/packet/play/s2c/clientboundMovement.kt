@@ -1,7 +1,8 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 import kotlin.math.roundToInt
 
 data class EntityTeleportPacket(
@@ -17,7 +18,7 @@ data class EntityTeleportPacket(
         const val TYPE = 0x66
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(entityId)
         out.writeDouble(x)
         out.writeDouble(y)
@@ -38,7 +39,7 @@ sealed class EntityRelativeMovementPacket(
     val pitch: Float? = null,
     val onGround: Boolean
 ) : Packet(type) {
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(entityId)
         relX?.let { out.writeShort((it * 4096).roundToInt()) }
         relY?.let { out.writeShort((it * 4096).roundToInt()) }

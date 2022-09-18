@@ -3,7 +3,9 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.commands.CommandSource
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeShort
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
@@ -24,6 +26,7 @@ import net.benwoodworth.knbt.*
 import net.kyori.adventure.text.Component
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.OutputStream
 import java.util.*
 import kotlin.random.Random
 import kotlin.reflect.typeOf
@@ -542,7 +545,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
         }
     }
 
-    fun networkEncode(out: MinecraftOutputStream) {
+    fun networkEncode(out: OutputStream) {
         for (section in sections) {
             if (section == null) {
                 out.writeShort(0) // Block count

@@ -1,11 +1,12 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.Gamemode
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.Packet
 import net.benwoodworth.knbt.NbtCompound
+import java.io.OutputStream
 
 data class PlayLoginPacket(
     val entityId: Int,
@@ -30,13 +31,12 @@ data class PlayLoginPacket(
         const val TYPE = 0x25
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeInt(entityId)
         out.writeBoolean(hardcore)
-        out.writeByte(gamemode.ordinal)
+        out.writeByteEnum(gamemode)
         out.writeByte(previousGamemode?.ordinal ?: -1)
-        out.writeVarInt(dimensions.size)
-        dimensions.forEach { out.writeIdentifier(it) }
+        out.writeIdentifierArray(dimensions)
         out.writeNbtTag(registryCodec)
         out.writeIdentifier(dimensionType)
         out.writeIdentifier(dimensionName)
@@ -48,8 +48,7 @@ data class PlayLoginPacket(
         out.writeBoolean(enableRespawnScreen)
         out.writeBoolean(isDebug)
         out.writeBoolean(isFlat)
-        out.writeBoolean(deathLocation != null)
-        deathLocation?.let { (dimension, position) ->
+        out.writeOptional(deathLocation) { (dimension, position) ->
             out.writeIdentifier(dimension)
             out.writeBlockPosition(position)
         }

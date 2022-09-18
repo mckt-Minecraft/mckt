@@ -1,8 +1,12 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeItemStack
+import io.github.gaming32.mckt.data.writeItemStackArray
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 class SetContainerContentPacket(
     val windowId: UByte,
@@ -13,11 +17,10 @@ class SetContainerContentPacket(
         const val TYPE = 0x11
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeByte(windowId.toInt())
         out.writeVarInt(0) // State ID
-        out.writeVarInt(slots.size)
-        slots.forEach { out.writeItemStack(it) }
+        out.writeItemStackArray(slots)
         out.writeItemStack(carriedItem)
     }
 

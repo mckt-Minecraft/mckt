@@ -1,11 +1,9 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
-import io.github.gaming32.mckt.data.readBoolean
-import io.github.gaming32.mckt.data.readDouble
-import io.github.gaming32.mckt.data.readFloat
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 sealed class MovementPacket(
     type: Int,
@@ -16,7 +14,7 @@ sealed class MovementPacket(
     val pitch: Float? = null,
     val onGround: Boolean
 ) : Packet(type) {
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         x?.let { out.writeDouble(it) }
         y?.let { out.writeDouble(it) }
         z?.let { out.writeDouble(it) }

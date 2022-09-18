@@ -1,10 +1,10 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
-import io.github.gaming32.mckt.getLogger
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import net.benwoodworth.knbt.buildNbtCompound
 import net.benwoodworth.knbt.put
+import java.io.OutputStream
 import java.util.*
 
 data class ChunkAndLightDataPacket(
@@ -16,10 +16,9 @@ data class ChunkAndLightDataPacket(
         private val EMPTY_BIT_SET = BitSet(256)
         private val FULL_BIT_SET = BitSet.valueOf(LongArray(4) { -1L })
         private val HEIGHTMAP = LongArray(52)
-        private val LOGGER = getLogger()
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeInt(x)
         out.writeInt(z)
         out.writeNbtTag(buildNbtCompound("") {

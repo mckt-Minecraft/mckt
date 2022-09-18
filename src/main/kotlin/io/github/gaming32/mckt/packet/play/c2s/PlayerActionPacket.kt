@@ -5,6 +5,7 @@ import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class PlayerActionPacket(
     val action: Action,
@@ -29,11 +30,11 @@ data class PlayerActionPacket(
     constructor(inp: InputStream) : this(
         inp.readVarIntEnum(),
         inp.readBlockPosition(),
-        inp.readUByteEnum(),
+        inp.readByteEnum(),
         inp.readVarInt()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(action.ordinal)
         out.writeBlockPosition(location)
         out.writeByte(face.ordinal)

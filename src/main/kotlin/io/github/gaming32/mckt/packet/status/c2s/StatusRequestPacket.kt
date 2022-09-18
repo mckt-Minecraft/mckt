@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.packet.status.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 class StatusRequestPacket() : Packet(TYPE) {
     companion object {
@@ -11,7 +11,7 @@ class StatusRequestPacket() : Packet(TYPE) {
 
     constructor(inp: InputStream) : this()
 
-    override fun write(out: MinecraftOutputStream) = Unit
+    override fun write(out: OutputStream) = Unit
 
     override fun toString() = "StatusRequestPacket()"
 }

@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.packet
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
-import io.github.gaming32.mckt.data.MinecraftWritable
+import io.github.gaming32.mckt.data.Writable
 import io.github.gaming32.mckt.data.encodeData
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.getLogger
 import io.ktor.utils.io.*
 import kotlinx.coroutines.sync.Mutex
@@ -17,29 +17,25 @@ private val DEFLATER = Deflater()
 private val BUFFER = ByteArray(8192)
 private val LOGGER = getLogger()
 
-abstract class Packet(val type: Int) : MinecraftWritable {
+abstract class Packet(val type: Int) : Writable {
     suspend fun writePacket(channel: ByteWriteChannel, compression: Int) {
         LOGGER.debug("Sending packet {}", this)
         var output = ByteArrayOutputStream()
-        MinecraftOutputStream(output).let { mcOut ->
-            mcOut.writeVarInt(type)
-            write(mcOut)
-        }
+        output.writeVarInt(type)
+        write(output)
         if (compression != -1) {
             val out2 = ByteArrayOutputStream()
-            MinecraftOutputStream(out2).let { mcOut ->
-                if (output.size() > compression) {
-                    mcOut.writeVarInt(output.size())
-                    DEFLATER.setInput(output.toByteArray())
-                    DEFLATER.finish()
-                    while (!DEFLATER.finished()) {
-                        out2.write(BUFFER, 0, DEFLATER.deflate(BUFFER))
-                    }
-                    DEFLATER.reset()
-                } else {
-                    mcOut.writeVarInt(0)
-                    mcOut.write(output.toByteArray())
+            if (output.size() > compression) {
+                out2.writeVarInt(output.size())
+                DEFLATER.setInput(output.toByteArray())
+                DEFLATER.finish()
+                while (!DEFLATER.finished()) {
+                    out2.write(BUFFER, 0, DEFLATER.deflate(BUFFER))
                 }
+                DEFLATER.reset()
+            } else {
+                out2.writeVarInt(0)
+                out2.write(output.toByteArray())
             }
             output = out2
         }

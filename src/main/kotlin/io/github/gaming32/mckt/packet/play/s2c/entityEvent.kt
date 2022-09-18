@@ -1,7 +1,9 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeInt
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 object EntityEvent {
     const val SPAWN_HONEY_PARTICLES: UByte = 53u
@@ -24,7 +26,7 @@ data class EntityEventPacket(val entityId: Int, val event: UByte) : Packet(TYPE)
         const val TYPE = 0x1A
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeInt(entityId)
         out.writeByte(event.toInt())
     }

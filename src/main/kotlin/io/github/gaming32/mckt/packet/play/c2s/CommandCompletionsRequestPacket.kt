@@ -1,10 +1,12 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
 import io.github.gaming32.mckt.data.readString
 import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.data.writeString
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 
 data class CommandCompletionsRequestPacket(val requestId: Int, val command: String) : Packet(TYPE) {
     companion object {
@@ -16,7 +18,7 @@ data class CommandCompletionsRequestPacket(val requestId: Int, val command: Stri
         inp.readString(32500)
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(requestId)
         out.writeString(command, 32500)
     }

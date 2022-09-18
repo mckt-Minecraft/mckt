@@ -1,7 +1,11 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeDegrees
+import io.github.gaming32.mckt.data.writeDouble
+import io.github.gaming32.mckt.data.writeUuid
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 import java.util.*
 
 data class SpawnPlayerPacket(
@@ -17,7 +21,7 @@ data class SpawnPlayerPacket(
         val TYPE = 0x02
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(entityId)
         out.writeUuid(uuid)
         out.writeDouble(x)

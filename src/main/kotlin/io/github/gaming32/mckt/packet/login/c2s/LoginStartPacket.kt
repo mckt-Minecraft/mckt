@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.packet.login.c2s
 import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
+import java.io.OutputStream
 import java.util.*
 
 data class LoginStartPacket(
@@ -26,7 +27,7 @@ data class LoginStartPacket(
         if (!inp.readBoolean()) null else inp.readUuid()
     )
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeString(username, 16)
         out.writeBoolean(signatureInfo != null)
         signatureInfo?.let {

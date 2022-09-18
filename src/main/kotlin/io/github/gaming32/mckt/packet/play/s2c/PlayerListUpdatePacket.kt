@@ -1,9 +1,10 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.Gamemode
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
 import net.kyori.adventure.text.Component
+import java.io.OutputStream
 import java.util.*
 
 class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
@@ -22,9 +23,7 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
         }
     }
 
-    sealed class Action(val type: Int, val uuid: UUID) {
-        abstract fun write(out: MinecraftOutputStream)
-    }
+    sealed class Action(val type: Int, val uuid: UUID) : Writable
 
     class AddPlayer(
         uuid: UUID,
@@ -43,26 +42,22 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
             override fun toString() = "SignatureData(timestamp=$timestamp, publicKey=..., signature=...)"
         }
 
-        override fun write(out: MinecraftOutputStream) {
+        override fun write(out: OutputStream) {
             out.writeString(name, 16)
-            out.writeVarInt(properties.size)
-            properties.forEach { name, (value, signature) ->
-                out.writeString(name)
-                out.writeString(value)
-                out.writeBoolean(signature != null)
-                signature?.let { out.writeString(it) }
+            out.writeArray(properties) { name, (value, signature) ->
+                writeString(name)
+                writeString(value)
+                writeOptionalString(signature)
             }
-            out.writeVarInt(gamemode.ordinal)
+            out.writeVarIntEnum(gamemode)
             out.writeVarInt(ping)
-            out.writeBoolean(displayName != null)
-            displayName?.let { out.writeText(it) }
-            out.writeBoolean(signatureData != null)
-            signatureData?.let {
-                out.writeLong(it.timestamp)
-                out.writeVarInt(it.publicKey?.size ?: 0)
-                it.publicKey?.let { key -> out.write(key) }
-                out.writeVarInt(it.signature?.size ?: 0)
-                it.signature?.let { sig -> out.write(sig) }
+            out.writeOptionalText(displayName)
+            out.writeOptional(signatureData) {
+                writeLong(it.timestamp)
+                writeVarInt(it.publicKey?.size ?: 0)
+                it.publicKey?.let { key -> write(key) }
+                writeVarInt(it.signature?.size ?: 0)
+                it.signature?.let { sig -> write(sig) }
             }
         }
 
@@ -72,43 +67,39 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
     }
 
     class UpdateGamemode(uuid: UUID, val gamemode: Gamemode) : Action(1, uuid) {
-        override fun write(out: MinecraftOutputStream) = out.writeVarInt(gamemode.ordinal)
+        override fun write(out: OutputStream) = out.writeVarIntEnum(gamemode)
 
         override fun toString() = "UpdateGamemode(uuid=$uuid, gamemode=$gamemode)"
     }
 
     class UpdatePing(uuid: UUID, val ping: Int) : Action(2, uuid) {
-        override fun write(out: MinecraftOutputStream) = out.writeVarInt(ping)
+        override fun write(out: OutputStream) = out.writeVarInt(ping)
 
         override fun toString() = "UpdatePing(uuid=$uuid, ping=$ping)"
     }
 
     class UpdateDisplayName(uuid: UUID, val displayName: Component?) : Action(3, uuid) {
-        override fun write(out: MinecraftOutputStream) {
-            out.writeBoolean(displayName != null)
-            displayName?.let { out.writeText(it) }
-        }
+        override fun write(out: OutputStream) = out.writeOptionalText(displayName)
 
         override fun toString() = "UpdateDisplayName(uuid=$uuid, displayName=$displayName)"
     }
 
     class RemovePlayer(uuid: UUID) : Action(4, uuid) {
-        override fun write(out: MinecraftOutputStream) = Unit
+        override fun write(out: OutputStream) = Unit
 
         override fun toString() = "RemovePlayer(uuid=$uuid)"
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         if (actions.isEmpty()) {
             out.writeVarInt(0)
             out.writeVarInt(0)
             return
         }
         out.writeVarInt(actions[0].type)
-        out.writeVarInt(actions.size)
-        actions.forEach { action ->
-            out.writeUuid(action.uuid)
-            action.write(out)
+        out.writeArray(actions) { action ->
+            writeUuid(action.uuid)
+            action.write(this)
         }
     }
 

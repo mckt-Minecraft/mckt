@@ -1,19 +1,19 @@
 package io.github.gaming32.mckt.commands.arguments
 
 import com.mojang.brigadier.arguments.*
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.objects.Identifier
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import java.io.OutputStream
 
-@Suppress("BlockingMethodInNonBlockingContext")
 object ArgumentTypes {
     private val REGISTRY = mutableMapOf<
         Class<out ArgumentType<*>>,
         Pair<
             Identifier,
-            ArgumentType<*>.(out: MinecraftOutputStream) -> Unit
+            ArgumentType<*>.(out: OutputStream) -> Unit
             >
         >()
     @OptIn(ExperimentalSerializationApi::class)
@@ -108,19 +108,19 @@ object ArgumentTypes {
     fun <T : ArgumentType<*>> register(
         id: Identifier,
         argumentType: Class<T>,
-        infoSerializer: T.(out: MinecraftOutputStream) -> Unit = {}
+        infoSerializer: T.(out: OutputStream) -> Unit = {}
     ) {
         if (argumentType in REGISTRY) {
             throw IllegalArgumentException("Already registered: $id/$argumentType")
         }
         @Suppress("UNCHECKED_CAST")
-        REGISTRY[argumentType] = Pair(id, infoSerializer as ArgumentType<*>.(out: MinecraftOutputStream) -> Unit)
+        REGISTRY[argumentType] = Pair(id, infoSerializer as ArgumentType<*>.(out: OutputStream) -> Unit)
     }
 
     fun getNetworkId(typeId: Identifier) = NETWORK_IDS[typeId]
         ?: throw IllegalArgumentException("Argument type $typeId not supported for network serialization")
 
-    fun ArgumentType<*>.networkSerialize(out: MinecraftOutputStream) {
+    fun ArgumentType<*>.networkSerialize(out: OutputStream) {
         val serializer = REGISTRY[javaClass]?.second
             ?: throw IllegalArgumentException("Cannot serialize $this")
         serializer(out)

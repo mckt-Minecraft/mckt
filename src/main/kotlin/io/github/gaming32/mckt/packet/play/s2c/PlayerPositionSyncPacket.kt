@@ -1,7 +1,8 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 data class PlayerPositionSyncPacket(
     val teleportId: Int,
@@ -21,7 +22,7 @@ data class PlayerPositionSyncPacket(
         const val TYPE = 0x39
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeDouble(x)
         out.writeDouble(y)
         out.writeDouble(z)

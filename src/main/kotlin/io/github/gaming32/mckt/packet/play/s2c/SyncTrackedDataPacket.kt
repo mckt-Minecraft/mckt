@@ -1,8 +1,10 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.data.MinecraftOutputStream
+import io.github.gaming32.mckt.data.writeByte
+import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.EntityPose
 import io.github.gaming32.mckt.packet.Packet
+import java.io.OutputStream
 
 data class SyncTrackedDataPacket(
     val entityId: Int,
@@ -13,7 +15,7 @@ data class SyncTrackedDataPacket(
         const val TYPE = 0x50
     }
 
-    override fun write(out: MinecraftOutputStream) {
+    override fun write(out: OutputStream) {
         out.writeVarInt(entityId)
         out.writeByte(0) // Index 0 = Entity.flags
         out.writeVarInt(0) // Type 0 = Byte
