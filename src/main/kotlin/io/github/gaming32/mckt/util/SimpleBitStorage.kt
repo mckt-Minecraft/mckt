@@ -67,8 +67,8 @@ class SimpleBitStorage(val bits: Int, val size: Int, input: LongArray? = null) {
     }
 
     fun getAndSet(i: Int, j: Int): Int {
-        require(i in 0 until size)
-        require(j.toLong() in 0L..mask)
+        require(i in 0 until size) { "Index out of bounds" }
+        require(j.toLong() in 0L..mask) { "Value out of range" }
         val k = cellIndex(i)
         val l = data[k]
         val m = (i - k * valuesPerLong) * bits
@@ -78,8 +78,8 @@ class SimpleBitStorage(val bits: Int, val size: Int, input: LongArray? = null) {
     }
 
     operator fun set(i: Int, j: Int) {
-        require(i in 0 until size)
-        require(j.toLong() in 0..mask)
+        require(i in 0 until size) { "Index out of bounds" }
+        require(j.toLong() in 0..mask) { "Value out of range" }
         val k = cellIndex(i)
         val l = data[k]
         val m = (i - k * valuesPerLong) * bits
@@ -87,7 +87,7 @@ class SimpleBitStorage(val bits: Int, val size: Int, input: LongArray? = null) {
     }
 
     operator fun get(i: Int): Int {
-        require(i in 0 until size)
+        require(i in 0 until size) { "Index out of bounds" }
         val j = cellIndex(i)
         val l = data[j]
         val k = (i - j * valuesPerLong) * bits

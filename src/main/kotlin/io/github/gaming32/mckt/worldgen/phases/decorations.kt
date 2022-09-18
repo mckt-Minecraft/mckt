@@ -10,9 +10,10 @@ import kotlin.random.Random
 
 class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
-        private const val REQUIREMENT = 0.5
+        private const val REQUIREMENT = 0.2
+        private const val REQUIREMENT_2 = 0.5
         private const val FLIP_CONSTANT = 4009383296558120008L
-        private const val SCALE = 150.0
+        private const val SCALE = 200.0
     }
 
     private val perlin = PerlinNoise(generator.seed xor FLIP_CONSTANT)
@@ -20,12 +21,30 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
     override fun generateChunk(chunk: WorldChunk, rand: Random) {
         val cx = chunk.x shl 4
         val cz = chunk.z shl 4
-        if (perlin.noise2d(cx / SCALE, cz / SCALE) > REQUIREMENT) {
+        val noise = perlin.noise2d(cx / SCALE, cz / SCALE)
+        if (noise > REQUIREMENT) {
             val offsetX = rand.nextInt(12)
             val offsetZ = rand.nextInt(12)
             val absX = cx + offsetX
             val absZ = cz + offsetZ
             draw(chunk, rand, offsetX, generator.groundPhase.getHeight(absX + 2, absZ + 2) + 1, offsetZ)
+            if (noise > REQUIREMENT_2) {
+                var offsetX2 = rand.nextInt(12)
+                if (offsetX2 in offsetX..offsetX + 4) {
+                    offsetX2 = (offsetX + 5).mod(12)
+                } else if (offsetX2 in offsetX - 4 until offsetX) {
+                    offsetX2 = (offsetX - 5).mod(12)
+                }
+                var offsetZ2 = rand.nextInt(12)
+                if (offsetZ2 in offsetZ..offsetZ + 4) {
+                    offsetZ2 = (offsetZ + 5).mod(12)
+                } else if (offsetZ2 in offsetZ - 4 until offsetZ) {
+                    offsetZ2 = (offsetZ - 5).mod(12)
+                }
+                val absX2 = cx + offsetX2
+                val absZ2 = cz + offsetZ2
+                draw(chunk, rand, offsetX2, generator.groundPhase.getHeight(absX2 + 2, absZ2 + 2) + 1, offsetZ2)
+            }
         }
     }
 
@@ -67,8 +86,6 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
     }
 
     private fun WorldChunk.setBlockIf(x: Int, y: Int, z: Int, block: BlockState) {
-        if (x < 0 || x > 15) return
-        if (z < 0 || z > 15) return
         if (getBlock(x, y, z) == Blocks.AIR) {
             setBlock(x, y, z, block)
         }
