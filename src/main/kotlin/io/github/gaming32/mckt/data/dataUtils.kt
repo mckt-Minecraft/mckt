@@ -36,7 +36,7 @@ fun InputStream.readFully(b: ByteArray, off: Int, len: Int) {
     if (len < 0) throw IndexOutOfBoundsException()
     var n = 0
     while (n < len) {
-        val count: Int = read(b, off + n, len - n)
+        val count = read(b, off + n, len - n)
         if (count < 0) throw EOFException()
         n += count
     }

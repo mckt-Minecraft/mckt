@@ -12,10 +12,7 @@ import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -322,8 +319,10 @@ class World(val server: MinecraftServer, val name: String) {
         if (region == null) {
             region = WorldRegion(this@World, x, z)
             openRegions[x, z] = region
-            launch(saveLoadPool) { region.load() }.join()
+            region.loadJob = launch(saveLoadPool) { region.load() }
         }
+        region.loadJob?.join()
+        region.loadJob = null
         region
     }
 
@@ -409,6 +408,8 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
         @SerialName("ChunksPresent") val chunksPresent: BitSet,
         @SerialName("Chunks")        val chunks: Array<WorldChunk.ChunkData>
     )
+
+    internal var loadJob: Job? = null
 
     private val chunks = arrayOfNulls<WorldChunk>(32 * 32)
 
