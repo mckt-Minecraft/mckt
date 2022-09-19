@@ -21,6 +21,7 @@ application {
 tasks.withType<Jar> {
     manifest {
         attributes["Main-Class"] = applicationMainClassName
+        attributes["Multi-Release"] = true
     }
 }
 

@@ -58,7 +58,14 @@ class ConsoleCommandSource(server: MinecraftServer, name: String) : CommandSourc
     override val displayName = Component.text(name)
     override val operator get() = 4
 
-    override suspend fun reply(message: Component) = LOGGER.info(message.plainText())
+    override suspend fun reply(message: Component) {
+        val text = message.plainText()
+        if ('\n' in text && text[0] != '\n') {
+            LOGGER.info("\n$text")
+        } else {
+            LOGGER.info(text)
+        }
+    }
 }
 
 class ClientCommandSource(val client: PlayClient) : CommandSource(client.server) {
