@@ -23,14 +23,15 @@ import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.future.await
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
+import kotlinx.serialization.json.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
@@ -104,6 +105,8 @@ class PlayClient(
 
     var options = ClientOptions(this)
     internal var ended = false
+    var properties = mapOf<String, Pair<String, String?>>()
+        private set
 
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
@@ -173,11 +176,33 @@ class PlayClient(
         ))
         syncOpLevel()
         syncPosition(false)
+
+        properties = try {
+            val uuid = server.httpClient
+                .request("https://api.mojang.com/users/profiles/minecraft/$username")
+                .body<JsonObject>()["id"]
+                ?.cast<JsonPrimitive>()
+                ?.content ?: throw IllegalStateException("No UUID!")
+            server.httpClient
+                .request("https://sessionserver.mojang.com/session/minecraft/profile/$uuid?unsigned=false")
+                .body<JsonObject>()["properties"]
+                ?.cast<JsonArray>()
+                ?.associate { property ->
+                    property as JsonObject
+                    property["name"]?.cast<JsonPrimitive>()!!.content to (
+                        property["value"]?.cast<JsonPrimitive>()!!.content to
+                            property["signature"]?.cast<JsonPrimitive>()?.contentOrNull
+                    )
+                } ?: throw IllegalStateException("No properties!")
+        } catch (e: Exception) {
+            LOGGER.warn("Failed to retrieve player skin data", e)
+            mapOf()
+        }
         sendPacket(PlayerListUpdatePacket(
             *server.clients.values.map { client -> PlayerListUpdatePacket.AddPlayer(
                 uuid = client.uuid,
                 name = client.username,
-                properties = mapOf(),
+                properties = client.properties,
                 gamemode = client.data.gamemode,
                 ping = -1,
                 displayName = null,
@@ -188,7 +213,7 @@ class PlayClient(
             PlayerListUpdatePacket.AddPlayer(
                 uuid = uuid,
                 name = username,
-                properties = mapOf(),
+                properties = properties,
                 gamemode = data.gamemode,
                 ping = -1,
                 displayName = null,

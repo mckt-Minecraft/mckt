@@ -10,6 +10,7 @@ import kotlinx.serialization.json.*
 
 const val MINECRAFT_VERSION = "1.19.2"
 const val PROTOCOL_VERSION = 760
+val MCKT_VERSION = MinecraftServer::class.java.`package`.specificationVersion ?: "UNKNOWN"
 
 @Serializable
 data class GameVersion(

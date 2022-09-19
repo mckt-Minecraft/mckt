@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val applicationMainClassName: String by project
+val ktorVersion: String by project
+val adventureVersion: String by project
 val log4jVersion: String by project
 val jlineVersion: String by project
 
@@ -22,6 +24,7 @@ tasks.withType<Jar> {
     manifest {
         attributes["Main-Class"] = applicationMainClassName
         attributes["Multi-Release"] = true
+        attributes["Specification-Version"] = project.version
     }
 }
 
@@ -33,12 +36,16 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-network:2.1.1")
+    implementation("io.ktor:ktor-network:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
-    implementation("net.kyori:adventure-api:4.11.0")
-    implementation("net.kyori:adventure-text-serializer-gson:4.11.0")
-    implementation("net.kyori:adventure-text-serializer-legacy:4.11.0")
-    implementation("net.kyori:adventure-text-serializer-plain:4.11.0")
+    implementation("net.kyori:adventure-api:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
 
     implementation("net.benwoodworth.knbt:knbt:0.11.2")
 

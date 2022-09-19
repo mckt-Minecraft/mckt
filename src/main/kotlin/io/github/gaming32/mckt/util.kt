@@ -118,3 +118,12 @@ fun wrapDegrees(degrees: Float) = (degrees % 360f).let { when {
 } }
 
 fun Any?.toText() = if (this is ComponentLike) asComponent() else Component.text(toString())
+
+fun uuidFromAnyString(s: String) = UUID.fromString(
+    s.replaceFirst (
+        "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
+        "$1-$2-$3-$4-$5"
+    )
+)!!
+
+inline fun <reified T> Any.cast() = this as? T

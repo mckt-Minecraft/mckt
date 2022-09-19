@@ -22,8 +22,14 @@ import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -43,6 +49,24 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.List
+import kotlin.collections.asSequence
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.contains
+import kotlin.collections.filter
+import kotlin.collections.firstOrNull
+import kotlin.collections.forEach
+import kotlin.collections.forEachIndexed
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapNotNull
+import kotlin.collections.mapTo
+import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
+import kotlin.collections.remove
+import kotlin.collections.set
+import kotlin.collections.toList
 import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
@@ -94,6 +118,15 @@ class MinecraftServer(
         newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors() - 1, "Heavy-Computation")
     }
 
+    val httpClient = HttpClient(CIO) {
+        defaultRequest {
+            header("User-Agent", "mckt/$MCKT_VERSION")
+        }
+        install(ContentNegotiation) {
+            json()
+        }
+    }
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
 
@@ -117,6 +150,11 @@ class MinecraftServer(
                     LOGGER.info("{} left the game.", client.username)
                     clients.remove(client.username)
                     client.close()
+                    broadcastChat(Component.translatable(
+                        "multiplayer.player.left",
+                        NamedTextColor.YELLOW,
+                        Component.text(client.username)
+                    ))
                     broadcast(PlayerListUpdatePacket(
                         PlayerListUpdatePacket.RemovePlayer(client.uuid)
                     ))
@@ -164,6 +202,7 @@ class MinecraftServer(
         if (threadPoolContext is CloseableCoroutineDispatcher) {
             threadPoolContext.close()
         }
+        httpClient.close()
         LOGGER.info("Server stopped")
     }
 
@@ -277,10 +316,9 @@ class MinecraftServer(
             .then(argument<CommandSource, String>("message", greedyString())
                 .executesSuspend {
                     val message = getString("message")
-                    LOGGER.info("CHAT: [{}] {}", source.displayName.plainText(), message)
-                    source.server.broadcast(SystemChatPacket(
+                    source.server.broadcastChat(
                         Component.translatable("chat.type.announcement", source.displayName, Component.text(message))
-                    ))
+                    )
                     0
                 }
             )
@@ -390,7 +428,7 @@ class MinecraftServer(
         registerCommand(Component.text("Set player gamemode"), literal<CommandSource>("gamemode").also { command ->
             command.requires { it.hasPermission(1) }
             Gamemode.values().forEach { gamemode ->
-                val gamemodeText = Component.text(gamemode.name.capitalize())
+                val gamemodeText = Component.translatable("gameMode.${gamemode.name.lowercase()}")
                 command.then(literal<CommandSource>(gamemode.name.lowercase())
                     .executesSuspend {
                         source.player.setGamemode(gamemode)
@@ -600,10 +638,11 @@ class MinecraftServer(
             while (running) {
                 val line = try {
                     GlobalScope.async(Dispatchers.IO) {
-                        reader.readLine("> ")
+                        reader.readLine()
                     }.await()?.trim()?.ifEmpty { null } ?: continue
                 } catch (e: UserInterruptException) {
-                    continue
+                    running = false
+                    break
                 } catch (e: EndOfFileException) {
                     break
                 }
@@ -710,7 +749,18 @@ class MinecraftServer(
                                         oldClient.kick(
                                             Component.translatable("multiplayer.disconnect.duplicate_login")
                                         )
+                                        oldClient.save()
+                                        broadcastChat(Component.translatable(
+                                            "multiplayer.player.left",
+                                            NamedTextColor.YELLOW,
+                                            Component.text(client.username)
+                                        ))
                                     }
+                                    broadcastChat(Component.translatable(
+                                        "multiplayer.player.joined",
+                                        NamedTextColor.YELLOW,
+                                        Component.text(client.username)
+                                    ))
                                     client.postHandshake()
                                 }
                             })
@@ -726,6 +776,11 @@ class MinecraftServer(
                 }
             }
         }
+    }
+
+    suspend fun broadcastChat(message: Component) {
+        LOGGER.info("CHAT: {}", message.plainText())
+        broadcast(SystemChatPacket(message))
     }
 
     suspend fun broadcast(packet: Packet) = coroutineScope {
