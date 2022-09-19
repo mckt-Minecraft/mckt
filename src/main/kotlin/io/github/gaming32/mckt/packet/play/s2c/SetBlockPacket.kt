@@ -15,7 +15,7 @@ data class SetBlockPacket(val location: BlockPosition, val blockState: BlockStat
 
     override fun write(out: OutputStream) {
         out.writeBlockPosition(location)
-        out.writeVarInt(BLOCKSTATE_TO_ID[blockState]
+        out.writeVarInt(BLOCKSTATE_TO_ID.getInt(blockState).takeIf { it != -1 }
             ?: throw IllegalArgumentException("Not network syncable: $blockState"))
     }
 }

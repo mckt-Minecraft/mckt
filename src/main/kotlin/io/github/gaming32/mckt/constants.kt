@@ -75,7 +75,9 @@ data class BlockState(
     }
 
     fun canonicalize(): BlockState {
-        return ID_TO_BLOCKSTATE[BLOCKSTATE_TO_ID[this] ?: return this] ?: this
+        return ID_TO_BLOCKSTATE.getOrNull(
+            BLOCKSTATE_TO_ID.getInt(this).takeIf { it != -1 } ?: return this
+        ) ?: this
     }
 }
 
@@ -120,7 +122,9 @@ val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE
 val ID_TO_BLOCKSTATE = arrayOfNulls<BlockState>(GLOBAL_PALETTE.size).apply {
     GLOBAL_PALETTE.forEach { this[it.globalId] = it }
 } as Array<BlockState>
-val BLOCKSTATE_TO_ID = GLOBAL_PALETTE.associateWithTo(Object2IntOpenHashMap()) { it.globalId }
+val BLOCKSTATE_TO_ID = GLOBAL_PALETTE.associateWithTo(Object2IntOpenHashMap()) {
+    it.globalId
+}.apply { defaultReturnValue(-1) }
 
 @OptIn(ExperimentalSerializationApi::class)
 private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->
