@@ -17,9 +17,9 @@ jobs:
         uses: actions/upload-artifact@v2.3.1
         with:
           name: build-distributions
-          path: build/distributions/*.zip
+          path: build/distributions/*
       - name: Upload build JARs
         uses: actions/upload-artifact@v2.3.1
         with:
           name: build-jars
-          path: build/libs/*.jar
+          path: build/libs/*

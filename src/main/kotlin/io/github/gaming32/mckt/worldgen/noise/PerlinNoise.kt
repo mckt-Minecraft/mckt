@@ -22,8 +22,8 @@ class PerlinNoise(seed: Long?) {
         )
     }
 
-    private val perm = if (seed == null) PERM else PERM.copyOf()
-        .apply { shuffle(Random(seed)) }
+    private val perm = (if (seed == null) PERM else PERM.copyOf()
+        .apply { shuffle(Random(seed)) })
         .copyOf(257).also { it[256] = it[0] }
 
     fun noise1d(x: Double): Double {

@@ -34,10 +34,15 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.jline.reader.*
+import org.jline.utils.AttributedString
+import org.jline.utils.AttributedStringBuilder
+import org.jline.utils.AttributedStyle
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
@@ -45,8 +50,15 @@ import kotlin.math.min
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
+private val STYLES = listOf(
+    AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN),
+    AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW),
+    AttributedStyle.DEFAULT.foreground(AttributedStyle.MAGENTA)
+)
 
-class MinecraftServer {
+class MinecraftServer(
+    val useJline: Boolean = false
+) {
     var running = true
     private val handshakeJobs = mutableSetOf<Job>()
     @PublishedApi internal val clients = mutableMapOf<String, PlayClient>()
@@ -91,7 +103,7 @@ class MinecraftServer {
         world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
-        LOGGER.info("Server started...")
+        LOGGER.info("Server started")
         while (running) {
             val startTime = System.nanoTime()
             world.meta.time++
@@ -176,7 +188,7 @@ class MinecraftServer {
     }
 
     private fun registerCommands() {
-        registerCommand(Component.text("Shows this help"), literal<CommandSource>("help")
+        registerCommand(Component.text("Show this help"), literal<CommandSource>("help")
             .executesSuspend {
                 source.reply(Component.text("Here's a list of the commands you can use:\n")
                     .append(Component.join(
@@ -550,6 +562,54 @@ class MinecraftServer {
     @Suppress("RedundantAsync")
     @OptIn(DelicateCoroutinesApi::class)
     private suspend fun handleCommands() {
+        if (useJline) {
+            val reader = LineReaderBuilder.builder()
+                .completer { _, line, candidates ->
+                    val parsed = commandDispatcher.parse(line.line(), consoleCommandSender)
+                    val suggestions = commandDispatcher.getCompletionSuggestions(parsed, line.cursor()).get()
+                    suggestions.list.mapTo(candidates) { Candidate(it.text) }
+                }
+                .highlighter(object : Highlighter {
+                    override fun setErrorIndex(errorIndex: Int) = Unit
+                    override fun setErrorPattern(errorPattern: Pattern?) = Unit
+                    override fun highlight(reader: LineReader, buffer: String): AttributedString {
+                        val parsed = commandDispatcher.parse(buffer, consoleCommandSender)
+                        val sb = AttributedStringBuilder()
+                        var end = 0
+                        parsed.context.nodes.forEachIndexed { index, node ->
+                            val range = node.range
+                            sb.append(" ".repeat(range.start - end), AttributedStyle.DEFAULT)
+                            sb.append(
+                                buffer.substring(range.start, range.end.coerceAtMost(buffer.length)),
+                                if (node.node is LiteralCommandNode<*>) {
+                                    AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN)
+                                } else {
+                                    STYLES[index % STYLES.size]
+                                }
+                            )
+                            end = range.end
+                        }
+                        sb.append(
+                            buffer.substring(end.coerceAtMost(buffer.length)),
+                            AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)
+                        )
+                        return sb.toAttributedString()
+                    }
+                })
+                .build()
+            while (running) {
+                val line = try {
+                    GlobalScope.async(Dispatchers.IO) {
+                        reader.readLine("> ")
+                    }.await()?.trim()?.ifEmpty { null } ?: continue
+                } catch (e: UserInterruptException) {
+                    continue
+                } catch (e: EndOfFileException) {
+                    break
+                }
+                consoleCommandSender.runCommand(line, commandDispatcher)
+            }
+        }
         while (running) {
             consoleCommandSender.runCommand(
                 GlobalScope.async(Dispatchers.IO) { readlnOrNull() }.await()?.trim()?.ifEmpty { null } ?: continue,
@@ -683,11 +743,11 @@ class MinecraftServer {
     suspend fun broadcastExcept(client: PlayClient, packet: Packet) = broadcast(packet) { it !== client }
 }
 
-fun main() {
+fun main(vararg args: String) {
     thread(name = "Timer-Hack-Thread", isDaemon = true) {
         while (true) {
             Thread.sleep(Long.MAX_VALUE)
         }
     }
-    runBlocking { MinecraftServer().run() }
+    runBlocking { MinecraftServer(useJline = "--no-jline" !in args).run() }
 }

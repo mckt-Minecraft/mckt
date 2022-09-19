@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 class IntIntPair2ObjectMap<V>(private val internal: Long2ObjectMap<V> = Long2ObjectOpenHashMap()) {
     private fun join(x: Int, y: Int) = x.toLong() shl 32 or y.toUInt().toLong()
 
-    val values: Collection<V> = internal.values
+    val values: Collection<V> get() = internal.values
 
     operator fun get(x: Int, y: Int): V? = internal[join(x, y)]
     operator fun set(x: Int, y: Int, value: V) {

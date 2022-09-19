@@ -2,11 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val applicationMainClassName: String by project
 val log4jVersion: String by project
+val jlineVersion: String by project
 
 plugins {
     application
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
+    id("io.ktor.plugin") version "2.1.1"
 }
 
 group = "io.github.gaming32"
@@ -47,6 +49,9 @@ dependencies {
 
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
+
+    implementation("org.jline:jline-reader:$jlineVersion")
+    implementation("org.jline:jline-terminal-jansi:$jlineVersion")
 }
 
 tasks.withType<KotlinCompile> {
