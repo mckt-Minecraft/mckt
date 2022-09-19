@@ -225,7 +225,13 @@ class PlayClient(
         sendPacket(ClientboundSetHeldItemPacket(data.selectedHotbarSlot))
 
         val spawnPlayerPacket = SpawnPlayerPacket(entityId, uuid, data.x, data.y, data.z, data.yaw, data.pitch)
-        val syncTrackedDataPacket = SyncTrackedDataPacket(entityId, data.flags, data.pose)
+        val syncTrackedDataPacket = SyncTrackedDataPacket(
+            entityId,
+            data.flags,
+            data.pose,
+            options.displayedSkinParts,
+            options.mainHand
+        )
         val equipment = data.getEquipment()
         val setEquipmentPacket = if (equipment.isNotEmpty()) {
             SetEquipmentPacket(entityId, *equipment.toList().toTypedArray())
@@ -244,7 +250,13 @@ class PlayClient(
                 client.data.x, client.data.y, client.data.z,
                 client.data.yaw, client.data.pitch
             ))
-            sendPacket(SyncTrackedDataPacket(client.entityId, client.data.flags, data.pose))
+            sendPacket(SyncTrackedDataPacket(
+                client.entityId,
+                client.data.flags,
+                client.data.pose,
+                client.options.displayedSkinParts,
+                client.options.mainHand
+            ))
             val otherEquipment = client.data.getEquipment()
             if (otherEquipment.isNotEmpty()) {
                 sendPacket(SetEquipmentPacket(client.entityId, *otherEquipment.toList().toTypedArray()))
@@ -374,7 +386,27 @@ class PlayClient(
                         )) { it.options.chatMode == 0 }
                     }
 
-                    is ClientOptionsPacket -> options = packet.options
+                    is ClientOptionsPacket -> {
+                        val newOptions = packet.options
+                        val changedSkinParts = if (options.displayedSkinParts != newOptions.displayedSkinParts) {
+                            newOptions.displayedSkinParts
+                        } else {
+                            null
+                        }
+                        val changedMainHand = if (options.mainHand != newOptions.mainHand) {
+                            newOptions.mainHand
+                        } else {
+                            null
+                        }
+                        options = newOptions
+                        if (changedSkinParts != null || changedMainHand != null) {
+                            server.broadcast(SyncTrackedDataPacket(
+                                entityId,
+                                displayedSkinParts = changedSkinParts,
+                                mainHand = changedMainHand
+                            ))
+                        }
+                    }
                     is CommandCompletionsRequestPacket -> {
                         val reader = StringReader(packet.command)
                         if (reader.canRead() && reader.peek() == '/') {
@@ -696,7 +728,7 @@ class PlayClient(
         } else {
             data.flags = data.flags and EntityFlags.INVISIBLE.inv()
         }
-        server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
+        server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
     }
 
     override suspend fun sendPacket(packet: Packet) {
