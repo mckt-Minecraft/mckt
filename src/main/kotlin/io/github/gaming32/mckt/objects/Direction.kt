@@ -6,5 +6,7 @@ enum class Direction(val vector: BlockPosition) {
     NORTH(BlockPosition(0, 0, -1)),
     SOUTH(BlockPosition(0, 0, 1)),
     WEST(BlockPosition(-1, 0, 0)),
-    EAST(BlockPosition(1, 0, 0))
+    EAST(BlockPosition(1, 0, 0));
+
+    val opposite get() = values()[if ((ordinal and 1) == 0) ordinal + 1 else ordinal - 1]
 }

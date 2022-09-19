@@ -7,7 +7,6 @@ import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
-import io.github.gaming32.mckt.packet.play.s2c.SetEquipmentPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
@@ -695,9 +694,9 @@ class PlayerData(
             }
         }
 
-    fun getEquipment(): Map<SetEquipmentPacket.Slot, ItemStack?> {
-        val result = enumMapOf<SetEquipmentPacket.Slot, ItemStack?>()
-        for (slot in SetEquipmentPacket.Slot.values()) {
+    fun getEquipment(): Map<EquipmentSlot, ItemStack?> {
+        val result = enumMapOf<EquipmentSlot, ItemStack?>()
+        for (slot in EquipmentSlot.values()) {
             val rawSlot = if (slot.rawSlot == -1) selectedInventorySlot else slot.rawSlot
             if (inventory[rawSlot] != null) {
                 result[slot] = inventory[rawSlot]

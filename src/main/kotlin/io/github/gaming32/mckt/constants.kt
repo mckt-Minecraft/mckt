@@ -2,6 +2,7 @@ package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.data.toGson
 import io.github.gaming32.mckt.objects.Identifier
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -115,8 +116,11 @@ val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE
     .filter(BlockState::defaultForId)
     .associateBy(BlockState::blockId)
 
-val ID_TO_BLOCKSTATE = GLOBAL_PALETTE.associateBy { it.globalId }
-val BLOCKSTATE_TO_ID = ID_TO_BLOCKSTATE.inverted()
+@Suppress("UNCHECKED_CAST")
+val ID_TO_BLOCKSTATE = arrayOfNulls<BlockState>(GLOBAL_PALETTE.size).apply {
+    GLOBAL_PALETTE.forEach { this[it.globalId] = it }
+} as Array<BlockState>
+val BLOCKSTATE_TO_ID = GLOBAL_PALETTE.associateWithTo(Object2IntOpenHashMap()) { it.globalId }
 
 @OptIn(ExperimentalSerializationApi::class)
 private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->
@@ -128,7 +132,7 @@ private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/
 val ITEM_ID_TO_PROTOCOL = REGISTRIES_DATA[Identifier("item")]?.entrySet()?.associate { (name, data) ->
     Identifier.parse(name) to data.asJsonObject["protocol_id"].asInt
 } ?: mapOf()
-val ITEM_PROTOCOL_TO_ID = ITEM_ID_TO_PROTOCOL.inverted()
+val ITEM_PROTOCOL_TO_ID = ITEM_ID_TO_PROTOCOL.invert()
 
 @OptIn(ExperimentalSerializationApi::class)
 val DEFAULT_TAGS = MinecraftServer::class.java.getResourceAsStream("/defaultTags.json")?.use { input ->

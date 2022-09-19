@@ -12,10 +12,7 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.data.encodeData
 import io.github.gaming32.mckt.data.writeString
-import io.github.gaming32.mckt.objects.EntityDimensions
-import io.github.gaming32.mckt.objects.EntityPose
-import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.objects.Vector3d
+import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
@@ -518,17 +515,18 @@ class PlayClient(
                         server.broadcastExcept(
                             this@PlayClient, SetEquipmentPacket(
                                 entityId,
-                                SetEquipmentPacket.Slot.MAIN_HAND to data.inventory[data.selectedInventorySlot]
+                                EquipmentSlot.MAIN_HAND to data.inventory[data.selectedInventorySlot]
                             )
                         )
                     }
 
                     is SetCreativeInventorySlotPacket -> {
                         data.inventory[packet.slot] = packet.item
-                        val syncSlot = SetEquipmentPacket.Slot.getSlot(packet.slot)
+                        sendPacket(SetContainerSlotPacket(0, packet.slot, packet.item))
+                        val syncSlot = EquipmentSlot.getSlot(packet.slot)
                         if (
                             syncSlot != null &&
-                            (syncSlot != SetEquipmentPacket.Slot.MAIN_HAND || packet.slot == data.selectedInventorySlot)
+                            (syncSlot != EquipmentSlot.MAIN_HAND || packet.slot == data.selectedInventorySlot)
                         ) {
                             server.broadcastExcept(this@PlayClient, SetEquipmentPacket(entityId, syncSlot to packet.item))
                         }
@@ -547,7 +545,7 @@ class PlayClient(
                         } else {
                             packet.location + packet.face.vector
                         }
-                        val slot = if (packet.offhand) 45 else data.selectedInventorySlot
+                        val slot = if (packet.offhand) EquipmentSlot.OFFHAND.rawSlot else data.selectedInventorySlot
                         var itemStack = data.inventory[slot]
                         if (itemStack != null) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
@@ -560,16 +558,14 @@ class PlayClient(
                                     data.inventory[slot] = null
                                 }
                             }
-                            server.broadcastExcept(
-                                this@PlayClient, SetEquipmentPacket(
-                                    entityId,
-                                    if (packet.offhand) {
-                                        SetEquipmentPacket.Slot.OFFHAND
-                                    } else {
-                                        SetEquipmentPacket.Slot.MAIN_HAND
-                                    } to itemStack
-                                )
-                            )
+                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                entityId,
+                                if (packet.offhand) {
+                                    EquipmentSlot.OFFHAND
+                                } else {
+                                    EquipmentSlot.MAIN_HAND
+                                } to itemStack
+                            ))
                         }
                     }
 
@@ -582,12 +578,22 @@ class PlayClient(
                         if (packet.action == finishedAction) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
                             server.world.setBlock(packet.location, Blocks.AIR)
-                            server.broadcastExcept(
-                                this@PlayClient, EntityAnimationPacket(
-                                    entityId, EntityAnimationPacket.SWING_MAINHAND
-                                )
-                            )
+                            server.broadcastExcept(this@PlayClient, EntityAnimationPacket(
+                                entityId, EntityAnimationPacket.SWING_MAINHAND
+                            ))
                             server.broadcast(SetBlockPacket(packet.location, Blocks.AIR))
+                        } else if (packet.action == PlayerActionPacket.Action.SWAP_OFFHAND) {
+                            val newOffhand = data.inventory[data.selectedInventorySlot]
+                            val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                            data.inventory[data.selectedInventorySlot] = newMainhand
+                            data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
+                            sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
+                            sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                entityId,
+                                EquipmentSlot.MAIN_HAND to newMainhand,
+                                EquipmentSlot.OFFHAND to newOffhand
+                            ))
                         }
                     }
 
