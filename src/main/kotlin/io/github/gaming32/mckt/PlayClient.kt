@@ -130,10 +130,7 @@ class PlayClient(
             compression = useCompression
         }
         sendPacket(LoginSuccessPacket(uuid, username))
-    }
 
-    @OptIn(ExperimentalSerializationApi::class)
-    suspend fun postHandshake() = coroutineScope {
         dataFile = File(server.world.playersDir, "$username.json")
         data = try {
             dataFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
@@ -144,7 +141,10 @@ class PlayClient(
             val spawnPoint = server.world.findSpawnPoint()
             PlayerData(spawnPoint.x + 0.5, spawnPoint.y.toDouble(), spawnPoint.z + 0.5)
         }
+    }
 
+    @OptIn(ExperimentalSerializationApi::class)
+    suspend fun postHandshake() = coroutineScope {
         sendPacket(PlayLoginPacket(
             entityId = entityId,
             hardcore = false,

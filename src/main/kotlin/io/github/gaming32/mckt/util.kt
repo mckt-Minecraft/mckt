@@ -26,6 +26,7 @@ val TRANSLATABLE_FLATTENER = ComponentFlattener.basic().toBuilder().apply {
         val translation = DEFAULT_TRANSLATIONS[component.key()]
             ?: return@complexMapper handler.accept(Component.text(component.key()))
         val parts = translation.split("%s", limit = component.args().size + 1)
+        if (parts.isEmpty()) return@complexMapper
         handler.accept(Component.text(parts[0].replace("%%", "%")))
         for (i in 1 until parts.size) {
             handler.accept(component.args()[i - 1])
@@ -95,8 +96,7 @@ fun Component.attributedTextTo(builder: AttributedStringBuilder) =
         val styleStack = ArrayDeque<Style>()
 
         override fun pushStyle(style: Style) {
-            val top = styleStack.lastOrNull()
-            if (top != null) {
+            if (!style.isEmpty) { // No style change, nothing to do
                 builder.style {
                     var newStyle = it
                     ADVENTURE_TO_JLINE_STYLES.forEach { adventure, (jlineOn, jlineOff, _) ->
@@ -110,7 +110,8 @@ fun Component.attributedTextTo(builder: AttributedStringBuilder) =
                     newStyle
                 }
             }
-            styleStack.addLast(if (top != null) style.merge(top, Style.Merge.colorAndDecorations()) else style)
+            val top = styleStack.lastOrNull()
+            styleStack.addLast(if (top != null) style.merge(top) else style)
         }
 
         override fun component(text: String) {
@@ -121,27 +122,29 @@ fun Component.attributedTextTo(builder: AttributedStringBuilder) =
             styleStack.removeLast()
             val top = styleStack.lastOrNull()
             if (top != null) {
-                builder.style {
-                    var newStyle = it
-                    ADVENTURE_TO_JLINE_STYLES.forEach { adventure, (jlineOn, jlineOff, jlineDefault) ->
-                        val state = top.decoration(adventure)
-                        if (state == TextDecoration.State.NOT_SET) {
-                            newStyle = jlineDefault(newStyle)
-                        } else if (state != style.decoration(adventure)) {
-                            newStyle = if (state == TextDecoration.State.TRUE) {
-                                jlineOn(newStyle)
-                            } else {
-                                jlineOff(newStyle)
+                if (!style.isEmpty) { // Nothing had changed, thus nothing to do
+                    builder.style {
+                        var newStyle = it
+                        ADVENTURE_TO_JLINE_STYLES.forEach { adventure, (jlineOn, jlineOff, jlineDefault) ->
+                            val state = top.decoration(adventure)
+                            if (state == TextDecoration.State.NOT_SET) {
+                                newStyle = jlineDefault(newStyle)
+                            } else if (state != style.decoration(adventure)) {
+                                newStyle = if (state == TextDecoration.State.TRUE) {
+                                    jlineOn(newStyle)
+                                } else {
+                                    jlineOff(newStyle)
+                                }
                             }
                         }
+                        val color = top.color()
+                        if (color == null) {
+                            newStyle = newStyle.foregroundDefault()
+                        } else if (color != style.color()) {
+                            newStyle = newStyle.foreground(color.red(), color.green(), color.blue())
+                        }
+                        newStyle
                     }
-                    val color = top.color()
-                    if (color == null) {
-                        newStyle = newStyle.foregroundDefault()
-                    } else if (color != style.color()) {
-                        newStyle = newStyle.foreground(color.red(), color.green(), color.blue())
-                    }
-                    newStyle
                 }
             } else {
                 builder.style(AttributedStyle.DEFAULT)

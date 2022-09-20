@@ -38,7 +38,11 @@ abstract class CommandSource(val server: MinecraftServer) {
         reply(message)
         val broadcastMessage = Component.translatable("chat.type.admin", NamedTextColor.GRAY, displayName, message)
         if (this !is ConsoleCommandSource) {
-            LOGGER.info(broadcastMessage.plainText())
+            LOGGER.info(if (server.useJline) {
+                broadcastMessage.attributedText().toAnsi()
+            } else {
+                broadcastMessage.plainText()
+            })
         }
         val skipClient = (this as? ClientCommandSource)?.client
         server.broadcast(SystemChatPacket(broadcastMessage)) { client ->

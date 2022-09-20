@@ -374,6 +374,12 @@ class World(val server: MinecraftServer, val name: String) {
         }
     }
 
+    fun isBlockLoaded(pos: BlockPosition) = pos.isInBuildLimit && isRegionLoaded(pos.x shr 9, pos.z shr 9)
+
+    fun isChunkLoaded(chunkX: Int, chunkZ: Int) = isRegionLoaded(chunkX shr 5, chunkZ shr 5)
+
+    fun isRegionLoaded(regionX: Int, regionZ: Int) = openRegions.contains(regionX, regionZ)
+
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
         while (isSaving) yield()
@@ -553,8 +559,10 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 out.writeVarInt(0) // Blocks: Air ID
                 out.writeVarInt(0) // Blocks: Data size
             } else {
-                out.writeShort(section.blockCount)
-                section.data.encode(out)
+                synchronized(this) {
+                    out.writeShort(section.blockCount)
+                    section.data.encode(out)
+                }
             }
             out.writeByte(0) // Biomes: Bits per entry
             out.writeVarInt(0) // Biomes: Plains ID

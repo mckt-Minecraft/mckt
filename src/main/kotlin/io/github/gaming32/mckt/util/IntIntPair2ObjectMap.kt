@@ -10,14 +10,20 @@ class IntIntPair2ObjectMap<V>(private val internal: Long2ObjectMap<V> = Long2Obj
     val values: Collection<V> get() = internal.values
 
     operator fun get(x: Int, y: Int): V? = internal[join(x, y)]
+
+    operator fun get(key: IntIntPair) = this[key.firstInt(), key.secondInt()]
+
     operator fun set(x: Int, y: Int, value: V) {
         internal.put(join(x, y), value)
     }
 
-    operator fun get(key: IntIntPair) = this[key.firstInt(), key.secondInt()]
     operator fun set(key: IntIntPair, value: V) {
         this[key.firstInt(), key.secondInt()] = value
     }
+
+    fun contains(x: Int, y: Int) = internal.containsKey(join(x, y))
+
+    operator fun contains(key: IntIntPair) = contains(key.firstInt(), key.secondInt())
 
     fun clear() = internal.clear()
 }

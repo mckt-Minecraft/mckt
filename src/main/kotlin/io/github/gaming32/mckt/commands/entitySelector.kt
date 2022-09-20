@@ -90,7 +90,7 @@ data class EntitySelector(
             predicate = predicate and { offsetAabb.intersects(it.boundingBox) }
         }
         if (!distance.isDummy) {
-            predicate = predicate and { (it.position distanceToSquared origin) inSquared distance }
+            predicate = predicate and { it.position.distanceToSquared(origin) inSquared distance }
         }
         return predicate
     }

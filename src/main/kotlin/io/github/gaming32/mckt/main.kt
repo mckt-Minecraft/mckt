@@ -326,14 +326,25 @@ class MinecraftServer(
             .requires { it.hasPermission(1) }
             .then(argument<CommandSource, PositionArgument>("position", BlockPositionArgumentType)
                 .executesSuspend {
-                    val position = getBlockPosition("position")
-                    val block = world.getBlock(position)
+                    val position = getLoadedBlockPosition("position")
+                    val block = world.getBlock(position)!!
                     source.reply(
                         Component.text("The block at ${position.x} ${position.y} ${position.z} is ")
                             .append(Component.text(block.toString(), NamedTextColor.GREEN))
                     )
                     0
                 }
+                .then(literal<CommandSource>("generate")
+                    .executesSuspend {
+                        val position = getBlockPosition("position")
+                        val block = world.getBlockOrGenerate(position)
+                        source.reply(
+                            Component.text("The block at ${position.x} ${position.y} ${position.z} is ")
+                                .append(Component.text(block.toString(), NamedTextColor.GREEN))
+                        )
+                        0
+                    }
+                )
             )
         )
         registerCommand(Component.text("Teleport a player"), literal<CommandSource>("tp").also { command ->

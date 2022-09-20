@@ -268,9 +268,9 @@ fun CommandContext<CommandSource>.getPositionArgument(name: String) = getArgumen
 
 fun CommandContext<CommandSource>.getLoadedBlockPosition(name: String) =
     getArgument(name, PositionArgument::class.java).toAbsoluteBlockPosition(source).also { pos ->
-//        if (!source.server.world.isChunkLoaded(pos)) {
-//            throw BlockPositionArgumentType.UNLOADED_EXCEPTION.create()
-        if (!pos.isInBuildLimit) {
+        if (!source.server.world.isBlockLoaded(pos)) {
+            throw BlockPositionArgumentType.UNLOADED_EXCEPTION.create()
+        } else if (!pos.isInBuildLimit) {
             throw BlockPositionArgumentType.OUT_OF_WORLD_EXCEPTION.create()
         }
     }
