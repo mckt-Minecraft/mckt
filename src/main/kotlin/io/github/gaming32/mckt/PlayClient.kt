@@ -87,8 +87,8 @@ class PlayClient(
         private set
     val entityId = server.nextEntityId++
 
-    lateinit var handlePacketsJob: Job
-    internal var nextTeleportId = 0
+    internal lateinit var handlePacketsJob: Job
+    private var nextTeleportId = 0
 
     internal var nextPingId = 0
     internal var pingId = -1
@@ -354,7 +354,7 @@ class PlayClient(
 
     val position get() = Vector3d(data.x, data.y, data.z)
 
-    val boundingBox get() = (POSE_DIMENSIONS[data.pose] ?: STANDING_DIMENSIONS).toAabb().offset(data.x, data.y, data.z)
+    val boundingBox get() = (POSE_DIMENSIONS[data.pose] ?: STANDING_DIMENSIONS).toBox().offset(data.x, data.y, data.z)
 
     suspend fun handlePackets() = coroutineScope {
         while (server.running && !ended) {

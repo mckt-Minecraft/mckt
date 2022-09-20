@@ -1,6 +1,6 @@
 package io.github.gaming32.mckt.objects
 
-data class AABB(
+data class Box(
     val minX: Double,
     val minY: Double,
     val minZ: Double,
@@ -10,7 +10,7 @@ data class AABB(
 ) {
     operator fun plus(other: Vector3d) = offset(other.x, other.y, other.z)
 
-    fun offset(x: Double, y: Double, z: Double) = AABB(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z)
+    fun offset(x: Double, y: Double, z: Double) = Box(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z)
 
     fun contains(x: Double, y: Double, z: Double) =
         x >= minX && x < maxX && y >= minY && y < maxY && z >= minZ && z < maxZ
@@ -21,5 +21,5 @@ data class AABB(
         this.minX < maxX && this.maxX > minX && this.minY < maxY &&
             this.maxY > minY && this.minZ < maxZ && this.maxZ > minZ
 
-    fun intersects(other: AABB) = intersects(other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ)
+    fun intersects(other: Box) = intersects(other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ)
 }

@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.and
 import io.github.gaming32.mckt.commands.arguments.EntityArgumentType
-import io.github.gaming32.mckt.objects.AABB
+import io.github.gaming32.mckt.objects.Box
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.toText
 import io.github.gaming32.mckt.wrapDegrees
@@ -24,7 +24,7 @@ data class EntitySelector(
     val basePredicate: (PlayClient) -> Boolean,
     val distance: DoubleRange,
     val positionOffset: (Vector3d) -> Vector3d,
-    val aabb: AABB?,
+    val box: Box?,
     val sorter: EntitySorter,
     val senderOnly: Boolean,
     val playerName: String?,
@@ -85,8 +85,8 @@ data class EntitySelector(
 
     private fun getPositionPredicate(origin: Vector3d): (PlayClient) -> Boolean {
         var predicate = basePredicate
-        if (aabb != null) {
-            val offsetAabb = aabb + origin
+        if (box != null) {
+            val offsetAabb = box + origin
             predicate = predicate and { offsetAabb.intersects(it.boundingBox) }
         }
         if (!distance.isDummy) {
@@ -168,7 +168,7 @@ class EntitySelectorReader(val reader: StringReader, private val atAllowed: Bool
 
     fun build(): EntitySelector {
         val boundingBox = if (dx == null && dy == null && dz == null) {
-            distance.max?.let { AABB(-it, -it, -it, it + 1, it + 1, it + 1) }
+            distance.max?.let { Box(-it, -it, -it, it + 1, it + 1, it + 1) }
         } else {
             createBB(dx ?: 0.0, dy ?: 0.0, dz ?: 0.0)
         }
@@ -185,11 +185,11 @@ class EntitySelectorReader(val reader: StringReader, private val atAllowed: Bool
         )
     }
 
-    private fun createBB(x: Double, y: Double, z: Double): AABB {
+    private fun createBB(x: Double, y: Double, z: Double): Box {
         val negX = x < 0.0
         val negY = y < 0.0
         val netZ = z < 0.0
-        return AABB(
+        return Box(
             if (negX) x else 0.0,
             if (negY) y else 0.0,
             if (netZ) z else 0.0,
