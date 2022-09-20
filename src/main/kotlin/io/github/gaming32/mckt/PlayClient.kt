@@ -684,6 +684,8 @@ class PlayClient(
         }
     }
 
+    suspend fun sendChat(text: Component) = sendPacket(SystemChatPacket(text))
+
     internal suspend fun syncPosition(toOthers: Boolean, toSelf: Boolean = true) {
         if (toSelf) {
             sendPacket(PlayerPositionSyncPacket(

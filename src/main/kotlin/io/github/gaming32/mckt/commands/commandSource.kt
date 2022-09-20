@@ -3,13 +3,10 @@ package io.github.gaming32.mckt.commands
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
-import io.github.gaming32.mckt.MinecraftServer
-import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.getLogger
+import io.github.gaming32.mckt.*
 import io.github.gaming32.mckt.objects.Vector2f
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.play.s2c.SystemChatPacket
-import io.github.gaming32.mckt.plainText
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
@@ -59,7 +56,11 @@ class ConsoleCommandSource(server: MinecraftServer, name: String) : CommandSourc
     override val operator get() = 4
 
     override suspend fun reply(message: Component) {
-        val text = message.plainText()
+        val text = if (server.useJline) {
+            message.attributedText().toAnsi()
+        } else {
+            message.plainText()
+        }
         if ('\n' in text && text[0] != '\n') {
             LOGGER.info("\n$text")
         } else {

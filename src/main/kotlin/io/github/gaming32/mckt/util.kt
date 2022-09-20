@@ -9,26 +9,62 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.flattener.ComponentFlattener
+import net.kyori.adventure.text.flattener.FlattenerListener
+import net.kyori.adventure.text.format.Style
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.jline.utils.AttributedStringBuilder
+import org.jline.utils.AttributedStyle
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
 import java.util.*
+import kotlin.collections.ArrayDeque
 import kotlin.math.max
 
-val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
-    flattener(ComponentFlattener.basic().toBuilder().apply {
-        complexMapper(TranslatableComponent::class.java) { component, handler ->
-            val translation = DEFAULT_TRANSLATIONS[component.key()]
-                ?: return@complexMapper handler.accept(Component.text(component.key()))
-            val parts = translation.split("%s", limit = component.args().size + 1)
-            handler.accept(Component.text(parts[0].replace("%%", "%")))
-            for (i in 1 until parts.size) {
-                handler.accept(component.args()[i - 1])
-                handler.accept(Component.text(parts[i].replace("%%", "%")))
-            }
+val TRANSLATABLE_FLATTENER = ComponentFlattener.basic().toBuilder().apply {
+    complexMapper(TranslatableComponent::class.java) { component, handler ->
+        val translation = DEFAULT_TRANSLATIONS[component.key()]
+            ?: return@complexMapper handler.accept(Component.text(component.key()))
+        val parts = translation.split("%s", limit = component.args().size + 1)
+        handler.accept(Component.text(parts[0].replace("%%", "%")))
+        for (i in 1 until parts.size) {
+            handler.accept(component.args()[i - 1])
+            handler.accept(Component.text(parts[i].replace("%%", "%")))
         }
-    }.build())
+    }
 }.build()
+
+val PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder().apply {
+    flattener(TRANSLATABLE_FLATTENER)
+}.build()
+
+val ADVENTURE_TO_JLINE_STYLES = mapOf(
+    TextDecoration.BOLD to Triple(
+        AttributedStyle::bold,
+        AttributedStyle::boldOff,
+        AttributedStyle::boldDefault
+    ),
+    TextDecoration.ITALIC to Triple(
+        AttributedStyle::italic,
+        AttributedStyle::italicOff,
+        AttributedStyle::italicDefault
+    ),
+    TextDecoration.UNDERLINED to Triple(
+        AttributedStyle::underline,
+        AttributedStyle::underlineOff,
+        AttributedStyle::underlineDefault
+    ),
+    TextDecoration.STRIKETHROUGH to Triple(
+        AttributedStyle::crossedOut,
+        AttributedStyle::crossedOutOff,
+        AttributedStyle::crossedOutDefault
+    ),
+    TextDecoration.OBFUSCATED to Triple(
+        AttributedStyle::inverse,
+        AttributedStyle::inverseOff,
+        AttributedStyle::inverseDefault
+    )
+)
 
 val NETWORK_NBT = Nbt {
     variant = NbtVariant.Java
@@ -53,6 +89,69 @@ val USERNAME_REGEX = Regex("^\\w{1,16}\$")
 fun getLogger() = LoggerFactory.getLogger(Util.getCallingClass())!!
 
 fun Component.plainText() = PLAIN_TEXT_SERIALIZER.serialize(this)
+
+fun Component.attributedTextTo(builder: AttributedStringBuilder) =
+    TRANSLATABLE_FLATTENER.flatten(this, object : FlattenerListener {
+        val styleStack = ArrayDeque<Style>()
+
+        override fun pushStyle(style: Style) {
+            val top = styleStack.lastOrNull()
+            if (top != null) {
+                builder.style {
+                    var newStyle = it
+                    ADVENTURE_TO_JLINE_STYLES.forEach { adventure, (jlineOn, jlineOff, _) ->
+                        if (style.decoration(adventure) != TextDecoration.State.NOT_SET) {
+                            newStyle = if (style.hasDecoration(adventure)) jlineOn(newStyle) else jlineOff(newStyle)
+                        }
+                    }
+                    style.color()?.let { color ->
+                        newStyle = newStyle.foreground(color.red(), color.green(), color.blue())
+                    }
+                    newStyle
+                }
+            }
+            styleStack.addLast(if (top != null) style.merge(top, Style.Merge.colorAndDecorations()) else style)
+        }
+
+        override fun component(text: String) {
+            builder.append(text)
+        }
+
+        override fun popStyle(style: Style) {
+            styleStack.removeLast()
+            val top = styleStack.lastOrNull()
+            if (top != null) {
+                builder.style {
+                    var newStyle = it
+                    ADVENTURE_TO_JLINE_STYLES.forEach { adventure, (jlineOn, jlineOff, jlineDefault) ->
+                        val state = top.decoration(adventure)
+                        if (state == TextDecoration.State.NOT_SET) {
+                            newStyle = jlineDefault(newStyle)
+                        } else if (state != style.decoration(adventure)) {
+                            newStyle = if (state == TextDecoration.State.TRUE) {
+                                jlineOn(newStyle)
+                            } else {
+                                jlineOff(newStyle)
+                            }
+                        }
+                    }
+                    val color = top.color()
+                    if (color == null) {
+                        newStyle = newStyle.foregroundDefault()
+                    } else if (color != style.color()) {
+                        newStyle = newStyle.foreground(color.red(), color.green(), color.blue())
+                    }
+                    newStyle
+                }
+            } else {
+                builder.style(AttributedStyle.DEFAULT)
+            }
+        }
+    })
+
+fun Component.attributedText() = AttributedStringBuilder().apply {
+    attributedTextTo(this)
+}.toAttributedString()!!
 
 fun Int.squared() = this * this
 
