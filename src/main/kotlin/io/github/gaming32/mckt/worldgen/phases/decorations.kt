@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.worldgen.phases
 
-import io.github.gaming32.mckt.BlockState
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.WorldChunk
+import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise

@@ -264,6 +264,7 @@ object Blocks {
     val DIORITE = getBlock("diorite")
     val ANDESITE = getBlock("andesite")
     val GRANITE = getBlock("granite")
+    val FIRE = getBlock("fire")
 }
 
 @Serializable

@@ -15,6 +15,11 @@ import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextCompon
 import io.github.gaming32.mckt.data.readShort
 import io.github.gaming32.mckt.data.readString
 import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.items.FlintAndSteelHandler
+import io.github.gaming32.mckt.items.ItemEventHandler
+import io.github.gaming32.mckt.items.LogItemHandler
+import io.github.gaming32.mckt.items.SimpleBlockItemHandler
+import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
@@ -96,6 +101,8 @@ class MinecraftServer(
     internal val commandDispatcher = CommandDispatcher<CommandSource>()
     internal val helpTexts = mutableMapOf<CommandNode<CommandSource>, Component?>()
 
+    internal val itemEventHandlers = mutableMapOf<Identifier, ItemEventHandler>()
+
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
         Dispatchers.Default
@@ -116,11 +123,16 @@ class MinecraftServer(
         LOGGER.info("Starting server...")
 
         registerCommands()
+        registerItemEventHandlers()
 
         world = World(this@MinecraftServer, "world")
+
+        LOGGER.info("Searching for spawn point...")
         world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
+
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
+        yield()
         LOGGER.info("Server started")
         while (running) {
             val startTime = System.nanoTime()
@@ -606,6 +618,21 @@ class MinecraftServer(
                 }
             )
         )
+    }
+
+    fun registerItemEventHandler(handler: ItemEventHandler, vararg items: Identifier) {
+        items.forEach { itemEventHandlers[it] = handler }
+    }
+
+    private fun registerItemEventHandlers() {
+        registerItemEventHandler(SimpleBlockItemHandler, *DEFAULT_BLOCKSTATES.keys.toTypedArray())
+        registerItemEventHandler(
+            LogItemHandler,
+            *DEFAULT_BLOCKSTATES.keys
+                .filter { it.value.endsWith("_log") } // It works, I guess /shrug
+                .toTypedArray()
+        )
+        registerItemEventHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
     }
 
     fun getPlayerByName(name: String) = clients[name]

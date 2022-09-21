@@ -12,6 +12,7 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.data.encodeData
 import io.github.gaming32.mckt.data.writeString
+import io.github.gaming32.mckt.items.ItemEventHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
@@ -597,32 +598,39 @@ class PlayClient(
                     )
 
                     is UseItemOnBlockPacket -> {
-                        val placePos = if (server.world.getBlock(packet.location) == Blocks.AIR) {
-                            packet.location
-                        } else {
-                            packet.location + packet.face.vector
-                        }
                         val slot = if (packet.offhand) EquipmentSlot.OFFHAND.rawSlot else data.selectedInventorySlot
                         var itemStack = data.inventory[slot]
                         if (itemStack != null) {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            val blockState = DEFAULT_BLOCKSTATES[itemStack.itemId] ?: Blocks.STONE
-                            server.world.setBlock(placePos, blockState)
-                            server.broadcast(SetBlockPacket(placePos, blockState))
-                            if (!data.gamemode.defaultAbilities.creativeMode) {
-                                if (--itemStack.count == 0) {
+                            val eventHandler = server.itemEventHandlers[itemStack.itemId]
+                            if (eventHandler != null) {
+                                val result = eventHandler.useOnBlock(ItemEventHandler.BlockUseEvent(
+                                    itemStack,
+                                    this@PlayClient,
+                                    packet.offhand, packet.sequence,
+                                    packet.location, packet.face,
+                                    packet.cursorX, packet.cursorY, packet.cursorZ,
+                                    packet.insideBlock
+                                ))
+                                if (
+                                    result == ItemEventHandler.Result.USE_UP &&
+                                    !data.gamemode.defaultAbilities.creativeMode
+                                ) {
+                                    itemStack.count--
+                                }
+                                if (itemStack.count == 0) {
                                     itemStack = null
                                     data.inventory[slot] = null
                                 }
+                                server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                    entityId,
+                                    if (packet.offhand) {
+                                        EquipmentSlot.OFFHAND
+                                    } else {
+                                        EquipmentSlot.MAIN_HAND
+                                    } to itemStack
+                                ))
                             }
-                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
-                                entityId,
-                                if (packet.offhand) {
-                                    EquipmentSlot.OFFHAND
-                                } else {
-                                    EquipmentSlot.MAIN_HAND
-                                } to itemStack
-                            ))
                         }
                     }
 
@@ -644,8 +652,8 @@ class PlayClient(
                             val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
                             data.inventory[data.selectedInventorySlot] = newMainhand
                             data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                            sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
-                            sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                            sendPacket(SetContainerSlotPacket(-2, data.selectedInventorySlot, newMainhand))
+                            sendPacket(SetContainerSlotPacket(-2, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
                             server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
                                 entityId,
                                 EquipmentSlot.MAIN_HAND to newMainhand,

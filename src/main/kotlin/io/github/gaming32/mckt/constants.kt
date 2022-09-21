@@ -1,10 +1,10 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.data.toGson
+import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
@@ -20,67 +20,6 @@ data class GameVersion(
     val usesNetty: Boolean,
     val majorVersion: String
 )
-
-@Serializable
-data class BlockState(
-    val blockId: Identifier = Identifier.EMPTY,
-    @SerialName("id")
-    val globalId: Int = -1,
-    val properties: Map<String, String> = mapOf(),
-    @SerialName("default")
-    val defaultForId: Boolean = false
-) {
-    companion object {
-        fun fromMap(map: Map<String, String>) = BlockState(
-            blockId = Identifier.parse(map["blockId"] ?: throw IllegalArgumentException(
-                "Missing blockId field from block state data"
-            )),
-            properties = map.toMutableMap().apply { remove("blockId") }
-        )
-    }
-
-    fun toMap() = properties + ("blockId" to blockId.toString())
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as BlockState
-
-        if (blockId != other.blockId) return false
-        if (properties != other.properties) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = blockId.hashCode()
-        result = 31 * result + properties.hashCode()
-        return result
-    }
-
-    override fun toString() = buildString {
-        append(blockId)
-        if (properties.isNotEmpty()) {
-            append('[')
-            properties.entries.forEachIndexed { index, (name, value) ->
-                if (index > 0) {
-                    append(',')
-                }
-                append(name)
-                append('=')
-                append(value)
-            }
-            append(']')
-        }
-    }
-
-    fun canonicalize(): BlockState {
-        return ID_TO_BLOCKSTATE.getOrNull(
-            BLOCKSTATE_TO_ID.getInt(this).takeIf { it != -1 } ?: return this
-        ) ?: this
-    }
-}
 
 @OptIn(ExperimentalSerializationApi::class)
 val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use { input ->
