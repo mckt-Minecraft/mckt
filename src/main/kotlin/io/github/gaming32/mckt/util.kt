@@ -20,6 +20,7 @@ import org.slf4j.helpers.Util
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.max
+import kotlin.random.Random
 
 val TRANSLATABLE_FLATTENER = ComponentFlattener.basic().toBuilder().apply {
     complexMapper(TranslatableComponent::class.java) { component, handler ->
@@ -229,3 +230,5 @@ fun uuidFromAnyString(s: String) = UUID.fromString(
 )!!
 
 inline fun <reified T> Any.cast() = this as? T
+
+fun Random.nextTriangular(mode: Double, deviation: Double) = mode + deviation * (nextDouble() - nextDouble())

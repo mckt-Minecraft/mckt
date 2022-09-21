@@ -172,7 +172,7 @@ object FlintAndSteelHandler : ItemEventHandler {
     }
 
     override suspend fun useOnBlock(event: ItemEventHandler.BlockUseEvent): ItemEventHandler.Result {
-        if (event.world.getBlock(event.location) == Blocks.AIR) return ItemEventHandler.Result.FAILURE
+        if (event.world.getBlock(event.location) == Blocks.AIR) return ItemEventHandler.Result.PASS
         val placeAt = event.location + event.face.vector
         var canPlace = false
         val properties = Blocks.FIRE.properties.toMutableMap()
@@ -189,10 +189,10 @@ object FlintAndSteelHandler : ItemEventHandler {
             }
         }
         return if (canPlace) {
-            event.setBlock(event.location + event.face.vector, Blocks.FIRE.with(properties).canonicalize())
+            event.server.setBlock(event.location + event.face.vector, Blocks.FIRE.with(properties).canonicalize())
             ItemEventHandler.Result.SUCCESS
         } else {
-            ItemEventHandler.Result.FAILURE
+            ItemEventHandler.Result.PASS
         }
     }
 }

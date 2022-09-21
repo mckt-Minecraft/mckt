@@ -15,7 +15,7 @@ data class UseItemOnBlockPacket(
     val cursorY: Float,
     val cursorZ: Float,
     val insideBlock: Boolean,
-    val sequence: Int = 0
+    val sequence: Int
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x31

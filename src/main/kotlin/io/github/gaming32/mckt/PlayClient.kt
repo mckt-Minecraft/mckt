@@ -39,10 +39,9 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.*
-import kotlin.math.floor
-import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.time.Duration.Companion.nanoseconds
+
 
 class PlayClient(
     server: MinecraftServer,
@@ -597,6 +596,34 @@ class PlayClient(
                         )
                     )
 
+                    is PlayerActionPacket -> {
+                        val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                            PlayerActionPacket.Action.START_DIGGING
+                        } else {
+                            PlayerActionPacket.Action.FINISH_DIGGING
+                        }
+                        if (packet.action == finishedAction) {
+                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                            server.world.setBlock(packet.location, Blocks.AIR)
+                            server.broadcastExcept(this@PlayClient, EntityAnimationPacket(
+                                entityId, EntityAnimationPacket.SWING_MAINHAND
+                            ))
+                            server.broadcast(SetBlockPacket(packet.location, Blocks.AIR))
+                        } else if (packet.action == PlayerActionPacket.Action.SWAP_OFFHAND) {
+                            val newOffhand = data.inventory[data.selectedInventorySlot]
+                            val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                            data.inventory[data.selectedInventorySlot] = newMainhand
+                            data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
+                            sendPacket(SetContainerSlotPacket(-2, data.selectedInventorySlot, newMainhand))
+                            sendPacket(SetContainerSlotPacket(-2, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                entityId,
+                                EquipmentSlot.MAIN_HAND to newMainhand,
+                                EquipmentSlot.OFFHAND to newOffhand
+                            ))
+                        }
+                    }
+
                     is UseItemOnBlockPacket -> {
                         val slot = if (packet.offhand) EquipmentSlot.OFFHAND.rawSlot else data.selectedInventorySlot
                         var itemStack = data.inventory[slot]
@@ -606,7 +633,7 @@ class PlayClient(
                             if (eventHandler != null) {
                                 val result = eventHandler.useOnBlock(ItemEventHandler.BlockUseEvent(
                                     itemStack,
-                                    this@PlayClient,
+                                    this@PlayClient, this@coroutineScope,
                                     packet.offhand, packet.sequence,
                                     packet.location, packet.face,
                                     packet.cursorX, packet.cursorY, packet.cursorZ,
@@ -634,31 +661,36 @@ class PlayClient(
                         }
                     }
 
-                    is PlayerActionPacket -> {
-                        val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
-                            PlayerActionPacket.Action.START_DIGGING
-                        } else {
-                            PlayerActionPacket.Action.FINISH_DIGGING
-                        }
-                        if (packet.action == finishedAction) {
-                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            server.world.setBlock(packet.location, Blocks.AIR)
-                            server.broadcastExcept(this@PlayClient, EntityAnimationPacket(
-                                entityId, EntityAnimationPacket.SWING_MAINHAND
-                            ))
-                            server.broadcast(SetBlockPacket(packet.location, Blocks.AIR))
-                        } else if (packet.action == PlayerActionPacket.Action.SWAP_OFFHAND) {
-                            val newOffhand = data.inventory[data.selectedInventorySlot]
-                            val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
-                            data.inventory[data.selectedInventorySlot] = newMainhand
-                            data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                            sendPacket(SetContainerSlotPacket(-2, data.selectedInventorySlot, newMainhand))
-                            sendPacket(SetContainerSlotPacket(-2, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
-                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
-                                entityId,
-                                EquipmentSlot.MAIN_HAND to newMainhand,
-                                EquipmentSlot.OFFHAND to newOffhand
-                            ))
+                    is UseItemPacket -> {
+                        val slot = if (packet.offhand) EquipmentSlot.OFFHAND.rawSlot else data.selectedInventorySlot
+                        var itemStack = data.inventory[slot]
+                        if (itemStack != null) {
+                            val eventHandler = server.itemEventHandlers[itemStack.itemId]
+                            if (eventHandler != null) {
+                                val result = eventHandler.use(ItemEventHandler.UseEvent(
+                                    itemStack,
+                                    this@PlayClient, this@coroutineScope,
+                                    packet.offhand, packet.sequence
+                                ))
+                                if (
+                                    result == ItemEventHandler.Result.USE_UP &&
+                                    !data.gamemode.defaultAbilities.creativeMode
+                                ) {
+                                    itemStack.count--
+                                }
+                                if (itemStack.count == 0) {
+                                    itemStack = null
+                                    data.inventory[slot] = null
+                                }
+                                server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                    entityId,
+                                    if (packet.offhand) {
+                                        EquipmentSlot.OFFHAND
+                                    } else {
+                                        EquipmentSlot.MAIN_HAND
+                                    } to itemStack
+                                ))
+                            }
                         }
                     }
 
@@ -690,6 +722,16 @@ class PlayClient(
             ignoreMovementPackets = false
             loadChunksAroundPlayer()
         }
+    }
+
+    val rotationVector: Vector3d get() {
+        val f = data.pitch * (Math.PI / 180.0).toFloat()
+        val g = -data.yaw * (Math.PI / 180.0).toFloat()
+        val h = cos(g)
+        val i = sin(g)
+        val j = cos(f)
+        val k = sin(f)
+        return Vector3d((i * j).toDouble(), (-k).toDouble(), (h * j).toDouble())
     }
 
     suspend fun sendChat(text: Component) = sendPacket(SystemChatPacket(text))

@@ -17,7 +17,7 @@ object SimpleBlockItemHandler : ItemEventHandler {
         } else {
             event.location + event.face.vector
         }
-        event.setBlock(placePos, block)
+        event.server.setBlock(placePos, block)
         return ItemEventHandler.Result.USE_UP
     }
 }

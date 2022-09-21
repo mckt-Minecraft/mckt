@@ -15,10 +15,9 @@ import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextCompon
 import io.github.gaming32.mckt.data.readShort
 import io.github.gaming32.mckt.data.readString
 import io.github.gaming32.mckt.data.readVarInt
-import io.github.gaming32.mckt.items.FlintAndSteelHandler
-import io.github.gaming32.mckt.items.ItemEventHandler
-import io.github.gaming32.mckt.items.LogItemHandler
-import io.github.gaming32.mckt.items.SimpleBlockItemHandler
+import io.github.gaming32.mckt.items.*
+import io.github.gaming32.mckt.objects.BlockPosition
+import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.Packet
@@ -94,7 +93,7 @@ class MinecraftServer(
 
     lateinit var world: World
         private set
-    internal var nextEntityId = 0
+    internal var nextEntityId = 1
 
     private val consoleCommandSender = ConsoleCommandSource(this, "CONSOLE")
     val serverCommandSender = ConsoleCommandSource(this, "Server")
@@ -633,6 +632,7 @@ class MinecraftServer(
                 .toTypedArray()
         )
         registerItemEventHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
+        registerItemEventHandler(FireworkRocketHandler, Identifier("firework_rocket"))
     }
 
     fun getPlayerByName(name: String) = clients[name]
@@ -640,6 +640,18 @@ class MinecraftServer(
     fun getPlayerByUuid(uuid: UUID) = clients.values.firstOrNull { it.uuid == uuid }
 
     inline fun getPlayers(predicate: (PlayClient) -> Boolean) = clients.values.filter(predicate)
+
+    suspend fun setBlock(location: BlockPosition, block: BlockState) {
+        world.setBlock(location, block)
+        broadcast(SetBlockPacket(location, block))
+    }
+
+    suspend fun waitTicks(ticks: Int = 1) {
+        val target = world.meta.time + ticks
+        while (world.meta.time < target) {
+            yield()
+        }
+    }
 
     @Suppress("RedundantAsync")
     @OptIn(DelicateCoroutinesApi::class)
