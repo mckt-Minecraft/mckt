@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.DEFAULT_BLOCKSTATES
+import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.BlockState
 import kotlinx.coroutines.CoroutineScope

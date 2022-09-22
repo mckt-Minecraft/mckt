@@ -18,7 +18,7 @@ data class SpawnPlayerPacket(
     val pitch: Float
 ) : Packet(TYPE) {
     companion object {
-        val TYPE = 0x02
+        const val TYPE = 0x02
     }
 
     override fun write(out: OutputStream) {

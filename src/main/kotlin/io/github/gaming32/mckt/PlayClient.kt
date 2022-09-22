@@ -41,6 +41,7 @@ import java.io.IOException
 import java.util.*
 import kotlin.math.*
 import kotlin.time.Duration.Companion.nanoseconds
+import org.slf4j.helpers.Util as Slf4jUtil
 
 
 class PlayClient(
@@ -107,6 +108,8 @@ class PlayClient(
     internal var ended = false
     var properties = mapOf<String, Pair<String, String?>>()
         private set
+
+    var lastEquipment = mapOf<EquipmentSlot, ItemStack>()
 
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
@@ -233,18 +236,10 @@ class PlayClient(
             options.mainHand
         )
         val equipment = data.getEquipment()
-        val setEquipmentPacket = if (equipment.isNotEmpty()) {
-            SetEquipmentPacket(entityId, *equipment.toList().toTypedArray())
-        } else {
-            null
-        }
         for (client in server.clients.values) {
             client.sendPacket(syncTrackedDataPacket)
             if (client === this@PlayClient) continue
             client.sendPacket(spawnPlayerPacket)
-            if (setEquipmentPacket != null) {
-                client.sendPacket(setEquipmentPacket)
-            }
             sendPacket(SpawnPlayerPacket(
                 client.entityId, client.uuid,
                 client.data.x, client.data.y, client.data.z,
@@ -257,10 +252,6 @@ class PlayClient(
                 client.options.displayedSkinParts,
                 client.options.mainHand
             ))
-            val otherEquipment = client.data.getEquipment()
-            if (otherEquipment.isNotEmpty()) {
-                sendPacket(SetEquipmentPacket(client.entityId, *otherEquipment.toList().toTypedArray()))
-            }
         }
 
         loadChunksAroundPlayer(3).joinAll()
@@ -356,15 +347,26 @@ class PlayClient(
 
     val boundingBox get() = (POSE_DIMENSIONS[data.pose] ?: STANDING_DIMENSIONS).toBox().offset(data.x, data.y, data.z)
 
+    suspend fun tick() {
+        val newEquipment = data.getEquipment()
+        if (newEquipment != lastEquipment) {
+            val changes = mutableListOf<Pair<EquipmentSlot, ItemStack>>()
+            for (slot in EquipmentSlot.values()) {
+                if (newEquipment[slot] != lastEquipment[slot]) {
+                    changes += slot to newEquipment[slot]!!
+                }
+            }
+            server.broadcastExcept(this, SetEquipmentPacket(entityId, *changes.toTypedArray()))
+        }
+    }
+
     suspend fun handlePackets() = coroutineScope {
         while (server.running && !ended) {
             val packet = try {
                 readPacket()
             } catch (e: Exception) {
                 if (e is ClosedReceiveChannelException) break
-                sendPacket(SystemChatPacket(
-                    Component.text(e.toString()).color(NamedTextColor.GOLD), true
-                ))
+                sendMessage(Component.text(e.toString()).color(NamedTextColor.GOLD), MessageType.ACTION_BAR)
                 LOGGER.error("Client connection had error", e)
                 continue
             }
@@ -646,10 +648,10 @@ class PlayClient(
                                 item.isNotEmpty() &&
                                 server.itemHandlers[item.itemId!!]?.isBlockItem == true
                             ) {
-                                // TODO: Create sendMessage method
-                                sendPacket(SystemChatPacket(
-                                    Component.translatable("build.tooHigh", Component.text(2031)), actionBar = true
-                                ))
+                                sendMessage(
+                                    Component.translatable("build.tooHigh", Component.text(2031)),
+                                    MessageType.ACTION_BAR
+                                )
                             } else if (result.shouldSwingHand()) {
                                 server.broadcast(EntityAnimationPacket(
                                     entityId,
@@ -661,9 +663,10 @@ class PlayClient(
                                 ))
                             }
                         } else {
-                            sendPacket(SystemChatPacket(
-                                Component.translatable("build.tooHigh", Component.text(2031)), actionBar = true
-                            ))
+                            sendMessage(
+                                Component.translatable("build.tooHigh", Component.text(2031)),
+                                MessageType.ACTION_BAR
+                            )
                         }
                         sendPacket(SetBlockPacket(server.world, packet.hit.location))
                         sendPacket(SetBlockPacket(server.world, packet.hit.offsetLocation))
@@ -691,9 +694,7 @@ class PlayClient(
                 }
             } catch (e: Exception) {
                 LOGGER.warn("Exception in packet handling", e)
-                sendPacket(SystemChatPacket(
-                    Component.text(e.toString()).color(NamedTextColor.GOLD), true
-                ))
+                sendMessage(Component.text(e.toString()).color(NamedTextColor.GOLD), MessageType.ACTION_BAR)
             }
         }
     }
@@ -806,8 +807,6 @@ class PlayClient(
         return Vector3d((i * j).toDouble(), (-k).toDouble(), (h * j).toDouble())
     }
 
-    suspend fun sendChat(text: Component) = sendPacket(SystemChatPacket(text))
-
     internal suspend fun syncPosition(toOthers: Boolean, toSelf: Boolean = true) {
         if (toSelf) {
             sendPacket(PlayerPositionSyncPacket(
@@ -853,6 +852,20 @@ class PlayClient(
             data.flags = data.flags and EntityFlags.INVISIBLE.inv()
         }
         server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+    }
+
+    suspend fun sendMessage(message: Component, type: MessageType = MessageType.SYSTEM) {
+        if (type == MessageType.PLAYER_CHAT) {
+            if (LOGGER.isDebugEnabled || !Slf4jUtil.getCallingClass().name.startsWith("io.github.gaming32.mckt")) {
+                LOGGER.warn(
+                    "Attempted to send player-type chat message. This may not be supported in the future.",
+                    Throwable()
+                )
+            }
+            if (options.chatMode > 0) return
+        }
+        if (type == MessageType.SYSTEM && options.chatMode > 1) return
+        sendPacket(SystemChatPacket(message, type == MessageType.ACTION_BAR))
     }
 
     override suspend fun sendPacket(packet: Packet) {

@@ -19,7 +19,12 @@ abstract class ItemHandler {
 
         val item get() = client.data.getHeldItem(hand)
 
-        val server get() = client.server
+        val server by client::server
+
+        val location by hit::location
+        val side by hit::side
+        val position by hit::position
+        val insideBlock by hit::insideBlock
     }
 
     open val isBlockItem get() = false
@@ -27,7 +32,7 @@ abstract class ItemHandler {
     open suspend fun canMine(
         state: BlockState,
         world: World,
-        position: BlockPosition,
+        location: BlockPosition,
         client: PlayClient,
         scope: CoroutineScope
     ) = true

@@ -1,6 +1,6 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
-import io.github.gaming32.mckt.BLOCKSTATE_TO_ID
+import io.github.gaming32.mckt.GlobalPalette.BLOCKSTATE_TO_ID
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.data.writeBlockPosition
 import io.github.gaming32.mckt.data.writeVarInt

@@ -2,6 +2,7 @@
 
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
@@ -462,7 +463,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
     fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block)
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block) ?: Unit
 
     fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 

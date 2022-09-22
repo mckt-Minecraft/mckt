@@ -102,10 +102,10 @@ sealed class NumberRange<T : Number>(val min: T?, val max: T?) {
         internal fun isNextCharValid(reader: StringReader): Boolean {
             val c = reader.peek()
             if ((c < '0' || c > '9') && c != '-') {
-                if (c != '.') {
-                    return false
+                return if (c != '.') {
+                    false
                 } else {
-                    return !reader.canRead(2) || reader.peek(1) != '.'
+                    !reader.canRead(2) || reader.peek(1) != '.'
                 }
             }
             return true

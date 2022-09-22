@@ -4,6 +4,8 @@ package io.github.gaming32.mckt.objects
 
 import io.github.gaming32.mckt.data.toGson
 import io.github.gaming32.mckt.data.toKotlinx
+import io.github.gaming32.mckt.dt.DtCompound
+import io.github.gaming32.mckt.dt.toDt
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -51,13 +53,14 @@ object BitSetSerializer : KSerializer<BitSet> {
         BitSet.valueOf(decoder.decodeSerializableValue(delegateSerializer))
 }
 
-object SNbtCompoundSerializer : KSerializer<NbtCompound> {
-    override val descriptor = PrimitiveSerialDescriptor("NbtCompound", PrimitiveKind.STRING)
+object DtCompoundSerializer : KSerializer<DtCompound> {
+    override val descriptor = PrimitiveSerialDescriptor("DtCompound", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: NbtCompound) =
-        encoder.encodeString(StringifiedNbt.encodeToString(value))
+    override fun serialize(encoder: Encoder, value: DtCompound) =
+        encoder.encodeString(StringifiedNbt.encodeToString(value.toNbt()))
 
-    override fun deserialize(decoder: Decoder): NbtCompound = StringifiedNbt.decodeFromString(decoder.decodeString())
+    override fun deserialize(decoder: Decoder) =
+        StringifiedNbt.decodeFromString<NbtCompound>(decoder.decodeString()).toDt()
 }
 
 object BlockPositionSerializer : KSerializer<BlockPosition> {

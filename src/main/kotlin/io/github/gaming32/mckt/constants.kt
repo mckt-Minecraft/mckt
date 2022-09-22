@@ -1,12 +1,12 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.data.toGson
-import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromStream
 
 const val MINECRAFT_VERSION = "1.19.2"
 const val PROTOCOL_VERSION = 760
@@ -39,32 +39,6 @@ val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS
     .asSequence()
     .filter(GameVersion::usesNetty)
     .associateBy(GameVersion::version)
-
-// blocks.json and registries.json were generated from the Vanilla server JAR with its builtin tool
-
-@OptIn(ExperimentalSerializationApi::class)
-val GLOBAL_PALETTE = MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
-    Json.decodeFromStream<JsonObject>(input)
-}?.asSequence()?.flatMap { (blockId, data) ->
-    data as JsonObject
-    val blockIdAsIdentifier = Identifier.parse(blockId)
-    (data["states"] as JsonArray)
-        .asSequence()
-        .map { Json.decodeFromJsonElement<BlockState>(it).copy(blockId = blockIdAsIdentifier) }
-}?.toSet() ?: emptySet()
-
-val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE
-    .asSequence()
-    .filter(BlockState::defaultForId)
-    .associateBy(BlockState::blockId)
-
-@Suppress("UNCHECKED_CAST")
-val ID_TO_BLOCKSTATE = arrayOfNulls<BlockState>(GLOBAL_PALETTE.size).apply {
-    GLOBAL_PALETTE.forEach { this[it.globalId] = it }
-} as Array<BlockState>
-val BLOCKSTATE_TO_ID = GLOBAL_PALETTE.associateWithTo(Object2IntOpenHashMap()) {
-    it.globalId
-}.apply { defaultReturnValue(-1) }
 
 @OptIn(ExperimentalSerializationApi::class)
 private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->

@@ -4,24 +4,24 @@ import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
-import io.github.gaming32.mckt.data.deepCopy
+import io.github.gaming32.mckt.dt.DtCompound
+import io.github.gaming32.mckt.dt.NbtTagType
 import io.github.gaming32.mckt.items.ItemHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.benwoodworth.knbt.NbtCompound
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class ItemStack(
     val itemId: Identifier?,
     var count: Int = 1,
-    @Serializable(SNbtCompoundSerializer::class)
+    @Serializable(DtCompoundSerializer::class)
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName("extraNbt")
-    private var extraNbtInternal: NbtCompound? = null
+    private var extraNbtInternal: DtCompound? = null
 ) {
     companion object {
         val EMPTY = ItemStack(null)
@@ -69,6 +69,36 @@ data class ItemStack(
 
     suspend fun use(world: World, client: PlayClient, hand: Hand, scope: CoroutineScope) =
         getHandler(client.server).use(world, client, hand, scope)
+
+    fun getOrCreateSubNbt(key: String): DtCompound {
+        val nbt = extraNbtInternal
+        if (nbt != null && nbt.contains(key, NbtTagType.COMPOUND)) {
+            return nbt.getCompound(key)
+        }
+        val result = DtCompound()
+        this[key] = result
+        return result
+    }
+
+    operator fun get(key: String) =
+        if (extraNbtInternal?.contains(key, NbtTagType.COMPOUND) == true) {
+            extraNbtInternal?.getCompound(key)
+        } else {
+            null
+        }
+
+    operator fun set(key: String, nbt: DtCompound) {
+        getOrCreateNbt()[key] = nbt
+    }
+
+    fun getOrCreateNbt(): DtCompound {
+        var result = extraNbtInternal
+        if (result == null) {
+            result = DtCompound()
+            extraNbtInternal = result
+        }
+        return result
+    }
 }
 
 fun ItemStack?.orEmpty() = this ?: ItemStack.EMPTY

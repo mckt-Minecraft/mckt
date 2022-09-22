@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
+import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.blocks.BlockHandler
 import io.github.gaming32.mckt.blocks.DefaultBlockHandler
 import io.github.gaming32.mckt.commands.*
@@ -161,6 +162,7 @@ class MinecraftServer(
                     broadcast(RemoveEntitiesPacket(client.entityId))
                     continue
                 }
+                client.tick()
                 if (world.meta.time % 20 == 0L) {
                     client.sendPacket(UpdateTimePacket(world.meta.time))
                     client.syncPosition(toOthers = true, toSelf = false)
@@ -469,7 +471,7 @@ class MinecraftServer(
                     .executesSuspend {
                         val targets = getPlayers("targets")
                         val message = getTextComponent("message")
-                        targets.forEach { it.sendChat(message) }
+                        targets.forEach { it.sendMessage(message) }
                         if (source !is ClientCommandSource) {
                             source.reply(Component.text()
                                 .append(Component.text("Sent raw message \""))
@@ -638,15 +640,19 @@ class MinecraftServer(
     fun getItemHandler(item: Identifier?) = itemHandlers[item] ?: DefaultItemHandler
 
     private fun registerItemHandlers() {
-        registerItemHandler(SimpleBlockItemHandler, *DEFAULT_BLOCKSTATES.keys.toTypedArray())
+        registerItemHandler(
+            SimpleBlockItemHandler,
+            *DEFAULT_BLOCKSTATES.keys.filter(ITEM_ID_TO_PROTOCOL::containsKey).toTypedArray()
+        )
         registerItemHandler(
             LogItemHandler,
             *DEFAULT_BLOCKSTATES.keys
                 .filter { it.value.endsWith("_log") } // It works, I guess /shrug
                 .toTypedArray()
         )
-        registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
+        registerItemHandler(DebugStickItemHandler, Identifier("debug_stick"))
         registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
+        registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
     }
 
     fun getPlayerByName(name: String) = clients[name]

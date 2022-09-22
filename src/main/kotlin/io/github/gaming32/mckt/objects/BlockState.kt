@@ -1,9 +1,23 @@
 package io.github.gaming32.mckt.objects
 
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.GlobalPalette.BLOCKSTATE_TO_ID
+import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
+import io.github.gaming32.mckt.MinecraftServer
+import io.github.gaming32.mckt.PlayClient
+import io.github.gaming32.mckt.World
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.collections.Map
+import kotlin.collections.associate
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEachIndexed
+import kotlin.collections.getOrNull
+import kotlin.collections.isNotEmpty
+import kotlin.collections.mapOf
+import kotlin.collections.plus
+import kotlin.collections.toMutableMap
 
 @Serializable
 data class BlockState(

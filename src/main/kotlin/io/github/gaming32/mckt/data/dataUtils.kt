@@ -5,9 +5,10 @@ package io.github.gaming32.mckt.data
 import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
 import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
 import io.github.gaming32.mckt.NETWORK_NBT
+import io.github.gaming32.mckt.dt.DtCompound
+import io.github.gaming32.mckt.dt.toDt
 import io.github.gaming32.mckt.objects.*
 import io.ktor.utils.io.*
-import net.benwoodworth.knbt.NbtCompound
 import net.benwoodworth.knbt.NbtTag
 import net.benwoodworth.knbt.decodeFromStream
 import net.benwoodworth.knbt.encodeToStream
@@ -153,7 +154,7 @@ fun InputStream.readItemStack(): ItemStack {
     return ItemStack(
         ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
         readUByte().toInt(),
-        readNbtTag() as NbtCompound?
+        readNbtTag().toDt() as DtCompound
     )
 }
 
@@ -313,11 +314,11 @@ fun OutputStream.writeItemStack(item: ItemStack) {
     if (item.isNotEmpty()) {
         writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
         writeVarInt(item.count)
-        val nbt = item.extraNbt
-        if (nbt.isNullOrEmpty()) {
+        val dt = item.extraNbt
+        if (dt.isNullOrEmpty()) {
             write(0) // TAG_End
         } else {
-            writeNbtTag(nbt)
+            writeNbtTag(dt.toNbt())
         }
     }
 }
