@@ -76,7 +76,7 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
     private fun draw(chunk: WorldChunk, rand: Random, x: Int, y: Int, z: Int) {
         val endY = rand.nextInt(y + 3, y + 7)
         for (oy in y..endY) {
-            chunk.setBlockIf(x + 2, oy, z + 2, Blocks.WOOD)
+            chunk.setBlockIf(x + 2, oy, z + 2, Blocks.OAK_LOG)
         }
         for (oy in endY - 2 until endY) {
             for (ox in 0 until 5) {
@@ -88,23 +88,23 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
                         (ox == 0 && oz == 4 && rand.nextBoolean()) ||
                         (ox == 4 && oz == 4 && rand.nextBoolean())
                     ) continue
-                    chunk.setBlockIf(x + ox, oy, z + oz, Blocks.LEAVES)
+                    chunk.setBlockIf(x + ox, oy, z + oz, Blocks.OAK_LEAVES)
                 }
             }
         }
-        chunk.setBlockIf(x + 1, endY, z + 2, Blocks.LEAVES)
-        chunk.setBlockIf(x + 3, endY, z + 2, Blocks.LEAVES)
-        chunk.setBlockIf(x + 2, endY, z + 1, Blocks.LEAVES)
-        chunk.setBlockIf(x + 2, endY, z + 3, Blocks.LEAVES)
-        if (rand.nextBoolean()) chunk.setBlockIf(x + 1, endY, z + 1, Blocks.LEAVES)
-        if (rand.nextBoolean()) chunk.setBlockIf(x + 3, endY, z + 1, Blocks.LEAVES)
-        if (rand.nextBoolean()) chunk.setBlockIf(x + 1, endY, z + 3, Blocks.LEAVES)
-        if (rand.nextBoolean()) chunk.setBlockIf(x + 3, endY, z + 3, Blocks.LEAVES)
-        chunk.setBlockIf(x + 1, endY + 1, z + 2, Blocks.LEAVES)
-        chunk.setBlockIf(x + 3, endY + 1, z + 2, Blocks.LEAVES)
-        chunk.setBlockIf(x + 2, endY + 1, z + 1, Blocks.LEAVES)
-        chunk.setBlockIf(x + 2, endY + 1, z + 3, Blocks.LEAVES)
-        chunk.setBlockIf(x + 2, endY + 1, z + 2, Blocks.LEAVES)
+        chunk.setBlockIf(x + 1, endY, z + 2, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 3, endY, z + 2, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 2, endY, z + 1, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 2, endY, z + 3, Blocks.OAK_LEAVES)
+        if (rand.nextBoolean()) chunk.setBlockIf(x + 1, endY, z + 1, Blocks.OAK_LEAVES)
+        if (rand.nextBoolean()) chunk.setBlockIf(x + 3, endY, z + 1, Blocks.OAK_LEAVES)
+        if (rand.nextBoolean()) chunk.setBlockIf(x + 1, endY, z + 3, Blocks.OAK_LEAVES)
+        if (rand.nextBoolean()) chunk.setBlockIf(x + 3, endY, z + 3, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 1, endY + 1, z + 2, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 3, endY + 1, z + 2, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 2, endY + 1, z + 1, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 2, endY + 1, z + 3, Blocks.OAK_LEAVES)
+        chunk.setBlockIf(x + 2, endY + 1, z + 2, Blocks.OAK_LEAVES)
         chunk.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
     }
 

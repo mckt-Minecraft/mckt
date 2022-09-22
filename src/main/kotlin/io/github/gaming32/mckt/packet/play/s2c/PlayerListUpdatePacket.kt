@@ -49,7 +49,7 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
                 writeString(value)
                 writeOptionalString(signature)
             }
-            out.writeVarIntEnum(gamemode)
+            out.writeEnum(gamemode)
             out.writeVarInt(ping)
             out.writeOptionalText(displayName)
             out.writeOptional(signatureData) {
@@ -67,7 +67,7 @@ class PlayerListUpdatePacket(vararg val actions: Action) : Packet(TYPE) {
     }
 
     class UpdateGamemode(uuid: UUID, val gamemode: Gamemode) : Action(1, uuid) {
-        override fun write(out: OutputStream) = out.writeVarIntEnum(gamemode)
+        override fun write(out: OutputStream) = out.writeEnum(gamemode)
 
         override fun toString() = "UpdateGamemode(uuid=$uuid, gamemode=$gamemode)"
     }

@@ -9,6 +9,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
+import io.github.gaming32.mckt.blocks.BlockHandler
+import io.github.gaming32.mckt.blocks.DefaultBlockHandler
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
@@ -100,7 +102,8 @@ class MinecraftServer(
     internal val commandDispatcher = CommandDispatcher<CommandSource>()
     internal val helpTexts = mutableMapOf<CommandNode<CommandSource>, Component?>()
 
-    internal val itemEventHandlers = mutableMapOf<Identifier, ItemEventHandler>()
+    internal val blockHandlers = mutableMapOf<Identifier, BlockHandler>()
+    internal val itemHandlers = mutableMapOf<Identifier, ItemHandler>()
 
     @OptIn(DelicateCoroutinesApi::class)
     internal val threadPoolContext = if (Runtime.getRuntime().availableProcessors() == 1) {
@@ -122,7 +125,8 @@ class MinecraftServer(
         LOGGER.info("Starting server...")
 
         registerCommands()
-        registerItemEventHandlers()
+        registerBlockHandlers()
+        registerItemHandlers()
 
         world = World(this@MinecraftServer, "world")
 
@@ -619,20 +623,30 @@ class MinecraftServer(
         )
     }
 
-    fun registerItemEventHandler(handler: ItemEventHandler, vararg items: Identifier) {
-        items.forEach { itemEventHandlers[it] = handler }
+    fun registerBlockHandler(handler: BlockHandler, vararg blocks: Identifier) {
+        blocks.forEach { blockHandlers[it] = handler }
     }
 
-    private fun registerItemEventHandlers() {
-        registerItemEventHandler(SimpleBlockItemHandler, *DEFAULT_BLOCKSTATES.keys.toTypedArray())
-        registerItemEventHandler(
+    fun getBlockHandler(block: Identifier?) = blockHandlers[block] ?: DefaultBlockHandler
+
+    private fun registerBlockHandlers() = Unit
+
+    fun registerItemHandler(handler: ItemHandler, vararg items: Identifier) {
+        items.forEach { itemHandlers[it] = handler }
+    }
+
+    fun getItemHandler(item: Identifier?) = itemHandlers[item] ?: DefaultItemHandler
+
+    private fun registerItemHandlers() {
+        registerItemHandler(SimpleBlockItemHandler, *DEFAULT_BLOCKSTATES.keys.toTypedArray())
+        registerItemHandler(
             LogItemHandler,
             *DEFAULT_BLOCKSTATES.keys
                 .filter { it.value.endsWith("_log") } // It works, I guess /shrug
                 .toTypedArray()
         )
-        registerItemEventHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
-        registerItemEventHandler(FireworkRocketHandler, Identifier("firework_rocket"))
+        registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
+        registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
     }
 
     fun getPlayerByName(name: String) = clients[name]

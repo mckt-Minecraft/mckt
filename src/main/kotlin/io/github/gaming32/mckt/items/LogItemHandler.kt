@@ -1,11 +1,15 @@
 package io.github.gaming32.mckt.items
 
+import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.objects.BlockState
+import kotlinx.coroutines.CoroutineScope
 
-object LogItemHandler : ItemEventHandler {
-    override suspend fun useOnBlock(event: ItemEventHandler.BlockUseEvent) =
-        SimpleBlockItemHandler.setBlock(event, BlockState(
-            blockId = event.item.itemId,
-            properties = mapOf("axis" to event.face.axis.name.lowercase())
+object LogItemHandler : ItemHandler() {
+    override val isBlockItem get() = true
+
+    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope) =
+        SimpleBlockItemHandler.setBlock(ctx, BlockState(
+            blockId = ctx.item.itemId ?: Blocks.OAK_LOG.blockId,
+            properties = mapOf("axis" to ctx.hit.side.axis.name.lowercase())
         ).canonicalize())
 }

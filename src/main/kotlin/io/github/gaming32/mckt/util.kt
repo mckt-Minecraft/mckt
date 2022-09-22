@@ -229,6 +229,8 @@ fun uuidFromAnyString(s: String) = UUID.fromString(
     )
 )!!
 
-inline fun <reified T> Any.cast() = this as? T
+inline fun <reified T> Any.castOrNull() = this as? T
+
+inline fun <reified T> Any.cast() = this as T
 
 fun Random.nextTriangular(mode: Double, deviation: Double) = mode + deviation * (nextDouble() - nextDouble())

@@ -10,7 +10,7 @@ import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.toTypedArray
 import java.io.OutputStream
 
-class SetEquipmentPacket(val entityId: Int, vararg val equipment: Pair<EquipmentSlot, ItemStack?>) : Packet(TYPE) {
+class SetEquipmentPacket(val entityId: Int, vararg val equipment: Pair<EquipmentSlot, ItemStack>) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x53
     }
@@ -19,9 +19,9 @@ class SetEquipmentPacket(val entityId: Int, vararg val equipment: Pair<Equipment
         require(equipment.isNotEmpty())
     }
 
-    constructor(entityId: Int, equipment: Map<EquipmentSlot, ItemStack?>) : this(entityId, *equipment.toTypedArray())
+    constructor(entityId: Int, equipment: Map<EquipmentSlot, ItemStack>) : this(entityId, *equipment.toTypedArray())
 
-    val equipmentAsMap: Map<EquipmentSlot, ItemStack?>
+    val equipmentAsMap: Map<EquipmentSlot, ItemStack>
         get() = if (equipment.isEmpty()) mapOf() else enumMapOf(*equipment)
 
     override fun write(out: OutputStream) {

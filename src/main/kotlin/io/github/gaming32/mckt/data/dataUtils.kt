@@ -5,9 +5,7 @@ package io.github.gaming32.mckt.data
 import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
 import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
 import io.github.gaming32.mckt.NETWORK_NBT
-import io.github.gaming32.mckt.objects.BlockPosition
-import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.objects.ItemStack
+import io.github.gaming32.mckt.objects.*
 import io.ktor.utils.io.*
 import net.benwoodworth.knbt.NbtCompound
 import net.benwoodworth.knbt.NbtTag
@@ -145,12 +143,12 @@ fun InputStream.readText() = GsonComponentSerializer.gson().deserialize(readStri
 
 fun InputStream.readIdentifier() = Identifier.parse(readString(32767))
 
-inline fun <reified T : Enum<T>> InputStream.readVarIntEnum() = enumValues<T>()[readVarInt()]
+inline fun <reified T : Enum<T>> InputStream.readEnum() = enumValues<T>()[readVarInt()]
 
 inline fun <reified T : Enum<T>> InputStream.readByteEnum() = enumValues<T>()[readUByte().toInt()]
 
-fun InputStream.readItemStack(): ItemStack? {
-    if (!readBoolean()) return null
+fun InputStream.readItemStack(): ItemStack {
+    if (!readBoolean()) return ItemStack.EMPTY
     val intItemId = readVarInt()
     return ItemStack(
         ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
@@ -170,6 +168,19 @@ fun InputStream.readRadians() = readUByte().toFloat() / 128f * PI.toFloat()
 fun InputStream.readUuid() = UUID(readLong(), readLong())
 
 fun InputStream.readBitSet(): BitSet = BitSet.valueOf(readLongArray())
+
+fun InputStream.readBlockHitResult(): BlockHitResult {
+    val location = readBlockPosition()
+    val direction = readEnum<Direction>()
+    return BlockHitResult(
+        Vector3d(
+            location.x.toDouble() + readFloat().toDouble(),
+            location.y.toDouble() + readFloat().toDouble(),
+            location.z.toDouble() + readFloat().toDouble()
+        ),
+        location, direction, readBoolean()
+    )
+}
 //endregion
 
 //region Writers
@@ -293,24 +304,25 @@ fun OutputStream.writeIdentifier(id: Identifier) = writeString(id.toString(), 32
 
 fun OutputStream.writeIdentifierArray(ids: List<Identifier>) = writeArray(ids) { writeIdentifier(it) }
 
-fun <T : Enum<T>> OutputStream.writeVarIntEnum(v: T) = writeVarInt(v.ordinal)
+fun <T : Enum<T>> OutputStream.writeEnum(v: T) = writeVarInt(v.ordinal)
 
-fun <T : Enum<T>> OutputStream.writeByteEnum(v: T) = write(v.ordinal)
+fun <T : Enum<T>> OutputStream.writeByteEnum(v: T) = writeByte(v.ordinal)
 
-fun OutputStream.writeItemStack(item: ItemStack?) {
-    writeBoolean(item != null && item.count > 0)
-    if (item != null && item.count > 0) {
+fun OutputStream.writeItemStack(item: ItemStack) {
+    writeBoolean(item.isNotEmpty())
+    if (item.isNotEmpty()) {
         writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
         writeVarInt(item.count)
-        if (item.extraNbt.isNullOrEmpty()) {
+        val nbt = item.extraNbt
+        if (nbt.isNullOrEmpty()) {
             write(0) // TAG_End
         } else {
-            writeNbtTag(item.extraNbt)
+            writeNbtTag(nbt)
         }
     }
 }
 
-fun OutputStream.writeItemStackArray(items: Array<out ItemStack?>) = writeArray(items) { writeItemStack(it) }
+fun OutputStream.writeItemStackArray(items: Array<out ItemStack>) = writeArray(items) { writeItemStack(it) }
 
 fun OutputStream.writeNbtTag(tag: NbtTag) = NETWORK_NBT.encodeToStream(NbtTag.serializer(), tag, this)
 
@@ -326,6 +338,17 @@ fun OutputStream.writeUuid(uuid: UUID) {
 }
 
 fun OutputStream.writeBitSet(bits: BitSet) = writeLongArray(bits.toLongArray())
+
+fun OutputStream.writeBlockHitResult(hit: BlockHitResult) {
+    val location = hit.location
+    writeBlockPosition(location)
+    writeEnum(hit.side)
+    val position = hit.position
+    writeFloat((position.x - location.x.toDouble()).toFloat())
+    writeFloat((position.y - location.y.toDouble()).toFloat())
+    writeFloat((position.z - location.z.toDouble()).toFloat())
+    writeBoolean(hit.insideBlock)
+}
 //endregion
 
 //region Ktor IO extensions

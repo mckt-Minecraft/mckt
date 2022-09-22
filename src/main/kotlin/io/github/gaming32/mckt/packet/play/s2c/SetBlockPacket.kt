@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.BLOCKSTATE_TO_ID
+import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.data.writeBlockPosition
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.BlockPosition
@@ -12,6 +13,8 @@ data class SetBlockPacket(val location: BlockPosition, val blockState: BlockStat
     companion object {
         const val TYPE = 0x09
     }
+
+    constructor(world: World, location: BlockPosition) : this(location, world.getLoadedBlock(location))
 
     override fun write(out: OutputStream) {
         out.writeBlockPosition(location)

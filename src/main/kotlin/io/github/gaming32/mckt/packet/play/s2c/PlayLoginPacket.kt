@@ -34,7 +34,7 @@ data class PlayLoginPacket(
     override fun write(out: OutputStream) {
         out.writeInt(entityId)
         out.writeBoolean(hardcore)
-        out.writeByteEnum(gamemode)
+        out.writeByte(gamemode.ordinal)
         out.writeByte(previousGamemode?.ordinal ?: -1)
         out.writeIdentifierArray(dimensions)
         out.writeNbtTag(registryCodec)

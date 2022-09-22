@@ -28,16 +28,16 @@ data class PlayerActionPacket(
     }
 
     constructor(inp: InputStream) : this(
-        inp.readVarIntEnum(),
+        inp.readEnum(),
         inp.readBlockPosition(),
         inp.readByteEnum(),
         inp.readVarInt()
     )
 
     override fun write(out: OutputStream) {
-        out.writeVarInt(action.ordinal)
+        out.writeEnum(action)
         out.writeBlockPosition(location)
-        out.writeByte(face.ordinal)
+        out.writeByteEnum(face)
         out.writeVarInt(sequence)
     }
 }

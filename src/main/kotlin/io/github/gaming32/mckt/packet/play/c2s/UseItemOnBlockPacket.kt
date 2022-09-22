@@ -1,20 +1,15 @@
 package io.github.gaming32.mckt.packet.play.c2s
 
 import io.github.gaming32.mckt.data.*
-import io.github.gaming32.mckt.objects.BlockPosition
-import io.github.gaming32.mckt.objects.Direction
+import io.github.gaming32.mckt.objects.BlockHitResult
+import io.github.gaming32.mckt.objects.Hand
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
 import java.io.OutputStream
 
 data class UseItemOnBlockPacket(
-    val offhand: Boolean,
-    val location: BlockPosition,
-    val face: Direction,
-    val cursorX: Float,
-    val cursorY: Float,
-    val cursorZ: Float,
-    val insideBlock: Boolean,
+    val hand: Hand,
+    val hit: BlockHitResult,
     val sequence: Int
 ) : Packet(TYPE) {
     companion object {
@@ -22,24 +17,14 @@ data class UseItemOnBlockPacket(
     }
 
     constructor(inp: InputStream) : this(
-        inp.readBoolean(),
-        inp.readBlockPosition(),
-        inp.readVarIntEnum(),
-        inp.readFloat(),
-        inp.readFloat(),
-        inp.readFloat(),
-        inp.readBoolean(),
+        inp.readEnum(),
+        inp.readBlockHitResult(),
         inp.readVarInt()
     )
 
     override fun write(out: OutputStream) {
-        out.writeBoolean(offhand)
-        out.writeBlockPosition(location)
-        out.writeVarInt(face.ordinal)
-        out.writeFloat(cursorX)
-        out.writeFloat(cursorY)
-        out.writeFloat(cursorZ)
-        out.writeBoolean(insideBlock)
+        out.writeEnum(hand)
+        out.writeBlockHitResult(hit)
         out.writeVarInt(sequence)
     }
 }

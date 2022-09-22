@@ -259,8 +259,8 @@ object Blocks {
     val GRASS_BLOCK = getBlock("grass_block")
     val BEDROCK = getBlock("bedrock")
     val LAVA = getBlock("lava")
-    val WOOD = getBlock("oak_log")
-    val LEAVES = getBlock("oak_leaves")
+    val OAK_LOG = getBlock("oak_log")
+    val OAK_LEAVES = getBlock("oak_leaves")
     val DIORITE = getBlock("diorite")
     val ANDESITE = getBlock("andesite")
     val GRANITE = getBlock("granite")
@@ -326,6 +326,9 @@ class World(val server: MinecraftServer, val name: String) {
         region
     }
 
+    fun getLoadedRegion(x: Int, z: Int) =
+        openRegions[x, z] ?: throw IllegalStateException("Failed to get unloaded region $x $z")
+
     suspend fun getChunk(x: Int, z: Int): WorldChunk? =
         getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
@@ -343,6 +346,12 @@ class World(val server: MinecraftServer, val name: String) {
         getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
+
+    fun getLoadedBlock(x: Int, y: Int, z: Int) =
+        openRegions[x shr 9, z shr 9]?.getBlock(x and 511, y, z and 511)
+            ?: throw IllegalStateException("Failed to get unloaded block $x $y $z")
+
+    fun getLoadedBlock(pos: BlockPosition) = getLoadedBlock(pos.x, pos.y, pos.z)
 
     suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
         getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, block)
@@ -657,7 +666,7 @@ class PlayerData(
     var flying = false
     var operatorLevel = 0
     var gamemode = Gamemode.CREATIVE
-    val inventory = arrayOfNulls<ItemStack>(46)
+    val inventory = Array(46) { ItemStack.EMPTY }
     var selectedHotbarSlot = 0
         set(value) {
             require(value in 0..9) { "Hotbar slot not in range 0..9" }
@@ -669,6 +678,26 @@ class PlayerData(
         set(value) {
             selectedHotbarSlot = value - 36
         }
+
+    var mainHand
+        get() = inventory[selectedInventorySlot]
+        set(value) {
+            inventory[selectedInventorySlot] = value
+        }
+    var offhand
+        get() = inventory[45]
+        set(value) {
+            inventory[45] = value
+        }
+
+    fun getHeldItem(hand: Hand) = if (hand == Hand.MAINHAND) mainHand else offhand
+    fun setHeldItem(hand: Hand, stack: ItemStack) {
+        if (hand == Hand.MAINHAND) {
+            mainHand = stack
+        } else {
+            offhand = stack
+        }
+    }
 
     var flags: Int = 0
     var pose: EntityPose = EntityPose.STANDING
@@ -703,11 +732,11 @@ class PlayerData(
             }
         }
 
-    fun getEquipment(): Map<EquipmentSlot, ItemStack?> {
-        val result = enumMapOf<EquipmentSlot, ItemStack?>()
+    fun getEquipment(): Map<EquipmentSlot, ItemStack> {
+        val result = enumMapOf<EquipmentSlot, ItemStack>()
         for (slot in EquipmentSlot.values()) {
             val rawSlot = if (slot.rawSlot == -1) selectedInventorySlot else slot.rawSlot
-            if (inventory[rawSlot] != null) {
+            if (inventory[rawSlot].isNotEmpty()) {
                 result[slot] = inventory[rawSlot]
             }
         }

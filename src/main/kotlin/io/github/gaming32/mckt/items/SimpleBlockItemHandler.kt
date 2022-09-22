@@ -2,22 +2,26 @@ package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.DEFAULT_BLOCKSTATES
+import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.BlockState
+import kotlinx.coroutines.CoroutineScope
 
-object SimpleBlockItemHandler : ItemEventHandler {
-    override suspend fun useOnBlock(event: ItemEventHandler.BlockUseEvent) =
-        setBlock(event, DEFAULT_BLOCKSTATES[event.item.itemId] ?: Blocks.STONE)
+object SimpleBlockItemHandler : ItemHandler() {
+    override val isBlockItem get() = true
+
+    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope) =
+        setBlock(ctx, DEFAULT_BLOCKSTATES[ctx.item.itemId] ?: Blocks.STONE)
 
     suspend fun setBlock(
-        event: ItemEventHandler.BlockUseEvent,
+        ctx: ItemUsageContext,
         block: BlockState
-    ): ItemEventHandler.Result {
-        val placePos = if (event.world.getBlock(event.location) == Blocks.AIR) {
-            event.location
+    ): ActionResult {
+        val placePos = if (ctx.world.getBlock(ctx.hit.location) == Blocks.AIR) {
+            ctx.hit.location
         } else {
-            event.location + event.face.vector
+            ctx.hit.offsetLocation
         }
-        event.server.setBlock(placePos, block)
-        return ItemEventHandler.Result.USE_UP
+        ctx.server.setBlock(placePos, block)
+        return ActionResult.success(false)
     }
 }

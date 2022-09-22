@@ -10,8 +10,8 @@ import java.io.OutputStream
 
 class SetContainerContentPacket(
     val windowId: UByte,
-    vararg val slots: ItemStack?,
-    val carriedItem: ItemStack? = null
+    vararg val slots: ItemStack,
+    val carriedItem: ItemStack = ItemStack.EMPTY
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x11

@@ -1,10 +1,12 @@
 package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.Blocks
+import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.objects.Identifier
+import kotlinx.coroutines.CoroutineScope
 
-object FlintAndSteelHandler : ItemEventHandler {
+object FlintAndSteelHandler : ItemHandler() {
     private val burnChancesInternal = mutableMapOf<Identifier, Int>()
     private val spreadChancesInternal = mutableMapOf<Identifier, Int>()
     val burnChances: Map<Identifier, Int> = burnChancesInternal
@@ -171,17 +173,17 @@ object FlintAndSteelHandler : ItemEventHandler {
         registerFlammable(Identifier("glow_lichen"), 15, 100)
     }
 
-    override suspend fun useOnBlock(event: ItemEventHandler.BlockUseEvent): ItemEventHandler.Result {
-        if (event.world.getBlock(event.location) == Blocks.AIR) return ItemEventHandler.Result.PASS
-        val placeAt = event.location + event.face.vector
+    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
+        if (ctx.world.getBlock(ctx.hit.location) == Blocks.AIR) return ActionResult.PASS
+        val placeAt = ctx.hit.offsetLocation
         var canPlace = false
         val properties = Blocks.FIRE.properties.toMutableMap()
-        if (event.world.getBlock(placeAt.down()) != Blocks.AIR) {
+        if (ctx.world.getBlock(placeAt.down()) != Blocks.AIR) {
             canPlace = true
         } else {
             for (direction in Direction.values()) {
                 if (direction == Direction.DOWN) continue
-                val block = event.world.getBlock(placeAt + direction.vector)?.blockId
+                val block = ctx.world.getBlock(placeAt + direction.vector)?.blockId
                 if (block != null && isFlammable(block)) {
                     properties[direction.name.lowercase()] = "true"
                     canPlace = true
@@ -189,10 +191,10 @@ object FlintAndSteelHandler : ItemEventHandler {
             }
         }
         return if (canPlace) {
-            event.server.setBlock(event.location + event.face.vector, Blocks.FIRE.with(properties).canonicalize())
-            ItemEventHandler.Result.SUCCESS
+            ctx.client.server.setBlock(ctx.hit.offsetLocation, Blocks.FIRE.with(properties).canonicalize())
+            ActionResult.success(false)
         } else {
-            ItemEventHandler.Result.PASS
+            ActionResult.FAIL
         }
     }
 }

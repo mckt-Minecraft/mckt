@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.objects
 
-import io.github.gaming32.mckt.BLOCKSTATE_TO_ID
-import io.github.gaming32.mckt.ID_TO_BLOCKSTATE
+import io.github.gaming32.mckt.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -93,4 +93,9 @@ data class BlockState(
     fun with(key: String, value: String) = BlockState(blockId, properties = properties + mapOf(key to value))
 
     fun with(properties: Map<String, String>) = BlockState(blockId, properties = properties)
+
+    fun getHandler(server: MinecraftServer) = server.getBlockHandler(blockId)
+
+    suspend fun onUse(world: World, client: PlayClient, hand: Hand, hit: BlockHitResult, scope: CoroutineScope) =
+        getHandler(world.server).onUse(this, world, hit.location, client, hand, hit, scope)
 }

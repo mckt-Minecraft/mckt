@@ -8,7 +8,7 @@ import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.Packet
 import java.io.OutputStream
 
-data class SetContainerSlotPacket(val windowId: Byte, val slotId: Int, val item: ItemStack?) : Packet(TYPE) {
+data class SetContainerSlotPacket(val windowId: Byte, val slotId: Int, val item: ItemStack) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x13
     }
