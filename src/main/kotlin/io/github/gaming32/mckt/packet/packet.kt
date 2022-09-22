@@ -35,6 +35,7 @@ abstract class Packet(val type: Int) : Writable {
                 DEFLATER.reset()
             } else {
                 out2.writeVarInt(0)
+                @Suppress("BlockingMethodInNonBlockingContext")
                 out2.write(output.toByteArray())
             }
             output = out2

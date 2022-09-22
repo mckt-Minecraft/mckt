@@ -24,6 +24,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.OutputStream
 import java.util.*
+import kotlin.io.path.moveTo
 import kotlin.random.Random
 import kotlin.reflect.typeOf
 import kotlin.time.Duration.Companion.nanoseconds
@@ -492,9 +493,11 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
     }
 
     fun save() {
-        regionFile.outputStream().use { out ->
+        val tempFile = File.createTempFile("mckt-save", ".nbt")
+        tempFile.outputStream().use { out ->
             world.meta.saveFormat.encodeToStream(toData(), out, typeOf<RegionData>())
         }
+        tempFile.toPath().moveTo(regionFile.toPath(), true)
     }
 
     override fun close() = save()
