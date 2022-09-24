@@ -63,6 +63,7 @@ import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
 import kotlin.math.min
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val LOGGER = getLogger()
@@ -138,8 +139,8 @@ class MinecraftServer(
         acceptConnectionsJob = launch { acceptConnections() }
         yield()
         LOGGER.info("Server started")
+        var startTime = System.nanoTime()
         while (running) {
-            val startTime = System.nanoTime()
             world.meta.time++
             if (world.meta.autosave && world.meta.time % config.autosavePeriod == 0L) {
                 launch { world.saveAndLog() }
@@ -181,11 +182,13 @@ class MinecraftServer(
                     (tickTime - 50) / 1000.0, (tickTime - 50) / 50.0
                 )
             }
+            startTime = System.nanoTime()
             val sleepTime = 50 - tickTime
             if (sleepTime <= 0) {
                 yield()
             } else {
                 delay(sleepTime)
+                startTime += sleepTime.milliseconds.inWholeNanoseconds
             }
         }
         LOGGER.info("Stopping server...")
