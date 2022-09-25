@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.data.toGson
@@ -21,9 +23,27 @@ data class GameVersion(
     val majorVersion: String
 )
 
-@OptIn(ExperimentalSerializationApi::class)
-val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use { input ->
-    Json.decodeFromStream<Map<String, String>>(input)
+@Serializable
+data class BlockSoundGroup(
+    val volume: Float,
+    val pitch: Float,
+    val breakSound: Identifier,
+    val stepSound: Identifier,
+    val placeSound: Identifier,
+    val hitSound: Identifier,
+    val fallSound: Identifier
+)
+
+@Serializable
+data class BlockProperties(
+    val soundGroup: String,
+    val mapColor: Int,
+    val blastResistance: Double,
+    val hardness: Double
+)
+
+val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use {
+    Json.decodeFromStream<Map<String, String>>(it)
 } ?: mapOf()) + mapOf(
     "commands.save.saving" to "Saving world \"%s\"",
     "commands.save.success" to "Saved world \"%s\" in %sms",
@@ -31,18 +51,16 @@ val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en
     "commands.op.success" to "Made %s a server operator (level %s)"
 )
 
-@OptIn(ExperimentalSerializationApi::class)
-val GAME_VERSIONS = MinecraftServer::class.java.getResourceAsStream("/protocolVersions.json")?.use { input ->
-    Json.decodeFromStream<List<GameVersion>>(input)
+val GAME_VERSIONS = MinecraftServer::class.java.getResourceAsStream("/protocolVersions.json")?.use {
+    Json.decodeFromStream<List<GameVersion>>(it)
 } ?: listOf()
 val GAME_VERSIONS_BY_PROTOCOL = GAME_VERSIONS
     .asSequence()
     .filter(GameVersion::usesNetty)
     .associateBy(GameVersion::version)
 
-@OptIn(ExperimentalSerializationApi::class)
-private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use { input ->
-    Json.decodeFromStream<JsonObject>(input)
+private val REGISTRIES_DATA = MinecraftServer::class.java.getResourceAsStream("/registries.json")?.use {
+    Json.decodeFromStream<JsonObject>(it)
 }?.asSequence()?.associate { (registry, data) ->
     Identifier.parse(registry) to data.toGson().asJsonObject["entries"].asJsonObject
 } ?: mapOf()
@@ -52,7 +70,15 @@ val ITEM_ID_TO_PROTOCOL = REGISTRIES_DATA[Identifier("item")]?.entrySet()?.assoc
 } ?: mapOf()
 val ITEM_PROTOCOL_TO_ID = ITEM_ID_TO_PROTOCOL.invert()
 
-@OptIn(ExperimentalSerializationApi::class)
 val DEFAULT_TAGS = MinecraftServer::class.java.getResourceAsStream("/defaultTags.json")?.use { input ->
     Json.decodeFromStream<Map<Identifier, Map<Identifier, IntArray>>>(input)
 } ?: mapOf()
+
+val BLOCK_SOUND_GROUPS = MinecraftServer::class.java.getResourceAsStream("/dataexport/blockSoundGroups.json")?.use {
+    Json.decodeFromStream<Map<String, BlockSoundGroup>>(it)
+} ?: mapOf()
+
+val BLOCK_PROPERTIES = MinecraftServer::class.java.getResourceAsStream("/dataexport/blocks.json")?.use {
+    Json.decodeFromStream<Map<Identifier, BlockProperties>>(it)
+} ?: mapOf()
+

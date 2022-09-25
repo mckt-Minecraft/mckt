@@ -71,7 +71,7 @@ class PlayClient(
         val chatMode: Int = 0,
         val chatColors: Boolean = true,
         val displayedSkinParts: Int = 127,
-        val mainHand: Int = 0,
+        val mainHand: Arm = Arm.RIGHT,
         val textFiltering: Boolean = false,
         val allowServerListings: Boolean = true
     ) {
@@ -797,9 +797,17 @@ class PlayClient(
         }
     }
 
-    val rotationVector: Vector3d get() {
-        val f = data.pitch * (Math.PI / 180.0).toFloat()
-        val g = -data.yaw * (Math.PI / 180.0).toFloat()
+    val rotationVector: Vector3d get() = getRotationVector(data.pitch, data.yaw)
+
+    fun getHeldItemVector(item: Identifier): Vector3d {
+        val offhand = data.offhand.itemId == item && data.mainHand.itemId != item
+        val arm = if (offhand) options.mainHand.opposite else options.mainHand
+        return getRotationVector(0f, data.yaw + if (arm == Arm.RIGHT) 80f else -80f) * 0.5
+    }
+
+    private fun getRotationVector(pitch: Float, yaw: Float): Vector3d {
+        val f = pitch * (Math.PI / 180.0).toFloat()
+        val g = -yaw * (Math.PI / 180.0).toFloat()
         val h = cos(g)
         val i = sin(g)
         val j = cos(f)

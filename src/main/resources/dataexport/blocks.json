@@ -1,0 +1,5600 @@
+{
+  "minecraft:air": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:stone": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:granite": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_granite": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:diorite": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_diorite": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:andesite": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_andesite": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:grass_block": {
+    "soundGroup": "grass",
+    "mapColor": 1,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:dirt": {
+    "soundGroup": "gravel",
+    "mapColor": 10,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:coarse_dirt": {
+    "soundGroup": "gravel",
+    "mapColor": 10,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:podzol": {
+    "soundGroup": "gravel",
+    "mapColor": 34,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:cobblestone": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_planks": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_planks": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_planks": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_planks": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_planks": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_planks": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_planks": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:spruce_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:birch_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:jungle_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:acacia_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dark_oak_sapling": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:mangrove_propagule": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bedrock": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:water": {
+    "soundGroup": "stone",
+    "mapColor": 12,
+    "blastResistance": 100.0,
+    "hardness": 100.0
+  },
+  "minecraft:lava": {
+    "soundGroup": "stone",
+    "mapColor": 4,
+    "blastResistance": 100.0,
+    "hardness": 100.0
+  },
+  "minecraft:sand": {
+    "soundGroup": "sand",
+    "mapColor": 2,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:red_sand": {
+    "soundGroup": "sand",
+    "mapColor": 15,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:gravel": {
+    "soundGroup": "gravel",
+    "mapColor": 11,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:gold_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_gold_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:iron_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_iron_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:coal_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_coal_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:nether_gold_ore": {
+    "soundGroup": "nether_gold_ore",
+    "mapColor": 35,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:oak_log": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_log": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_log": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_log": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_log": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_log": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_log": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_roots": {
+    "soundGroup": "mangrove_roots",
+    "mapColor": 34,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:muddy_mangrove_roots": {
+    "soundGroup": "muddy_mangrove_roots",
+    "mapColor": 34,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:stripped_spruce_log": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_birch_log": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_jungle_log": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_acacia_log": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_dark_oak_log": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_oak_log": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_mangrove_log": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_wood": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_wood": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_wood": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_wood": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_wood": {
+    "soundGroup": "wood",
+    "mapColor": 21,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_wood": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_wood": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_oak_wood": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_spruce_wood": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_birch_wood": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_jungle_wood": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_acacia_wood": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_dark_oak_wood": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_mangrove_wood": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:spruce_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:birch_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:jungle_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:acacia_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:dark_oak_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:mangrove_leaves": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:azalea_leaves": {
+    "soundGroup": "azalea_leaves",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:flowering_azalea_leaves": {
+    "soundGroup": "azalea_leaves",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:sponge": {
+    "soundGroup": "grass",
+    "mapColor": 18,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:wet_sponge": {
+    "soundGroup": "grass",
+    "mapColor": 18,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:glass": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:lapis_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_lapis_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:lapis_block": {
+    "soundGroup": "stone",
+    "mapColor": 32,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:dispenser": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:chiseled_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:cut_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:note_block": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:white_bed": {
+    "soundGroup": "wood",
+    "mapColor": 8,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:orange_bed": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:magenta_bed": {
+    "soundGroup": "wood",
+    "mapColor": 16,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:light_blue_bed": {
+    "soundGroup": "wood",
+    "mapColor": 17,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:yellow_bed": {
+    "soundGroup": "wood",
+    "mapColor": 18,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:lime_bed": {
+    "soundGroup": "wood",
+    "mapColor": 19,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:pink_bed": {
+    "soundGroup": "wood",
+    "mapColor": 20,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:gray_bed": {
+    "soundGroup": "wood",
+    "mapColor": 21,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:light_gray_bed": {
+    "soundGroup": "wood",
+    "mapColor": 22,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:cyan_bed": {
+    "soundGroup": "wood",
+    "mapColor": 23,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:purple_bed": {
+    "soundGroup": "wood",
+    "mapColor": 24,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:blue_bed": {
+    "soundGroup": "wood",
+    "mapColor": 25,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:brown_bed": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:green_bed": {
+    "soundGroup": "wood",
+    "mapColor": 27,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:red_bed": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:black_bed": {
+    "soundGroup": "wood",
+    "mapColor": 29,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:powered_rail": {
+    "soundGroup": "metal",
+    "mapColor": 0,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:detector_rail": {
+    "soundGroup": "metal",
+    "mapColor": 0,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:sticky_piston": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:cobweb": {
+    "soundGroup": "stone",
+    "mapColor": 3,
+    "blastResistance": 4.0,
+    "hardness": 4.0
+  },
+  "minecraft:grass": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:fern": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_bush": {
+    "soundGroup": "grass",
+    "mapColor": 13,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:seagrass": {
+    "soundGroup": "wet_grass",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tall_seagrass": {
+    "soundGroup": "wet_grass",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:piston": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:piston_head": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:white_wool": {
+    "soundGroup": "wool",
+    "mapColor": 8,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:orange_wool": {
+    "soundGroup": "wool",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:magenta_wool": {
+    "soundGroup": "wool",
+    "mapColor": 16,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:light_blue_wool": {
+    "soundGroup": "wool",
+    "mapColor": 17,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:yellow_wool": {
+    "soundGroup": "wool",
+    "mapColor": 18,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:lime_wool": {
+    "soundGroup": "wool",
+    "mapColor": 19,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:pink_wool": {
+    "soundGroup": "wool",
+    "mapColor": 20,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:gray_wool": {
+    "soundGroup": "wool",
+    "mapColor": 21,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:light_gray_wool": {
+    "soundGroup": "wool",
+    "mapColor": 22,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:cyan_wool": {
+    "soundGroup": "wool",
+    "mapColor": 23,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:purple_wool": {
+    "soundGroup": "wool",
+    "mapColor": 24,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:blue_wool": {
+    "soundGroup": "wool",
+    "mapColor": 25,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:brown_wool": {
+    "soundGroup": "wool",
+    "mapColor": 26,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:green_wool": {
+    "soundGroup": "wool",
+    "mapColor": 27,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:red_wool": {
+    "soundGroup": "wool",
+    "mapColor": 28,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:black_wool": {
+    "soundGroup": "wool",
+    "mapColor": 29,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:moving_piston": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 0.0,
+    "hardness": -1.0
+  },
+  "minecraft:dandelion": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:poppy": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:blue_orchid": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:allium": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:azure_bluet": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:red_tulip": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:orange_tulip": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:white_tulip": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:pink_tulip": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:oxeye_daisy": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:cornflower": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:wither_rose": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:lily_of_the_valley": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:brown_mushroom": {
+    "soundGroup": "grass",
+    "mapColor": 26,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:red_mushroom": {
+    "soundGroup": "grass",
+    "mapColor": 28,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:gold_block": {
+    "soundGroup": "metal",
+    "mapColor": 30,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:iron_block": {
+    "soundGroup": "metal",
+    "mapColor": 6,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:bricks": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:tnt": {
+    "soundGroup": "grass",
+    "mapColor": 4,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bookshelf": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:mossy_cobblestone": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:obsidian": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 1200.0,
+    "hardness": 50.0
+  },
+  "minecraft:torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:wall_torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:fire": {
+    "soundGroup": "wool",
+    "mapColor": 4,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:soul_fire": {
+    "soundGroup": "wool",
+    "mapColor": 17,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:spawner": {
+    "soundGroup": "metal",
+    "mapColor": 11,
+    "blastResistance": 5.0,
+    "hardness": 5.0
+  },
+  "minecraft:oak_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:chest": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:redstone_wire": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:diamond_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_diamond_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:diamond_block": {
+    "soundGroup": "metal",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:crafting_table": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:wheat": {
+    "soundGroup": "crop",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:farmland": {
+    "soundGroup": "gravel",
+    "mapColor": 10,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:furnace": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:oak_sign": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:spruce_sign": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:birch_sign": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:acacia_sign": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:jungle_sign": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:dark_oak_sign": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:mangrove_sign": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:oak_door": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:ladder": {
+    "soundGroup": "ladder",
+    "mapColor": 0,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:rail": {
+    "soundGroup": "metal",
+    "mapColor": 0,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:cobblestone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:spruce_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:birch_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:acacia_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:jungle_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:dark_oak_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:mangrove_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:lever": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:stone_pressure_plate": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:iron_door": {
+    "soundGroup": "metal",
+    "mapColor": 6,
+    "blastResistance": 5.0,
+    "hardness": 5.0
+  },
+  "minecraft:oak_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:spruce_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:birch_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:jungle_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:acacia_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:dark_oak_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:mangrove_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:redstone_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_redstone_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:redstone_torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:redstone_wall_torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:stone_button": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:snow": {
+    "soundGroup": "snow",
+    "mapColor": 8,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:ice": {
+    "soundGroup": "glass",
+    "mapColor": 5,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:snow_block": {
+    "soundGroup": "snow",
+    "mapColor": 8,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:cactus": {
+    "soundGroup": "wool",
+    "mapColor": 7,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:clay": {
+    "soundGroup": "gravel",
+    "mapColor": 9,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:sugar_cane": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:jukebox": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:oak_fence": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:pumpkin": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:netherrack": {
+    "soundGroup": "netherrack",
+    "mapColor": 35,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:soul_sand": {
+    "soundGroup": "soul_sand",
+    "mapColor": 26,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:soul_soil": {
+    "soundGroup": "soul_soil",
+    "mapColor": 26,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:basalt": {
+    "soundGroup": "basalt",
+    "mapColor": 29,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:polished_basalt": {
+    "soundGroup": "basalt",
+    "mapColor": 29,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:soul_torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:soul_wall_torch": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:glowstone": {
+    "soundGroup": "glass",
+    "mapColor": 2,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:nether_portal": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": -1.0
+  },
+  "minecraft:carved_pumpkin": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:jack_o_lantern": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:repeater": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:white_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 8,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:orange_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 15,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:magenta_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 16,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:light_blue_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 17,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:yellow_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 18,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:lime_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 19,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:pink_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 20,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:gray_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 21,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:light_gray_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 22,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:cyan_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 23,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:purple_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 24,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:blue_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 25,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:brown_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 26,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:green_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 27,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:red_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 28,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:black_stained_glass": {
+    "soundGroup": "glass",
+    "mapColor": 29,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:oak_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:spruce_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:birch_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:jungle_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:acacia_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:dark_oak_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:mangrove_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:mossy_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:cracked_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:chiseled_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:packed_mud": {
+    "soundGroup": "packed_mud",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 1.0
+  },
+  "minecraft:mud_bricks": {
+    "soundGroup": "mud_bricks",
+    "mapColor": 44,
+    "blastResistance": 3.0,
+    "hardness": 1.5
+  },
+  "minecraft:infested_stone": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:infested_cobblestone": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 1.0
+  },
+  "minecraft:infested_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:infested_mossy_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:infested_cracked_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:infested_chiseled_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 9,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:brown_mushroom_block": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:red_mushroom_block": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:mushroom_stem": {
+    "soundGroup": "wood",
+    "mapColor": 3,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:iron_bars": {
+    "soundGroup": "metal",
+    "mapColor": 0,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:chain": {
+    "soundGroup": "chain",
+    "mapColor": 0,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:melon": {
+    "soundGroup": "wood",
+    "mapColor": 19,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:attached_pumpkin_stem": {
+    "soundGroup": "wood",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:attached_melon_stem": {
+    "soundGroup": "wood",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:pumpkin_stem": {
+    "soundGroup": "stem",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:melon_stem": {
+    "soundGroup": "stem",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:vine": {
+    "soundGroup": "vine",
+    "mapColor": 7,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:glow_lichen": {
+    "soundGroup": "glow_lichen",
+    "mapColor": 61,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:oak_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:stone_brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:mud_brick_stairs": {
+    "soundGroup": "mud_bricks",
+    "mapColor": 44,
+    "blastResistance": 3.0,
+    "hardness": 1.5
+  },
+  "minecraft:mycelium": {
+    "soundGroup": "grass",
+    "mapColor": 24,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:lily_pad": {
+    "soundGroup": "lily_pad",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:nether_bricks": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:nether_brick_fence": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:nether_brick_stairs": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:nether_wart": {
+    "soundGroup": "nether_wart",
+    "mapColor": 28,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:enchanting_table": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 1200.0,
+    "hardness": 5.0
+  },
+  "minecraft:brewing_stand": {
+    "soundGroup": "stone",
+    "mapColor": 6,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:cauldron": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:water_cauldron": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:lava_cauldron": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:powder_snow_cauldron": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:end_portal": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:end_portal_frame": {
+    "soundGroup": "glass",
+    "mapColor": 27,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:end_stone": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:dragon_egg": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:redstone_lamp": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:cocoa": {
+    "soundGroup": "wood",
+    "mapColor": 7,
+    "blastResistance": 3.0,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:sandstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:emerald_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_emerald_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:ender_chest": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 600.0,
+    "hardness": 22.5
+  },
+  "minecraft:tripwire_hook": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tripwire": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:emerald_block": {
+    "soundGroup": "metal",
+    "mapColor": 33,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:spruce_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:command_block": {
+    "soundGroup": "stone",
+    "mapColor": 26,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:beacon": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:cobblestone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:mossy_cobblestone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:flower_pot": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_oak_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_spruce_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_birch_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_jungle_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_acacia_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_dark_oak_sapling": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_mangrove_propagule": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_fern": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_dandelion": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_poppy": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_blue_orchid": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_allium": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_azure_bluet": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_red_tulip": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_orange_tulip": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_white_tulip": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_pink_tulip": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_oxeye_daisy": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_cornflower": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_lily_of_the_valley": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_wither_rose": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_red_mushroom": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_brown_mushroom": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_dead_bush": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_cactus": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:carrots": {
+    "soundGroup": "crop",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potatoes": {
+    "soundGroup": "crop",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:oak_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:spruce_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:birch_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:jungle_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:acacia_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:dark_oak_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:mangrove_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:skeleton_skull": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:skeleton_wall_skull": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:wither_skeleton_skull": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:wither_skeleton_wall_skull": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:zombie_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:zombie_wall_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:player_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:player_wall_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:creeper_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:creeper_wall_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:dragon_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:dragon_wall_head": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:anvil": {
+    "soundGroup": "anvil",
+    "mapColor": 6,
+    "blastResistance": 1200.0,
+    "hardness": 5.0
+  },
+  "minecraft:chipped_anvil": {
+    "soundGroup": "anvil",
+    "mapColor": 6,
+    "blastResistance": 1200.0,
+    "hardness": 5.0
+  },
+  "minecraft:damaged_anvil": {
+    "soundGroup": "anvil",
+    "mapColor": 6,
+    "blastResistance": 1200.0,
+    "hardness": 5.0
+  },
+  "minecraft:trapped_chest": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:light_weighted_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 30,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:heavy_weighted_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 6,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:comparator": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:daylight_detector": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:redstone_block": {
+    "soundGroup": "metal",
+    "mapColor": 4,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:nether_quartz_ore": {
+    "soundGroup": "nether_ore",
+    "mapColor": 35,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:hopper": {
+    "soundGroup": "metal",
+    "mapColor": 11,
+    "blastResistance": 4.800000190734863,
+    "hardness": 3.0
+  },
+  "minecraft:quartz_block": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:chiseled_quartz_block": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:quartz_pillar": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:quartz_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:activator_rail": {
+    "soundGroup": "metal",
+    "mapColor": 0,
+    "blastResistance": 0.699999988079071,
+    "hardness": 0.699999988079071
+  },
+  "minecraft:dropper": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:white_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 36,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:orange_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 37,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:magenta_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 38,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:light_blue_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 39,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:yellow_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 40,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:lime_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 41,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:pink_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 42,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:gray_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 43,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:light_gray_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 44,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:cyan_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 45,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:purple_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 46,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:blue_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 47,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:brown_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 48,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:green_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 49,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:red_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 50,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:black_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 51,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:white_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:orange_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:magenta_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:light_blue_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:yellow_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:lime_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:pink_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:gray_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:light_gray_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:cyan_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:purple_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:blue_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:brown_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:green_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:red_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:black_stained_glass_pane": {
+    "soundGroup": "glass",
+    "mapColor": 0,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:acacia_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:slime_block": {
+    "soundGroup": "slime",
+    "mapColor": 1,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:barrier": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 3600000.75,
+    "hardness": -1.0
+  },
+  "minecraft:light": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 3600000.75,
+    "hardness": -1.0
+  },
+  "minecraft:iron_trapdoor": {
+    "soundGroup": "metal",
+    "mapColor": 6,
+    "blastResistance": 5.0,
+    "hardness": 5.0
+  },
+  "minecraft:prismarine": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:prismarine_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dark_prismarine": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:prismarine_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:prismarine_brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dark_prismarine_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:prismarine_slab": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:prismarine_brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dark_prismarine_slab": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:sea_lantern": {
+    "soundGroup": "glass",
+    "mapColor": 14,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:hay_block": {
+    "soundGroup": "grass",
+    "mapColor": 18,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:white_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 8,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:orange_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 15,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:magenta_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 16,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:light_blue_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 17,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:yellow_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 18,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:lime_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 19,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:pink_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 20,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:gray_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 21,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:light_gray_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 22,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:cyan_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 23,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:purple_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 24,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:blue_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 25,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:brown_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 26,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:green_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 27,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:red_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 28,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:black_carpet": {
+    "soundGroup": "wool",
+    "mapColor": 29,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:coal_block": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:packed_ice": {
+    "soundGroup": "glass",
+    "mapColor": 5,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:sunflower": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:lilac": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:rose_bush": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:peony": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tall_grass": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:large_fern": {
+    "soundGroup": "grass",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:white_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:orange_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:magenta_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:light_blue_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:yellow_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:lime_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:pink_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:gray_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:light_gray_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:cyan_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:purple_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:blue_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:brown_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:green_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:red_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:black_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:white_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:orange_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:magenta_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:light_blue_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:yellow_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:lime_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:pink_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:gray_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:light_gray_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:cyan_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:purple_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:blue_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:brown_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:green_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:red_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:black_wall_banner": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:red_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:chiseled_red_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:cut_red_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:red_sandstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:oak_slab": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_slab": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_slab": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_slab": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_slab": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_slab": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_slab": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:stone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_stone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:cut_sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:petrified_oak_slab": {
+    "soundGroup": "stone",
+    "mapColor": 13,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:cobblestone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:stone_brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:mud_brick_slab": {
+    "soundGroup": "mud_bricks",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 1.5
+  },
+  "minecraft:nether_brick_slab": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:quartz_slab": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:red_sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:cut_red_sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:purpur_slab": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_stone": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_quartz": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_red_sandstone": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_fence": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:birch_fence": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:jungle_fence": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:acacia_fence": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:dark_oak_fence": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:mangrove_fence": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:spruce_door": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:birch_door": {
+    "soundGroup": "wood",
+    "mapColor": 2,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:jungle_door": {
+    "soundGroup": "wood",
+    "mapColor": 10,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:acacia_door": {
+    "soundGroup": "wood",
+    "mapColor": 15,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:dark_oak_door": {
+    "soundGroup": "wood",
+    "mapColor": 26,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:mangrove_door": {
+    "soundGroup": "wood",
+    "mapColor": 28,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:end_rod": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:chorus_plant": {
+    "soundGroup": "wood",
+    "mapColor": 24,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:chorus_flower": {
+    "soundGroup": "wood",
+    "mapColor": 24,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:purpur_block": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:purpur_pillar": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:purpur_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:end_stone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:beetroots": {
+    "soundGroup": "crop",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dirt_path": {
+    "soundGroup": "grass",
+    "mapColor": 10,
+    "blastResistance": 0.6499999761581421,
+    "hardness": 0.6499999761581421
+  },
+  "minecraft:end_gateway": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:repeating_command_block": {
+    "soundGroup": "stone",
+    "mapColor": 24,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:chain_command_block": {
+    "soundGroup": "stone",
+    "mapColor": 27,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:frosted_ice": {
+    "soundGroup": "glass",
+    "mapColor": 5,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:magma_block": {
+    "soundGroup": "stone",
+    "mapColor": 35,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:nether_wart_block": {
+    "soundGroup": "wart_block",
+    "mapColor": 28,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:red_nether_bricks": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:bone_block": {
+    "soundGroup": "bone",
+    "mapColor": 2,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:structure_void": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:observer": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 24,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:white_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 8,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:orange_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:magenta_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:light_blue_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 17,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:yellow_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 18,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:lime_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 19,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:pink_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 20,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:gray_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:light_gray_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 22,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:cyan_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:purple_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 46,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:blue_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 25,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:brown_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 26,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:green_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 27,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:red_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:black_shulker_box": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:white_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 8,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:orange_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:magenta_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:light_blue_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 17,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:yellow_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 18,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:lime_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 19,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:pink_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 20,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:gray_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:light_gray_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 22,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:cyan_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:purple_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 24,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:blue_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 25,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:brown_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 26,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:green_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 27,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:red_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:black_glazed_terracotta": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 1.399999976158142,
+    "hardness": 1.399999976158142
+  },
+  "minecraft:white_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 8,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:orange_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:magenta_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 16,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:light_blue_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 17,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:yellow_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 18,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:lime_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 19,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:pink_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 20,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:gray_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:light_gray_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 22,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:cyan_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:purple_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 24,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:blue_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 25,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:brown_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 26,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:green_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 27,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:red_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:black_concrete": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 1.7999999523162842,
+    "hardness": 1.7999999523162842
+  },
+  "minecraft:white_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 8,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:orange_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 15,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:magenta_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 16,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:light_blue_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 17,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:yellow_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 18,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:lime_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 19,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:pink_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 20,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:gray_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 21,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:light_gray_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 22,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:cyan_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 23,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:purple_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 24,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:blue_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 25,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:brown_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 26,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:green_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 27,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:red_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 28,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:black_concrete_powder": {
+    "soundGroup": "sand",
+    "mapColor": 29,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:kelp": {
+    "soundGroup": "wet_grass",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:kelp_plant": {
+    "soundGroup": "wet_grass",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dried_kelp_block": {
+    "soundGroup": "grass",
+    "mapColor": 27,
+    "blastResistance": 2.5,
+    "hardness": 0.5
+  },
+  "minecraft:turtle_egg": {
+    "soundGroup": "metal",
+    "mapColor": 2,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:dead_tube_coral_block": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dead_brain_coral_block": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dead_bubble_coral_block": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dead_fire_coral_block": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dead_horn_coral_block": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:tube_coral_block": {
+    "soundGroup": "coral",
+    "mapColor": 25,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:brain_coral_block": {
+    "soundGroup": "coral",
+    "mapColor": 20,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:bubble_coral_block": {
+    "soundGroup": "coral",
+    "mapColor": 24,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:fire_coral_block": {
+    "soundGroup": "coral",
+    "mapColor": 28,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:horn_coral_block": {
+    "soundGroup": "coral",
+    "mapColor": 18,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:dead_tube_coral": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_brain_coral": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_bubble_coral": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_fire_coral": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_horn_coral": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tube_coral": {
+    "soundGroup": "wet_grass",
+    "mapColor": 25,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:brain_coral": {
+    "soundGroup": "wet_grass",
+    "mapColor": 20,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bubble_coral": {
+    "soundGroup": "wet_grass",
+    "mapColor": 24,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:fire_coral": {
+    "soundGroup": "wet_grass",
+    "mapColor": 28,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:horn_coral": {
+    "soundGroup": "wet_grass",
+    "mapColor": 18,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_tube_coral_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_brain_coral_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_bubble_coral_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_fire_coral_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_horn_coral_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tube_coral_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 25,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:brain_coral_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 20,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bubble_coral_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 24,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:fire_coral_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 28,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:horn_coral_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 18,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_tube_coral_wall_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_brain_coral_wall_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_bubble_coral_wall_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_fire_coral_wall_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:dead_horn_coral_wall_fan": {
+    "soundGroup": "stone",
+    "mapColor": 21,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:tube_coral_wall_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 25,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:brain_coral_wall_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 20,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bubble_coral_wall_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 24,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:fire_coral_wall_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 28,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:horn_coral_wall_fan": {
+    "soundGroup": "wet_grass",
+    "mapColor": 18,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:sea_pickle": {
+    "soundGroup": "slime",
+    "mapColor": 27,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:blue_ice": {
+    "soundGroup": "glass",
+    "mapColor": 5,
+    "blastResistance": 2.799999952316284,
+    "hardness": 2.799999952316284
+  },
+  "minecraft:conduit": {
+    "soundGroup": "stone",
+    "mapColor": 31,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:bamboo_sapling": {
+    "soundGroup": "bamboo_sapling",
+    "mapColor": 13,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:bamboo": {
+    "soundGroup": "bamboo",
+    "mapColor": 7,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:potted_bamboo": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:void_air": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:cave_air": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:bubble_column": {
+    "soundGroup": "stone",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:polished_granite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:smooth_red_sandstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:mossy_stone_brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_diorite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:mossy_cobblestone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:end_stone_brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:stone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:smooth_sandstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_quartz_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:granite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:andesite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:red_nether_brick_stairs": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_andesite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:diorite_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_granite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:smooth_red_sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:mossy_stone_brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_diorite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:mossy_cobblestone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:end_stone_brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:smooth_sandstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:smooth_quartz_slab": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:granite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:andesite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:red_nether_brick_slab": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_andesite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:diorite_slab": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:brick_wall": {
+    "soundGroup": "stone",
+    "mapColor": 28,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:prismarine_wall": {
+    "soundGroup": "stone",
+    "mapColor": 23,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:red_sandstone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:mossy_stone_brick_wall": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:granite_wall": {
+    "soundGroup": "stone",
+    "mapColor": 10,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:stone_brick_wall": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:mud_brick_wall": {
+    "soundGroup": "mud_bricks",
+    "mapColor": 44,
+    "blastResistance": 3.0,
+    "hardness": 1.5
+  },
+  "minecraft:nether_brick_wall": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:andesite_wall": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:red_nether_brick_wall": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:sandstone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:end_stone_brick_wall": {
+    "soundGroup": "stone",
+    "mapColor": 2,
+    "blastResistance": 9.0,
+    "hardness": 3.0
+  },
+  "minecraft:diorite_wall": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:scaffolding": {
+    "soundGroup": "scaffolding",
+    "mapColor": 2,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:loom": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:barrel": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:smoker": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:blast_furnace": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:cartography_table": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:fletching_table": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:grindstone": {
+    "soundGroup": "stone",
+    "mapColor": 6,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:lectern": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:smithing_table": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 2.5,
+    "hardness": 2.5
+  },
+  "minecraft:stonecutter": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:bell": {
+    "soundGroup": "anvil",
+    "mapColor": 30,
+    "blastResistance": 5.0,
+    "hardness": 5.0
+  },
+  "minecraft:lantern": {
+    "soundGroup": "lantern",
+    "mapColor": 6,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:soul_lantern": {
+    "soundGroup": "lantern",
+    "mapColor": 6,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:campfire": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:soul_campfire": {
+    "soundGroup": "wood",
+    "mapColor": 34,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:sweet_berry_bush": {
+    "soundGroup": "sweet_berry_bush",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:warped_stem": {
+    "soundGroup": "nether_stem",
+    "mapColor": 56,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_warped_stem": {
+    "soundGroup": "nether_stem",
+    "mapColor": 56,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_hyphae": {
+    "soundGroup": "nether_stem",
+    "mapColor": 57,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_warped_hyphae": {
+    "soundGroup": "nether_stem",
+    "mapColor": 57,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_nylium": {
+    "soundGroup": "nylium",
+    "mapColor": 55,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:warped_fungus": {
+    "soundGroup": "fungus",
+    "mapColor": 23,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:warped_wart_block": {
+    "soundGroup": "wart_block",
+    "mapColor": 58,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:warped_roots": {
+    "soundGroup": "roots",
+    "mapColor": 23,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:nether_sprouts": {
+    "soundGroup": "nether_sprouts",
+    "mapColor": 23,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:crimson_stem": {
+    "soundGroup": "nether_stem",
+    "mapColor": 53,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_crimson_stem": {
+    "soundGroup": "nether_stem",
+    "mapColor": 53,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_hyphae": {
+    "soundGroup": "nether_stem",
+    "mapColor": 54,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:stripped_crimson_hyphae": {
+    "soundGroup": "nether_stem",
+    "mapColor": 54,
+    "blastResistance": 2.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_nylium": {
+    "soundGroup": "nylium",
+    "mapColor": 52,
+    "blastResistance": 0.4000000059604645,
+    "hardness": 0.4000000059604645
+  },
+  "minecraft:crimson_fungus": {
+    "soundGroup": "fungus",
+    "mapColor": 35,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:shroomlight": {
+    "soundGroup": "shroomlight",
+    "mapColor": 28,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:weeping_vines": {
+    "soundGroup": "weeping_vines",
+    "mapColor": 35,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:weeping_vines_plant": {
+    "soundGroup": "weeping_vines",
+    "mapColor": 35,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:twisting_vines": {
+    "soundGroup": "weeping_vines",
+    "mapColor": 23,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:twisting_vines_plant": {
+    "soundGroup": "weeping_vines",
+    "mapColor": 23,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:crimson_roots": {
+    "soundGroup": "roots",
+    "mapColor": 35,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:crimson_planks": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_planks": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_slab": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_slab": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:warped_pressure_plate": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:crimson_fence": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_fence": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:warped_trapdoor": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:crimson_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_fence_gate": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:warped_stairs": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 2.0
+  },
+  "minecraft:crimson_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:warped_button": {
+    "soundGroup": "wood",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:crimson_door": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:warped_door": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:crimson_sign": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:warped_sign": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:crimson_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 53,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:warped_wall_sign": {
+    "soundGroup": "wood",
+    "mapColor": 56,
+    "blastResistance": 1.0,
+    "hardness": 1.0
+  },
+  "minecraft:structure_block": {
+    "soundGroup": "stone",
+    "mapColor": 22,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:jigsaw": {
+    "soundGroup": "stone",
+    "mapColor": 22,
+    "blastResistance": 3600000.0,
+    "hardness": -1.0
+  },
+  "minecraft:composter": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:target": {
+    "soundGroup": "grass",
+    "mapColor": 14,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:bee_nest": {
+    "soundGroup": "wood",
+    "mapColor": 18,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:beehive": {
+    "soundGroup": "wood",
+    "mapColor": 13,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:honey_block": {
+    "soundGroup": "honey",
+    "mapColor": 15,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:honeycomb_block": {
+    "soundGroup": "coral",
+    "mapColor": 15,
+    "blastResistance": 0.6000000238418579,
+    "hardness": 0.6000000238418579
+  },
+  "minecraft:netherite_block": {
+    "soundGroup": "netherite",
+    "mapColor": 29,
+    "blastResistance": 1200.0,
+    "hardness": 50.0
+  },
+  "minecraft:ancient_debris": {
+    "soundGroup": "ancient_debris",
+    "mapColor": 29,
+    "blastResistance": 1200.0,
+    "hardness": 30.0
+  },
+  "minecraft:crying_obsidian": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 1200.0,
+    "hardness": 50.0
+  },
+  "minecraft:respawn_anchor": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 1200.0,
+    "hardness": 50.0
+  },
+  "minecraft:potted_crimson_fungus": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_warped_fungus": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_crimson_roots": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_warped_roots": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:lodestone": {
+    "soundGroup": "lodestone",
+    "mapColor": 6,
+    "blastResistance": 3.5,
+    "hardness": 3.5
+  },
+  "minecraft:blackstone": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:blackstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:blackstone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:blackstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_blackstone": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_blackstone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:cracked_polished_blackstone_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:chiseled_polished_blackstone": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_blackstone_brick_slab": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_blackstone_brick_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_blackstone_brick_wall": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:gilded_blackstone": {
+    "soundGroup": "gilded_blackstone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:polished_blackstone_stairs": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_blackstone_slab": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:polished_blackstone_pressure_plate": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:polished_blackstone_button": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:polished_blackstone_wall": {
+    "soundGroup": "stone",
+    "mapColor": 29,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:chiseled_nether_bricks": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:cracked_nether_bricks": {
+    "soundGroup": "nether_bricks",
+    "mapColor": 35,
+    "blastResistance": 6.0,
+    "hardness": 2.0
+  },
+  "minecraft:quartz_bricks": {
+    "soundGroup": "stone",
+    "mapColor": 14,
+    "blastResistance": 0.800000011920929,
+    "hardness": 0.800000011920929
+  },
+  "minecraft:candle": {
+    "soundGroup": "candle",
+    "mapColor": 2,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:white_candle": {
+    "soundGroup": "candle",
+    "mapColor": 3,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:orange_candle": {
+    "soundGroup": "candle",
+    "mapColor": 15,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:magenta_candle": {
+    "soundGroup": "candle",
+    "mapColor": 16,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:light_blue_candle": {
+    "soundGroup": "candle",
+    "mapColor": 17,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:yellow_candle": {
+    "soundGroup": "candle",
+    "mapColor": 18,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:lime_candle": {
+    "soundGroup": "candle",
+    "mapColor": 19,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:pink_candle": {
+    "soundGroup": "candle",
+    "mapColor": 20,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:gray_candle": {
+    "soundGroup": "candle",
+    "mapColor": 21,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:light_gray_candle": {
+    "soundGroup": "candle",
+    "mapColor": 22,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:cyan_candle": {
+    "soundGroup": "candle",
+    "mapColor": 23,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:purple_candle": {
+    "soundGroup": "candle",
+    "mapColor": 24,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:blue_candle": {
+    "soundGroup": "candle",
+    "mapColor": 25,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:brown_candle": {
+    "soundGroup": "candle",
+    "mapColor": 26,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:green_candle": {
+    "soundGroup": "candle",
+    "mapColor": 27,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:red_candle": {
+    "soundGroup": "candle",
+    "mapColor": 28,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:black_candle": {
+    "soundGroup": "candle",
+    "mapColor": 29,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:white_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:orange_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:magenta_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:light_blue_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:yellow_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:lime_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:pink_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:gray_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:light_gray_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:cyan_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:purple_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:blue_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:brown_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:green_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:red_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:black_candle_cake": {
+    "soundGroup": "wool",
+    "mapColor": 0,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:amethyst_block": {
+    "soundGroup": "amethyst_block",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:budding_amethyst": {
+    "soundGroup": "amethyst_block",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:amethyst_cluster": {
+    "soundGroup": "amethyst_cluster",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:large_amethyst_bud": {
+    "soundGroup": "medium_amethyst_bud",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:medium_amethyst_bud": {
+    "soundGroup": "large_amethyst_bud",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:small_amethyst_bud": {
+    "soundGroup": "small_amethyst_bud",
+    "mapColor": 24,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:tuff": {
+    "soundGroup": "tuff",
+    "mapColor": 43,
+    "blastResistance": 6.0,
+    "hardness": 1.5
+  },
+  "minecraft:calcite": {
+    "soundGroup": "calcite",
+    "mapColor": 36,
+    "blastResistance": 0.75,
+    "hardness": 0.75
+  },
+  "minecraft:tinted_glass": {
+    "soundGroup": "glass",
+    "mapColor": 21,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:powder_snow": {
+    "soundGroup": "powder_snow",
+    "mapColor": 8,
+    "blastResistance": 0.25,
+    "hardness": 0.25
+  },
+  "minecraft:sculk_sensor": {
+    "soundGroup": "sculk_sensor",
+    "mapColor": 23,
+    "blastResistance": 1.5,
+    "hardness": 1.5
+  },
+  "minecraft:sculk": {
+    "soundGroup": "sculk",
+    "mapColor": 29,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:sculk_vein": {
+    "soundGroup": "sculk_vein",
+    "mapColor": 29,
+    "blastResistance": 0.20000000298023224,
+    "hardness": 0.20000000298023224
+  },
+  "minecraft:sculk_catalyst": {
+    "soundGroup": "sculk_catalyst",
+    "mapColor": 29,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:sculk_shrieker": {
+    "soundGroup": "sculk_shrieker",
+    "mapColor": 29,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:oxidized_copper": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:weathered_copper": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:exposed_copper": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:copper_block": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:copper_ore": {
+    "soundGroup": "stone",
+    "mapColor": 11,
+    "blastResistance": 3.0,
+    "hardness": 3.0
+  },
+  "minecraft:deepslate_copper_ore": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 3.0,
+    "hardness": 4.5
+  },
+  "minecraft:oxidized_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:weathered_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:exposed_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:oxidized_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:weathered_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:exposed_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:oxidized_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:weathered_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:exposed_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_copper_block": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_weathered_copper": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_exposed_copper": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_oxidized_copper": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_oxidized_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_weathered_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_exposed_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_cut_copper": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_oxidized_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_weathered_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_exposed_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_cut_copper_stairs": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_oxidized_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 55,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_weathered_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 56,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_exposed_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 44,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:waxed_cut_copper_slab": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:lightning_rod": {
+    "soundGroup": "copper",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:pointed_dripstone": {
+    "soundGroup": "pointed_dripstone",
+    "mapColor": 48,
+    "blastResistance": 3.0,
+    "hardness": 1.5
+  },
+  "minecraft:dripstone_block": {
+    "soundGroup": "dripstone_block",
+    "mapColor": 48,
+    "blastResistance": 1.0,
+    "hardness": 1.5
+  },
+  "minecraft:cave_vines": {
+    "soundGroup": "cave_vines",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:cave_vines_plant": {
+    "soundGroup": "cave_vines",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:spore_blossom": {
+    "soundGroup": "spore_blossom",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:azalea": {
+    "soundGroup": "azalea",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:flowering_azalea": {
+    "soundGroup": "flowering_azalea",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:moss_carpet": {
+    "soundGroup": "moss_carpet",
+    "mapColor": 27,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:moss_block": {
+    "soundGroup": "moss_block",
+    "mapColor": 27,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:big_dripleaf": {
+    "soundGroup": "big_dripleaf",
+    "mapColor": 7,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:big_dripleaf_stem": {
+    "soundGroup": "big_dripleaf",
+    "mapColor": 7,
+    "blastResistance": 0.10000000149011612,
+    "hardness": 0.10000000149011612
+  },
+  "minecraft:small_dripleaf": {
+    "soundGroup": "small_dripleaf",
+    "mapColor": 7,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:hanging_roots": {
+    "soundGroup": "hanging_roots",
+    "mapColor": 10,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:rooted_dirt": {
+    "soundGroup": "rooted_dirt",
+    "mapColor": 10,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:mud": {
+    "soundGroup": "mud",
+    "mapColor": 45,
+    "blastResistance": 0.5,
+    "hardness": 0.5
+  },
+  "minecraft:deepslate": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.0
+  },
+  "minecraft:cobbled_deepslate": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:cobbled_deepslate_stairs": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:cobbled_deepslate_slab": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:cobbled_deepslate_wall": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:polished_deepslate": {
+    "soundGroup": "polished_deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:polished_deepslate_stairs": {
+    "soundGroup": "polished_deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:polished_deepslate_slab": {
+    "soundGroup": "polished_deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:polished_deepslate_wall": {
+    "soundGroup": "polished_deepslate",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_tiles": {
+    "soundGroup": "deepslate_tiles",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_tile_stairs": {
+    "soundGroup": "deepslate_tiles",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_tile_slab": {
+    "soundGroup": "deepslate_tiles",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_tile_wall": {
+    "soundGroup": "deepslate_tiles",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_bricks": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_brick_stairs": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_brick_slab": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:deepslate_brick_wall": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:chiseled_deepslate": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:cracked_deepslate_bricks": {
+    "soundGroup": "deepslate_bricks",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:cracked_deepslate_tiles": {
+    "soundGroup": "deepslate_tiles",
+    "mapColor": 59,
+    "blastResistance": 6.0,
+    "hardness": 3.5
+  },
+  "minecraft:infested_deepslate": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 0.75,
+    "hardness": 1.5
+  },
+  "minecraft:smooth_basalt": {
+    "soundGroup": "basalt",
+    "mapColor": 29,
+    "blastResistance": 4.199999809265137,
+    "hardness": 1.25
+  },
+  "minecraft:raw_iron_block": {
+    "soundGroup": "stone",
+    "mapColor": 60,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:raw_copper_block": {
+    "soundGroup": "stone",
+    "mapColor": 15,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:raw_gold_block": {
+    "soundGroup": "stone",
+    "mapColor": 30,
+    "blastResistance": 6.0,
+    "hardness": 5.0
+  },
+  "minecraft:potted_azalea_bush": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:potted_flowering_azalea_bush": {
+    "soundGroup": "stone",
+    "mapColor": 0,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:ochre_froglight": {
+    "soundGroup": "froglight",
+    "mapColor": 2,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:verdant_froglight": {
+    "soundGroup": "froglight",
+    "mapColor": 61,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:pearlescent_froglight": {
+    "soundGroup": "froglight",
+    "mapColor": 20,
+    "blastResistance": 0.30000001192092896,
+    "hardness": 0.30000001192092896
+  },
+  "minecraft:frogspawn": {
+    "soundGroup": "frogspawn",
+    "mapColor": 12,
+    "blastResistance": 0.0,
+    "hardness": 0.0
+  },
+  "minecraft:reinforced_deepslate": {
+    "soundGroup": "deepslate",
+    "mapColor": 59,
+    "blastResistance": 1200.0,
+    "hardness": 55.0
+  }
+}

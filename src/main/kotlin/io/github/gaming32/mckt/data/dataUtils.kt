@@ -182,6 +182,8 @@ fun InputStream.readBlockHitResult(): BlockHitResult {
         location, direction, readBoolean()
     )
 }
+
+fun InputStream.readVector3d() = Vector3d(readDouble(), readDouble(), readDouble())
 //endregion
 
 //region Writers
@@ -349,6 +351,12 @@ fun OutputStream.writeBlockHitResult(hit: BlockHitResult) {
     writeFloat((position.y - location.y.toDouble()).toFloat())
     writeFloat((position.z - location.z.toDouble()).toFloat())
     writeBoolean(hit.insideBlock)
+}
+
+fun OutputStream.writeVector3d(vec: Vector3d) {
+    writeDouble(vec.x)
+    writeDouble(vec.y)
+    writeDouble(vec.z)
 }
 //endregion
 

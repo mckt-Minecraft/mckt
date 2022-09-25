@@ -6,26 +6,18 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.*
 
-// blocks.json and registries.json were generated from the Vanilla server JAR with its builtin tool
+// blockStates.json and registries.json were generated from the Vanilla server JAR with its builtin tool
 object GlobalPalette {
+    val BLOCK_STATE_PROPERTIES: Map<Identifier, Map<String, List<String>>>
     val GLOBAL_PALETTE: Set<BlockState>
-    val BLOCK_PROPERTIES: Map<Identifier, Map<String, List<String>>>
 
     init {
         @OptIn(ExperimentalSerializationApi::class)
-        val paletteData = MinecraftServer::class.java.getResourceAsStream("/blocks.json")?.use { input ->
-            Json.decodeFromStream<JsonObject>(input)
+        val paletteData = MinecraftServer::class.java.getResourceAsStream("/blockStates.json")?.use {
+            Json.decodeFromStream<JsonObject>(it)
         } ?: JsonObject(emptyMap())
 
-        GLOBAL_PALETTE = paletteData.asSequence().flatMap { (blockId, data) ->
-            data as JsonObject
-            val blockIdAsIdentifier = Identifier.parse(blockId)
-            (data["states"] as JsonArray)
-                .asSequence()
-                .map { Json.decodeFromJsonElement<BlockState>(it).copy(blockId = blockIdAsIdentifier) }
-        }.toSet()
-
-        BLOCK_PROPERTIES = paletteData.asSequence().associate { (blockId, blockData) ->
+        BLOCK_STATE_PROPERTIES = paletteData.asSequence().associate { (blockId, blockData) ->
             blockData as JsonObject
             Identifier.parse(blockId) to (blockData["properties"]
                 .castOrNull<JsonObject>()
@@ -34,6 +26,19 @@ object GlobalPalette {
                     name to values.cast<JsonArray>().map { it.cast<JsonPrimitive>().content }
                 } ?: mapOf())
         }
+
+        GLOBAL_PALETTE = paletteData.asSequence().flatMap { (blockId, data) ->
+            data as JsonObject
+            val blockIdAsIdentifier = Identifier.parse(blockId)
+            (data["states"] as JsonArray)
+                .asSequence()
+                .map {
+                    val state = Json.decodeFromJsonElement<BlockState>(it)
+                    val new = BlockState(blockIdAsIdentifier, state.globalId, state.properties, state.defaultForId)
+                    new.canonical = true
+                    new
+                }
+        }.toSet()
     }
 
     val DEFAULT_BLOCKSTATES = GLOBAL_PALETTE

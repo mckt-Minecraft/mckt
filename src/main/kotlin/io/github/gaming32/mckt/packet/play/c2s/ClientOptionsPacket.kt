@@ -17,7 +17,7 @@ data class ClientOptionsPacket(val options: PlayClient.ClientOptions) : Packet(T
         inp.readVarInt(),
         inp.readBoolean(),
         inp.readUByte().toInt(),
-        inp.readVarInt(),
+        inp.readEnum(),
         inp.readBoolean(),
         inp.readBoolean()
     ))
@@ -28,7 +28,7 @@ data class ClientOptionsPacket(val options: PlayClient.ClientOptions) : Packet(T
         out.writeVarInt(options.chatMode)
         out.writeBoolean(options.chatColors)
         out.writeByte(options.displayedSkinParts)
-        out.writeVarInt(options.mainHand)
+        out.writeEnum(options.mainHand)
         out.writeBoolean(options.textFiltering)
         out.writeBoolean(options.allowServerListings)
     }

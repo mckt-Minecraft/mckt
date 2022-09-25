@@ -637,7 +637,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 
     internal fun fromData(input: SectionData) {
         blockCount = input.blockCount
-        data.setPaletteItems(input.palette.map { BlockState.fromMap(it).canonicalize() })
+        data.setPaletteItems(input.palette.map { BlockState.fromMap(it) })
         data.storage = input.blocks
     }
 }

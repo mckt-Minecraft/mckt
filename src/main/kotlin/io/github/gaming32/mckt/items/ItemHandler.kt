@@ -22,6 +22,7 @@ abstract class ItemHandler {
         val server by client::server
 
         val location by hit::location
+        val offsetLocation by hit::offsetLocation
         val side by hit::side
         val position by hit::position
         val insideBlock by hit::insideBlock

@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.objects
 
+import io.github.gaming32.mckt.GlobalPalette
 import io.github.gaming32.mckt.GlobalPalette.BLOCKSTATE_TO_ID
 import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.MinecraftServer
@@ -8,19 +9,12 @@ import io.github.gaming32.mckt.World
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.collections.Map
-import kotlin.collections.associate
+import kotlinx.serialization.Transient
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.forEachIndexed
-import kotlin.collections.getOrNull
-import kotlin.collections.isNotEmpty
-import kotlin.collections.mapOf
-import kotlin.collections.plus
-import kotlin.collections.toMutableMap
 
 @Serializable
-data class BlockState(
+class BlockState internal constructor(
     val blockId: Identifier = Identifier.EMPTY,
     @SerialName("id")
     val globalId: Int = -1,
@@ -36,7 +30,7 @@ data class BlockState(
                 )
             ),
             properties = map.toMutableMap().apply { remove("blockId") }
-        )
+        ).canonicalize()
 
         fun parse(state: String): BlockState {
             val bracketIndex = state.indexOf('[')
@@ -58,9 +52,18 @@ data class BlockState(
                 }
                 info[0] to info[1]
             }
-            return BlockState(blockId, properties = properties)
+            return BlockState(blockId, properties = properties).canonicalize()
         }
     }
+
+    @Transient
+    var canonical = false
+        internal set
+
+    @Transient
+    private val hash = blockId.hashCode() * 31 + properties.hashCode()
+
+    val propertyOptions by lazy { GlobalPalette.BLOCK_STATE_PROPERTIES[blockId]!! }
 
     fun toMap() = properties + ("blockId" to blockId.toString())
 
@@ -70,17 +73,17 @@ data class BlockState(
 
         other as BlockState
 
+        // Canonical means interned. If this is interned and it's not the same object as the other interned state, it's
+        // not the same state.
+        if (canonical && other.canonical) return false
+
         if (blockId != other.blockId) return false
         if (properties != other.properties) return false
 
         return true
     }
 
-    override fun hashCode(): Int {
-        var result = blockId.hashCode()
-        result = 31 * result + properties.hashCode()
-        return result
-    }
+    override fun hashCode() = hash
 
     override fun toString() = buildString {
         append(blockId)
@@ -98,15 +101,29 @@ data class BlockState(
         }
     }
 
-    fun canonicalizeOrNull() = ID_TO_BLOCKSTATE.getOrNull(BLOCKSTATE_TO_ID.getInt(this))
+    fun canonicalize() =
+        if (canonical) {
+            this
+        } else {
+            ID_TO_BLOCKSTATE.getOrNull(BLOCKSTATE_TO_ID.getInt(this))
+                ?: throw IllegalArgumentException("Unknown block state: $this")
+        }
 
-    fun canonicalizeOrThis() = canonicalizeOrNull() ?: this
+    fun with(key: String, value: String): BlockState {
+        require(key in propertyOptions) { "Unknown property $key for block $blockId" }
+        require(value in propertyOptions[key]!!) { "Unknown property $key for block $blockId" }
+        return BlockState(blockId, properties = properties.toMutableMap().apply { put(key, value) }).canonicalize()
+    }
 
-    fun canonicalize() = canonicalizeOrNull() ?: throw IllegalArgumentException("Unknown block state: $this")
+    internal fun with(properties: Map<String, String>) = BlockState(blockId, properties = properties).canonicalize()
 
-    fun with(key: String, value: String) = BlockState(blockId, properties = properties + mapOf(key to value))
-
-    fun with(properties: Map<String, String>) = BlockState(blockId, properties = properties)
+    fun cycle(property: String): BlockState {
+        val value = properties[property]
+        val options = propertyOptions[property]
+            ?: throw IllegalArgumentException("Unknown property $property for block $blockId")
+        val index = options.indexOf(value)
+        return with(property, options[(index + 1) % options.size])
+    }
 
     fun getHandler(server: MinecraftServer) = server.getBlockHandler(blockId)
 

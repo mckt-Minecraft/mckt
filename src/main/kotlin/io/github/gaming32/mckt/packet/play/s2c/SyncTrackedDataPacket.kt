@@ -2,6 +2,7 @@ package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeVarInt
+import io.github.gaming32.mckt.objects.Arm
 import io.github.gaming32.mckt.objects.EntityPose
 import io.github.gaming32.mckt.packet.Packet
 import java.io.OutputStream
@@ -12,7 +13,7 @@ data class SyncTrackedDataPacket(
     val entityFlags: Int? = null,
     val pose: EntityPose? = null,
     val displayedSkinParts: Int? = null,
-    val mainHand: Int? = null
+    val mainHand: Arm? = null
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x50
@@ -38,7 +39,7 @@ data class SyncTrackedDataPacket(
         if (mainHand != null) {
             out.writeByte(18)
             out.writeVarInt(0) // Type = Byte
-            out.writeByte(mainHand)
+            out.writeByte(mainHand.ordinal)
         }
         out.writeByte(0xff) // Index = End
     }
