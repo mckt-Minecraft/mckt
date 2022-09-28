@@ -74,4 +74,6 @@ abstract class BlockHandler {
         client: PlayClient,
         stack: ItemStack
     ) = Unit
+
+    open fun rotate(state: BlockState, rotation: BlockRotation) = state
 }

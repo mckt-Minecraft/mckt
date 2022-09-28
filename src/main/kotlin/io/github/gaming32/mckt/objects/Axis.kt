@@ -5,5 +5,9 @@ enum class Axis(val unit: BlockPosition, private val opposite: BlockPosition) {
     Y(BlockPosition.UP, BlockPosition.DOWN),
     Z(BlockPosition.SOUTH, BlockPosition.NORTH);
 
+    companion object {
+        fun String.toAxis() = valueOf(uppercase())
+    }
+
     fun direction(direction: Int) = if (direction < 0) opposite else unit
 }

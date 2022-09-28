@@ -115,6 +115,10 @@ class BlockState internal constructor(
 
     internal fun with(properties: Map<String, String>) = BlockState(blockId, properties = properties).canonicalize()
 
+    operator fun get(property: String) =
+        properties[property]
+            ?: throw IllegalArgumentException("Unknown property $property for block $blockId")
+
     fun cycle(property: String): BlockState {
         val value = properties[property]
         val options = propertyOptions[property]

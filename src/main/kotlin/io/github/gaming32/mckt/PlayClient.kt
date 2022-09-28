@@ -236,7 +236,6 @@ class PlayClient(
             options.displayedSkinParts,
             options.mainHand
         )
-        val equipment = data.getEquipment()
         for (client in server.clients.values) {
             client.sendPacket(syncTrackedDataPacket)
             if (client === this@PlayClient) continue
