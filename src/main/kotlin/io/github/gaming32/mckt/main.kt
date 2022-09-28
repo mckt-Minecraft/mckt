@@ -643,16 +643,9 @@ class MinecraftServer(
     fun getItemHandler(item: Identifier?) = itemHandlers[item] ?: DefaultItemHandler
 
     private fun registerItemHandlers() {
-        registerItemHandler(
-            SimpleBlockItemHandler,
-            *DEFAULT_BLOCKSTATES.keys.filter(ITEM_ID_TO_PROTOCOL::containsKey).toTypedArray()
-        )
-        registerItemHandler(
-            LogItemHandler,
-            *DEFAULT_BLOCKSTATES.keys
-                .filter { it.value.endsWith("_log") } // It works, I guess /shrug
-                .toTypedArray()
-        )
+        DEFAULT_BLOCKSTATES.keys.asSequence().filter(ITEM_ID_TO_PROTOCOL::containsKey).forEach {
+            registerItemHandler(BlockItemHandler(it), it)
+        }
         registerItemHandler(DebugStickItemHandler, Identifier("debug_stick"))
         registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
         registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))

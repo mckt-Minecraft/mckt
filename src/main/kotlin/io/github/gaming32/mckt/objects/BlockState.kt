@@ -6,6 +6,7 @@ import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
+import io.github.gaming32.mckt.items.ItemHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -73,7 +74,7 @@ class BlockState internal constructor(
 
         other as BlockState
 
-        // Canonical means interned. If this is interned and it's not the same object as the other interned state, it's
+        // Canonical means interned. If this is interned, and it's not the same object as the other interned state, it's
         // not the same state.
         if (canonical && other.canonical) return false
 
@@ -109,11 +110,8 @@ class BlockState internal constructor(
                 ?: throw IllegalArgumentException("Unknown block state: $this")
         }
 
-    fun with(key: String, value: String): BlockState {
-        require(key in propertyOptions) { "Unknown property $key for block $blockId" }
-        require(value in propertyOptions[key]!!) { "Unknown property $key for block $blockId" }
-        return BlockState(blockId, properties = properties.toMutableMap().apply { put(key, value) }).canonicalize()
-    }
+    fun with(key: String, value: String) =
+        BlockState(blockId, properties = properties.toMutableMap().apply { put(key, value) }).canonicalize()
 
     internal fun with(properties: Map<String, String>) = BlockState(blockId, properties = properties).canonicalize()
 
@@ -129,4 +127,7 @@ class BlockState internal constructor(
 
     suspend fun onUse(world: World, client: PlayClient, hand: Hand, hit: BlockHitResult, scope: CoroutineScope) =
         getHandler(world.server).onUse(this, world, hit.location, client, hand, hit, scope)
+
+    fun canReplace(ctx: ItemHandler.ItemUsageContext) =
+        getHandler(ctx.server).canReplace(this, ctx)
 }

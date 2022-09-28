@@ -12,6 +12,7 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.data.encodeData
 import io.github.gaming32.mckt.data.writeString
+import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.Packet
@@ -646,7 +647,7 @@ class PlayClient(
                                 !result.isAccepted() &&
                                 packet.hit.location.y >= 2031 &&
                                 item.isNotEmpty() &&
-                                server.itemHandlers[item.itemId!!]?.isBlockItem == true
+                                server.itemHandlers[item.itemId!!] is BlockItemHandler
                             ) {
                                 sendMessage(
                                     Component.translatable("build.tooHigh", Component.text(2031)),
@@ -669,7 +670,7 @@ class PlayClient(
                             )
                         }
                         sendPacket(SetBlockPacket(server.world, packet.hit.location))
-                        sendPacket(SetBlockPacket(server.world, packet.hit.offsetLocation))
+                        sendPacket(SetBlockPacket(server.world, packet.hit.location + packet.hit.side.vector))
                     }
 
                     is UseItemPacket -> {

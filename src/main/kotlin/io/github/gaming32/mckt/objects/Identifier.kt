@@ -50,4 +50,6 @@ data class Identifier(val namespace: String, val value: String) {
     constructor(value: String) : this("minecraft", value)
 
     override fun toString() = "$namespace:$value"
+
+    fun toShortString() = if (namespace == "minecraft") value else "$namespace:$value"
 }

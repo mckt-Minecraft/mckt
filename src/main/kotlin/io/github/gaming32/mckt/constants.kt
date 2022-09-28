@@ -5,10 +5,9 @@ package io.github.gaming32.mckt
 import io.github.gaming32.mckt.data.toGson
 import io.github.gaming32.mckt.objects.Identifier
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.*
 
 const val MINECRAFT_VERSION = "1.19.2"
 const val PROTOCOL_VERSION = 760
@@ -35,8 +34,30 @@ data class BlockSoundGroup(
 )
 
 @Serializable
+enum class PistonBehavior {
+    @SerialName("normal") NORMAL,
+    @SerialName("destroy") DESTROY,
+    @SerialName("block") BLOCK,
+    @SerialName("ignore") IGNORE,
+    @SerialName("push_only") PUSH_ONLY
+}
+
+@Serializable
+data class BlockMaterial(
+    val mapColor: Int,
+    val pistonBehavior: PistonBehavior,
+    val blocksMovement: Boolean,
+    val burnable: Boolean,
+    val liquid: Boolean,
+    val blocksLight: Boolean,
+    val replaceable: Boolean,
+    val solid: Boolean
+)
+
+@Serializable
 data class BlockProperties(
-    val soundGroup: String,
+    val soundGroup: BlockSoundGroup,
+    val material: BlockMaterial,
     val mapColor: Int,
     val blastResistance: Double,
     val hardness: Double
@@ -78,7 +99,21 @@ val BLOCK_SOUND_GROUPS = MinecraftServer::class.java.getResourceAsStream("/datae
     Json.decodeFromStream<Map<String, BlockSoundGroup>>(it)
 } ?: mapOf()
 
+val BLOCK_MATERIALS = MinecraftServer::class.java.getResourceAsStream("/dataexport/materials.json")?.use {
+    Json.decodeFromStream<Map<String, BlockMaterial>>(it)
+} ?: mapOf()
+
 val BLOCK_PROPERTIES = MinecraftServer::class.java.getResourceAsStream("/dataexport/blocks.json")?.use {
-    Json.decodeFromStream<Map<Identifier, BlockProperties>>(it)
+    Json.decodeFromStream<Map<Identifier, JsonObject>>(it).asSequence().associate { (id, data) ->
+        val soundGroup = data["soundGroup"].cast<JsonPrimitive>().content
+        val material = data["material"].cast<JsonPrimitive>().content
+        id to BlockProperties(
+            BLOCK_SOUND_GROUPS[soundGroup] ?: throw IllegalArgumentException("Unknown sound group: $soundGroup"),
+            BLOCK_MATERIALS[material] ?: throw IllegalArgumentException("Unknown material: $material"),
+            data["mapColor"].cast<JsonPrimitive>().int,
+            data["blastResistance"].cast<JsonPrimitive>().double,
+            data["hardness"].cast<JsonPrimitive>().double
+        )
+    }
 } ?: mapOf()
 

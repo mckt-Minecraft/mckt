@@ -18,6 +18,4 @@ class BlockHitResult(
     val insideBlock: Boolean = false
 ) : HitResult(position) {
     override val type = if (missed) Type.MISS else Type.BLOCK
-
-    val offsetLocation = location + side.vector
 }

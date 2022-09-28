@@ -1,0 +1,492 @@
+{
+  "air": {
+    "mapColor": 0,
+    "pistonBehavior": "normal",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "structure_void": {
+    "mapColor": 0,
+    "pistonBehavior": "normal",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "portal": {
+    "mapColor": 0,
+    "pistonBehavior": "block",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "carpet": {
+    "mapColor": 3,
+    "pistonBehavior": "normal",
+    "blocksMovement": false,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "plant": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "underwater_plant": {
+    "mapColor": 12,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "replaceable_plant": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "nether_shoots": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "replaceable_underwater_plant": {
+    "mapColor": 12,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "water": {
+    "mapColor": 12,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": true,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "bubble_column": {
+    "mapColor": 12,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": true,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "lava": {
+    "mapColor": 4,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": true,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "snow_layer": {
+    "mapColor": 8,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "fire": {
+    "mapColor": 0,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": true,
+    "solid": false
+  },
+  "decoration": {
+    "mapColor": 0,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "cobweb": {
+    "mapColor": 3,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "sculk": {
+    "mapColor": 29,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "redstone_lamp": {
+    "mapColor": 0,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "organic_product": {
+    "mapColor": 9,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "soil": {
+    "mapColor": 10,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "solid_organic": {
+    "mapColor": 1,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "dense_ice": {
+    "mapColor": 5,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "aggregate": {
+    "mapColor": 2,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "sponge": {
+    "mapColor": 18,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "shulker_box": {
+    "mapColor": 24,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "wood": {
+    "mapColor": 13,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "nether_wood": {
+    "mapColor": 13,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "bamboo_sapling": {
+    "mapColor": 13,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "bamboo": {
+    "mapColor": 13,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "wool": {
+    "mapColor": 3,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "tnt": {
+    "mapColor": 4,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "leaves": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": true,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "glass": {
+    "mapColor": 0,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "ice": {
+    "mapColor": 5,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "cactus": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": true
+  },
+  "stone": {
+    "mapColor": 11,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "metal": {
+    "mapColor": 6,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "snow_block": {
+    "mapColor": 8,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "repair_station": {
+    "mapColor": 6,
+    "pistonBehavior": "block",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "barrier": {
+    "mapColor": 0,
+    "pistonBehavior": "block",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "piston": {
+    "mapColor": 11,
+    "pistonBehavior": "block",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "moss_block": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "gourd": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "egg": {
+    "mapColor": 7,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "cake": {
+    "mapColor": 0,
+    "pistonBehavior": "destroy",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "amethyst": {
+    "mapColor": 24,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  },
+  "powder_snow": {
+    "mapColor": 8,
+    "pistonBehavior": "normal",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": false
+  },
+  "frogspawn": {
+    "mapColor": 12,
+    "pistonBehavior": "destroy",
+    "blocksMovement": false,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "froglight": {
+    "mapColor": 0,
+    "pistonBehavior": "normal",
+    "blocksMovement": true,
+    "burnable": false,
+    "liquid": false,
+    "blocksLight": true,
+    "replaceable": false,
+    "solid": true
+  }
+}

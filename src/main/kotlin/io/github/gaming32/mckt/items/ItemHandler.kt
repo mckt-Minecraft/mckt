@@ -17,18 +17,13 @@ abstract class ItemHandler {
             client, hand, hit, client.server.world, client.data.getHeldItem(hand)
         )
 
-        val item get() = client.data.getHeldItem(hand)
-
         val server by client::server
 
-        val location by hit::location
-        val offsetLocation by hit::offsetLocation
+        open val location by hit::location
         val side by hit::side
         val position by hit::position
         val insideBlock by hit::insideBlock
     }
-
-    open val isBlockItem get() = false
 
     open suspend fun canMine(
         state: BlockState,

@@ -175,7 +175,7 @@ object FlintAndSteelHandler : ItemHandler() {
 
     override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
         if (ctx.world.getBlock(ctx.hit.location) == Blocks.AIR) return ActionResult.PASS
-        val placeAt = ctx.hit.offsetLocation
+        val placeAt = ctx.location + ctx.side.vector
         var canPlace = false
         val properties = Blocks.FIRE.properties.toMutableMap()
         if (ctx.world.getBlock(placeAt.down()) != Blocks.AIR) {
@@ -191,7 +191,7 @@ object FlintAndSteelHandler : ItemHandler() {
             }
         }
         return if (canPlace) {
-            ctx.client.server.setBlock(ctx.hit.offsetLocation, Blocks.FIRE.with(properties).canonicalize())
+            ctx.client.server.setBlock(placeAt, Blocks.FIRE.with(properties).canonicalize())
             ActionResult.success(false)
         } else {
             ActionResult.FAIL

@@ -1,7 +1,11 @@
 package io.github.gaming32.mckt.blocks
 
+import io.github.gaming32.mckt.BLOCK_PROPERTIES
+import io.github.gaming32.mckt.GlobalPalette
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
+import io.github.gaming32.mckt.items.BlockItemHandler
+import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
 import kotlinx.coroutines.CoroutineScope
@@ -51,5 +55,23 @@ abstract class BlockHandler {
         state: BlockState,
         stack: ItemStack,
         scope: CoroutineScope
+    ) = Unit
+
+    open fun canReplace(state: BlockState, ctx: ItemHandler.ItemUsageContext) =
+        BLOCK_PROPERTIES[state.blockId]?.material?.replaceable == true &&
+            (ctx.itemStack.isEmpty() || ctx.itemStack.itemId != state.blockId)
+
+    open suspend fun getPlacementState(
+        block: Identifier,
+        ctx: BlockItemHandler.ItemPlacementContext,
+        scope: CoroutineScope
+    ) = GlobalPalette.DEFAULT_BLOCKSTATES[ctx.itemStack.itemId]
+
+    open fun onPlaced(
+        world: World,
+        location: BlockPosition,
+        state: BlockState,
+        client: PlayClient,
+        stack: ItemStack
     ) = Unit
 }
