@@ -9,9 +9,11 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
+import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.blocks.BlockHandler
 import io.github.gaming32.mckt.blocks.DefaultBlockHandler
+import io.github.gaming32.mckt.blocks.PillarBlockHandler
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
@@ -634,7 +636,14 @@ class MinecraftServer(
 
     fun getBlockHandler(block: Identifier?) = blockHandlers[block] ?: DefaultBlockHandler
 
-    private fun registerBlockHandlers() = Unit
+    private fun registerBlockHandlers() {
+        DEFAULT_BLOCKSTATES.keys.forEach {
+            val properties = BLOCK_STATE_PROPERTIES[it]!!
+            if (properties.size == 1 && properties.keys.first() == "axis") {
+                registerBlockHandler(PillarBlockHandler, it)
+            }
+        }
+    }
 
     fun registerItemHandler(handler: ItemHandler, vararg items: Identifier) {
         items.forEach { itemHandlers[it] = handler }
@@ -643,8 +652,10 @@ class MinecraftServer(
     fun getItemHandler(item: Identifier?) = itemHandlers[item] ?: DefaultItemHandler
 
     private fun registerItemHandlers() {
-        DEFAULT_BLOCKSTATES.keys.asSequence().filter(ITEM_ID_TO_PROTOCOL::containsKey).forEach {
-            registerItemHandler(BlockItemHandler(it), it)
+        DEFAULT_BLOCKSTATES.keys.forEach {
+            if (it in ITEM_ID_TO_PROTOCOL) {
+                registerItemHandler(BlockItemHandler(it), it)
+            }
         }
         registerItemHandler(DebugStickItemHandler, Identifier("debug_stick"))
         registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
