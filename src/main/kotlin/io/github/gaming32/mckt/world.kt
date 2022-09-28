@@ -33,7 +33,7 @@ import kotlin.time.DurationUnit
 
 private val LOGGER = getLogger()
 
-val DEFAULT_REGISTRY_CODEC = buildNbtCompound("") {
+val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
     putNbtCompound("minecraft:dimension_type") {
         put("type", "minecraft:dimension_type")
         putNbtList("value") {
