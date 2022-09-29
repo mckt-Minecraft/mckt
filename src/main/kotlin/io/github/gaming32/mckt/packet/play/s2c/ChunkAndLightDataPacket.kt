@@ -21,7 +21,7 @@ data class ChunkAndLightDataPacket(
     override fun write(out: OutputStream) {
         out.writeInt(x)
         out.writeInt(z)
-        out.writeNbtTag(buildNbtCompound("") {
+        out.writeNbtTag(buildNbtCompound {
             put("MOTION_BLOCKING", HEIGHTMAP)
         })
         out.writeVarInt(chunk.size)

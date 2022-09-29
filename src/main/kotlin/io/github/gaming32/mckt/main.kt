@@ -14,6 +14,7 @@ import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.blocks.BlockHandler
 import io.github.gaming32.mckt.blocks.DefaultBlockHandler
 import io.github.gaming32.mckt.blocks.PillarBlockHandler
+import io.github.gaming32.mckt.blocks.SaplingBlockHandler
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.arguments.TextArgumentType.getTextComponent
@@ -181,7 +182,7 @@ class MinecraftServer(
             }
             val endTime = System.nanoTime()
             val tickTime = (endTime - startTime).nanoseconds.inWholeMilliseconds
-            if (tickTime >= 1000) {
+            if (tickTime >= 1050) {
                 LOGGER.warn(
                     "Is the server overloaded? Running {} seconds ({} ticks) behind.",
                     (tickTime - 50) / 1000.0, (tickTime - 50) / 50.0
@@ -644,6 +645,8 @@ class MinecraftServer(
             val properties = BLOCK_STATE_PROPERTIES[it]!!
             if (properties.size == 1 && properties.keys.first() == "axis") {
                 registerBlockHandler(PillarBlockHandler, it)
+            } else if (it.value.endsWith("_sapling")) {
+                registerBlockHandler(SaplingBlockHandler, it)
             }
         }
     }
@@ -660,6 +663,7 @@ class MinecraftServer(
                 registerItemHandler(BlockItemHandler(it), it)
             }
         }
+        registerItemHandler(BoneMealItemHandler, Identifier("bone_meal"))
         registerItemHandler(DebugStickItemHandler, Identifier("debug_stick"))
         registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
         registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))

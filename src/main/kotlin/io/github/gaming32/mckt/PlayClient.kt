@@ -602,12 +602,12 @@ class PlayClient(
                     is PlayerActionPacket -> {
                         when (packet.action) {
                             PlayerActionPacket.Action.SWAP_OFFHAND -> {
-                                val newOffhand = data.inventory[data.selectedInventorySlot]
                                 val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                                val newOffhand = data.inventory[data.selectedInventorySlot]
                                 data.inventory[data.selectedInventorySlot] = newMainhand
                                 data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                                sendPacket(SetContainerSlotPacket(-2, data.selectedInventorySlot, newMainhand))
-                                sendPacket(SetContainerSlotPacket(-2, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                                sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
+                                sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
                                 server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
                                     entityId,
                                     EquipmentSlot.MAIN_HAND to newMainhand,

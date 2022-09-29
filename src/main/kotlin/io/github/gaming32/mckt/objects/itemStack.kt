@@ -52,6 +52,11 @@ data class ItemStack(
         if (--count < 0) count = 0
     }
 
+    fun decrement(amount: Int) {
+        count -= amount
+        if (count < 0) count = 0
+    }
+
     fun getHandler(server: MinecraftServer) = server.getItemHandler(itemId)
 
     suspend fun useOnBlock(ctx: ItemHandler.ItemUsageContext, scope: CoroutineScope) =

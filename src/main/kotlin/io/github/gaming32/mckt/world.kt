@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.packet.play.s2c.SetBlockPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
@@ -290,6 +291,17 @@ enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (chunk: W
     } } })
 }
 
+interface BlockAccess {
+    fun getBlock(x: Int, y: Int, z: Int): BlockState? = getBlock(BlockPosition(x, y, z))
+
+    fun getBlock(location: BlockPosition): BlockState? = getBlock(location.x, location.y, location.z)
+
+    fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Unit = setBlock(BlockPosition(x, y, z), block)
+
+    fun setBlock(location: BlockPosition, block: BlockState): Unit =
+        setBlock(location.x, location.y, location.z, block)
+}
+
 class World(val server: MinecraftServer, val name: String) {
     val worldDir = File("worlds", name).apply { mkdirs() }
     val metaFile = File(worldDir, "meta.json")
@@ -315,6 +327,11 @@ class World(val server: MinecraftServer, val name: String) {
     }
 
     val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
+
+    private val loadedAccessor = object : BlockAccess {
+        override fun getBlock(x: Int, y: Int, z: Int) = getLoadedBlockOrNull(x, y, z)
+        override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) = setLoadedBlock(x, y, z, block)
+    }
 
     suspend fun getRegion(x: Int, z: Int) = coroutineScope {
         var region = openRegions[x, z]
@@ -349,8 +366,12 @@ class World(val server: MinecraftServer, val name: String) {
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
+    fun getLoadedBlockOrNull(x: Int, y: Int, z: Int) = openRegions[x shr 9, z shr 9]?.getBlock(x and 511, y, z and 511)
+
+    fun getLoadedBlockOrNull(pos: BlockPosition) = getLoadedBlockOrNull(pos.x, pos.y, pos.z)
+
     fun getLoadedBlock(x: Int, y: Int, z: Int) =
-        openRegions[x shr 9, z shr 9]?.getBlock(x and 511, y, z and 511)
+        getLoadedBlockOrNull(x, y, z)
             ?: throw IllegalStateException("Failed to get unloaded block $x $y $z")
 
     fun getLoadedBlock(pos: BlockPosition) = getLoadedBlock(pos.x, pos.y, pos.z)
@@ -359,6 +380,12 @@ class World(val server: MinecraftServer, val name: String) {
         getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, block)
 
     suspend fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
+
+    fun setLoadedBlock(x: Int, y: Int, z: Int, block: BlockState) =
+        openRegions[x shr 9, z shr 9]?.setBlock(x and 511, y, z and 511, block)
+            ?: throw IllegalStateException("Failed to set unloaded block $x $y $z")
+
+    fun setLoadedBlock(pos: BlockPosition, block: BlockState) = setLoadedBlock(pos.x, pos.y, pos.z, block)
 
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {
@@ -392,6 +419,8 @@ class World(val server: MinecraftServer, val name: String) {
 
     fun isRegionLoaded(regionX: Int, regionZ: Int) = openRegions.contains(regionX, regionZ)
 
+    fun toBlockAccess() = loadedAccessor
+
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
         while (isSaving) yield()
@@ -417,7 +446,7 @@ class World(val server: MinecraftServer, val name: String) {
     }
 }
 
-class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
+class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, BlockAccess {
     val regionFile = File(world.regionsDir, "region_${x}_${z}${world.meta.saveFormat.fileExtension}")
 
     @Serializable
@@ -453,19 +482,15 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
-    fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
-
-    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+    override fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
 
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
         chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block) ?: Unit
-
-    fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -504,7 +529,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable {
     override fun close() = save()
 }
 
-class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int) {
+class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int) : BlockAccess {
     val world get() = region.world
     val x get() = (region.x shl 5) + xInRegion
     val z get() = (region.z shl 5) + zInRegion
@@ -519,15 +544,13 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
-    fun getBlock(x: Int, y: Int, z: Int): BlockState {
+    override fun getBlock(x: Int, y: Int, z: Int): BlockState {
         if (y < -2064 || y > 2063) return Blocks.AIR
         val section = sections[(y shr 4) + 127] ?: return Blocks.AIR
         return section.getBlock(x, y and 15, z)
     }
 
-    fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
-
-    fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
+    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
         if (y < -2064 || y > 2063) return
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
@@ -539,8 +562,6 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
             section.setBlock(x, y and 15, z, block)
         }
     }
-
-    fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
 
     internal fun toData() = synchronized(this) {
         val sectionsPresent = BitSet(sections.size)
@@ -745,6 +766,33 @@ class PlayerData(
             }
         }
         return result
+    }
+}
+
+data class BlocksView(val inner: BlockAccess, val offsetX: Int, val offsetY: Int, val offsetZ: Int) : BlockAccess {
+    constructor(inner: BlockAccess, offset: BlockPosition) : this(inner, offset.x, offset.y, offset.z)
+
+    override fun getBlock(x: Int, y: Int, z: Int) = inner.getBlock(x + offsetX, y + offsetY, z + offsetZ)
+
+    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+        inner.setBlock(x + offsetX, y + offsetY, z + offsetZ, block)
+}
+
+data class RememberingBlockAccess(val inner: BlockAccess) : BlockAccess {
+    private val memoryInternal = mutableListOf<SetBlockPacket>()
+    val memory: List<SetBlockPacket> by ::memoryInternal
+
+    override fun getBlock(x: Int, y: Int, z: Int) = inner.getBlock(x, y, z)
+
+    override fun getBlock(location: BlockPosition) = inner.getBlock(location)
+
+    override fun setBlock(location: BlockPosition, block: BlockState) {
+        inner.setBlock(location, block)
+        memoryInternal.add(SetBlockPacket(location, block))
+    }
+
+    suspend fun flush(server: MinecraftServer) {
+        memory.forEach { server.broadcast(it) }
     }
 }
 

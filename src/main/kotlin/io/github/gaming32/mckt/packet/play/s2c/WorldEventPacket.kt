@@ -15,6 +15,7 @@ class WorldEventPacket(
 ) : Packet(TYPE) {
     companion object {
         const val TYPE = 0x22
+        const val USE_BONEMEAL = 1505
         const val BREAK_BLOCK = 2001
     }
 
