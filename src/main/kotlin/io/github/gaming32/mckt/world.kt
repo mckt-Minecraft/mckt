@@ -161,7 +161,7 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                 }
             }
             addNbtCompound {
-                put("name", "minecraft:msg_command_outcoming")
+                put("name", "minecraft:msg_command_outgoing")
                 put("id", 3)
                 putNbtCompound("element") {
                     putNbtCompound("chat") {

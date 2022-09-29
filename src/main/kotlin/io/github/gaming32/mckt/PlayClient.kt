@@ -165,13 +165,14 @@ class PlayClient(
             reducedDebugInfo = false,
             enableRespawnScreen = false,
             isDebug = false,
-            isFlat = true,
+            isFlat = server.world.meta.worldGenerator == WorldGenerator.FLAT,
             deathLocation = null
         ))
         sendPacket(PlayPluginPacket(Identifier("brand")) {
             writeString("mckt")
         })
         sendPacket(SyncTagsPacket(DEFAULT_TAGS))
+        sendPacket(SetWorldSpawnPacket(server.world.findSpawnPoint(), 0f))
 
         commandSource = ClientCommandSource(this@PlayClient)
 

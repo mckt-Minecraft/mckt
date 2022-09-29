@@ -123,6 +123,9 @@ class MinecraftServer(
         install(ContentNegotiation) {
             json()
         }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 20_000
+        }
     }
 
     suspend fun run() = coroutineScope {
