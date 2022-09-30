@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.worldgen.phases
 import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.WorldChunk
+import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise
@@ -72,12 +73,21 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
             offsetZ3
         )
     }
+
+    private fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int) {
+        val birch = rand.nextInt(15) == 0
+        generateTree(
+            into, rand, x, y, z,
+            if (birch) Blocks.BIRCH_LOG else Blocks.OAK_LOG,
+            if (birch) Blocks.BIRCH_LEAVES else Blocks.OAK_LEAVES
+        )
+    }
 }
 
-fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int) {
+fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int, trunk: BlockState, leaves: BlockState) {
     val endY = rand.nextInt(y + 3, y + 7)
     for (oy in y..endY) {
-        into.setBlock(x + 2, oy, z + 2, Blocks.OAK_LOG)
+        into.setBlock(x + 2, oy, z + 2, trunk)
     }
     for (oy in endY - 2 until endY) {
         for (ox in 0 until 5) {
@@ -89,22 +99,22 @@ fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int) {
                     (ox == 0 && oz == 4 && rand.nextBoolean()) ||
                     (ox == 4 && oz == 4 && rand.nextBoolean())
                 ) continue
-                into.setBlock(x + ox, oy, z + oz, Blocks.OAK_LEAVES)
+                into.setBlock(x + ox, oy, z + oz, leaves)
             }
         }
     }
-    into.setBlock(x + 1, endY, z + 2, Blocks.OAK_LEAVES)
-    into.setBlock(x + 3, endY, z + 2, Blocks.OAK_LEAVES)
-    into.setBlock(x + 2, endY, z + 1, Blocks.OAK_LEAVES)
-    into.setBlock(x + 2, endY, z + 3, Blocks.OAK_LEAVES)
-    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 1, Blocks.OAK_LEAVES)
-    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 1, Blocks.OAK_LEAVES)
-    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 3, Blocks.OAK_LEAVES)
-    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 3, Blocks.OAK_LEAVES)
-    into.setBlock(x + 1, endY + 1, z + 2, Blocks.OAK_LEAVES)
-    into.setBlock(x + 3, endY + 1, z + 2, Blocks.OAK_LEAVES)
-    into.setBlock(x + 2, endY + 1, z + 1, Blocks.OAK_LEAVES)
-    into.setBlock(x + 2, endY + 1, z + 3, Blocks.OAK_LEAVES)
-    into.setBlock(x + 2, endY + 1, z + 2, Blocks.OAK_LEAVES)
+    into.setBlock(x + 1, endY, z + 2, leaves)
+    into.setBlock(x + 3, endY, z + 2, leaves)
+    into.setBlock(x + 2, endY, z + 1, leaves)
+    into.setBlock(x + 2, endY, z + 3, leaves)
+    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 1, leaves)
+    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 1, leaves)
+    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 3, leaves)
+    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 3, leaves)
+    into.setBlock(x + 1, endY + 1, z + 2, leaves)
+    into.setBlock(x + 3, endY + 1, z + 2, leaves)
+    into.setBlock(x + 2, endY + 1, z + 1, leaves)
+    into.setBlock(x + 2, endY + 1, z + 3, leaves)
+    into.setBlock(x + 2, endY + 1, z + 2, leaves)
     into.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
 }

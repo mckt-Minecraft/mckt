@@ -1,8 +1,11 @@
 package io.github.gaming32.mckt.blocks
 
+import io.github.gaming32.mckt.Blocks
+import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
+import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.worldgen.phases.generateTree
 import kotlin.random.Random
 
@@ -18,6 +21,11 @@ object SaplingBlockHandler : BlockHandler(), Fertilizable {
             return
         }
 
-        generateTree(world.toBlockAccess(), rand, location.x - 2, location.y, location.z - 2)
+        val baseBlock = state.blockId.toShortString().removeSuffix("sapling")
+        generateTree(
+            world.toBlockAccess(), rand, location.x - 2, location.y, location.z - 2,
+            DEFAULT_BLOCKSTATES[Identifier.parse(baseBlock + "log")] ?: Blocks.OAK_LOG,
+            DEFAULT_BLOCKSTATES[Identifier.parse(baseBlock + "leaves")] ?: Blocks.OAK_LEAVES
+        )
     }
 }

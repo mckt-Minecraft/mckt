@@ -268,6 +268,8 @@ object Blocks {
     val ANDESITE = getBlock("andesite")
     val GRANITE = getBlock("granite")
     val FIRE = getBlock("fire")
+    val BIRCH_LOG = getBlock("birch_log")
+    val BIRCH_LEAVES = getBlock("birch_leaves")
 }
 
 @Serializable
