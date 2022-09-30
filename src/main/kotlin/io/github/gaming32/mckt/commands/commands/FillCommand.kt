@@ -20,10 +20,9 @@ object FillCommand : BuiltinCommand {
                     .executesSuspend {
                         val box = BlockBox(getLoadedBlockPosition("from"), getLoadedBlockPosition("to"))
                         val block = getBlockState("block")
-                        source.server.updateBlocks {
-                            box.forEach { x, y, z ->
-                                setBlock(x, y, z, block)
-                            }
+                        val world = source.server.world
+                        box.forEach { x, y, z ->
+                            world.setBlock(x, y, z, block)
                         }
                         source.reply(Component.translatable(
                             "commands.fill.success",

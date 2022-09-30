@@ -17,8 +17,7 @@ object SaplingBlockHandler : BlockHandler(), Fertilizable {
             world.setBlock(location, state.with("stage", "1"))
             return
         }
-        world.server.updateBlocks {
-            generateTree(this, rand, location.x - 2, location.y, location.z - 2)
-        }
+
+        generateTree(world.toBlockAccess(), rand, location.x - 2, location.y, location.z - 2)
     }
 }

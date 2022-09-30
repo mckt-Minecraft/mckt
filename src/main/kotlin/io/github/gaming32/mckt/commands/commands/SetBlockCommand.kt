@@ -17,7 +17,7 @@ object SetBlockCommand : BuiltinCommand {
             .then(argument<CommandSource, BlockState>("block", BlockStateArgumentType)
                 .executesSuspend {
                     val location = getLoadedBlockPosition("pos")
-                    source.server.setBlock(location, getBlockState("block"))
+                    source.server.world.setBlock(location, getBlockState("block"))
                     source.replyBroadcast(Component.translatable(
                         "commands.setblock.success",
                         Component.text(location.x),

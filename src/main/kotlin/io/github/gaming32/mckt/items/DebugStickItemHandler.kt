@@ -5,7 +5,6 @@ import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.mod
 import io.github.gaming32.mckt.objects.*
-import io.github.gaming32.mckt.packet.play.s2c.SetBlockPacket
 import kotlinx.coroutines.CoroutineScope
 import net.kyori.adventure.text.Component
 
@@ -56,7 +55,6 @@ object DebugStickItemHandler : ItemHandler() {
         if (update) {
             val newState = cycle(state, properties, selectedName, client.data.isSneaking)
             world.setBlock(location, newState)
-            client.server.broadcast(SetBlockPacket(location, newState))
             client.sendMessage(Component.translatable(
                 "item.minecraft.debug_stick.update",
                 Component.text(selectedName),

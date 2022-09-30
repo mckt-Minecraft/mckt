@@ -56,9 +56,6 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.concurrent.thread
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
 import kotlin.time.Duration.Companion.milliseconds
@@ -175,6 +172,7 @@ class MinecraftServer(
                     }
                 }
             }
+            syncDirtyBlocks()
             val endTime = System.nanoTime()
             val tickTime = (endTime - startTime).nanoseconds.inWholeMilliseconds
             if (tickTime >= 1050) {
@@ -211,6 +209,25 @@ class MinecraftServer(
         }
         httpClient.close()
         LOGGER.info("Server stopped")
+    }
+
+    private suspend fun syncDirtyBlocks() = coroutineScope {
+        val sections = mutableMapOf<BlockPosition, MutableMap<BlockPosition, BlockState>>()
+        world.dirtyBlocks.forEach {
+            sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = world.getBlock(it) ?: return@forEach
+        }
+        world.dirtyBlocks.clear()
+        val jobs = mutableListOf<Job>()
+        sections.forEach { (sectionLocation, section) ->
+            val packet = if (section.size == 1) {
+                SetBlockPacket(sectionLocation shl 4 or section.keys.first(), section.values.first())
+            } else {
+                SectionMultiSetBlockPacket(sectionLocation, section)
+            }
+            for (client in clients.values) {
+                jobs.add(launch { client.sendPacket(packet) })
+            }
+        }
     }
 
     fun registerCommand(
@@ -323,21 +340,6 @@ class MinecraftServer(
     fun getPlayerByUuid(uuid: UUID) = clients.values.firstOrNull { it.uuid == uuid }
 
     inline fun getPlayers(predicate: (PlayClient) -> Boolean) = clients.values.filter(predicate)
-
-    suspend fun setBlock(location: BlockPosition, block: BlockState) {
-        world.setBlock(location, block)
-        broadcast(SetBlockPacket(location, block))
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    suspend inline fun updateBlocks(block: BlockAccess.() -> Unit) {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
-        val memory = RememberingBlockAccess(world.toBlockAccess())
-        memory.block()
-        memory.flush(this)
-    }
 
     suspend fun waitTicks(ticks: Int = 1) {
         val target = world.meta.time + ticks

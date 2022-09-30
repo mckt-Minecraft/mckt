@@ -536,9 +536,7 @@ class PlayClient(
                                     PlayerActionPacket.Action.FINISH_DIGGING
                                 }
                                 if (packet.action == finishedAction) {
-                                    if (tryBreak(packet.location, this)) {
-                                        server.broadcast(SetBlockPacket(server.world, packet.location))
-                                    } else {
+                                    if (!tryBreak(packet.location, this)) {
                                         sendPacket(SetBlockPacket(server.world, packet.location))
                                     }
                                 }

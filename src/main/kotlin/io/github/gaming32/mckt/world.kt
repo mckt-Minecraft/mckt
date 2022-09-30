@@ -8,13 +8,11 @@ import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
-import io.github.gaming32.mckt.packet.Packet
-import io.github.gaming32.mckt.packet.play.s2c.SectionMultiSetBlockPacket
-import io.github.gaming32.mckt.packet.play.s2c.SetBlockPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
+import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -311,6 +309,7 @@ class World(val server: MinecraftServer, val name: String) {
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
     internal val openRegions = IntIntPair2ObjectMap<WorldRegion>()
+    internal val dirtyBlocks = ConcurrentSet<BlockPosition>()
     var isSaving = false
         private set
 
@@ -478,6 +477,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
             chunk = WorldChunk(this, x, z)
             chunks[x * 32 + z] = chunk
             generate(chunk)
+            chunk.ready = true
         }
         return chunk
     }
@@ -543,6 +543,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     )
 
     private val sections = arrayOfNulls<ChunkSection>(254)
+    internal var ready = false
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
@@ -562,6 +563,9 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sections[(y shr 4) + 127] = section
             }
             section.setBlock(x, y and 15, z, block)
+        }
+        if (ready) {
+            world.dirtyBlocks.add(BlockPosition((this.x shl 4) + x, y, (this.z shl 4) + z))
         }
     }
 
@@ -586,6 +590,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sections[i] = null
             }
         }
+        ready = true
     }
 
     fun networkEncode(out: OutputStream) {
@@ -778,38 +783,6 @@ data class BlocksView(val inner: BlockAccess, val offsetX: Int, val offsetY: Int
 
     override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
         inner.setBlock(x + offsetX, y + offsetY, z + offsetZ, block)
-}
-
-data class RememberingBlockAccess(val inner: BlockAccess) : BlockAccess {
-    private val memoryInternal = mutableListOf<SetBlockPacket>()
-    val memory: List<SetBlockPacket> by ::memoryInternal
-
-    override fun getBlock(x: Int, y: Int, z: Int) = inner.getBlock(x, y, z)
-
-    override fun getBlock(location: BlockPosition) = inner.getBlock(location)
-
-    override fun setBlock(location: BlockPosition, block: BlockState) {
-        inner.setBlock(location, block)
-        memoryInternal.add(SetBlockPacket(location, block))
-    }
-
-    fun collectPackets(): List<Packet> {
-        val sections = mutableMapOf<BlockPosition, MutableMap<BlockPosition, BlockState>>()
-        memory.forEach {
-            sections.computeIfAbsent(it.location shr 4) { mutableMapOf() }[it.location and 15] = it.blockState
-        }
-        val result = mutableListOf<Packet>()
-        sections.forEach { (sectionLocation, section) ->
-            if (section.size == 1) {
-                result.add(SetBlockPacket(sectionLocation shl 4 or section.keys.first(), section.values.first()))
-            } else {
-                result.add(SectionMultiSetBlockPacket(sectionLocation, section))
-            }
-        }
-        return result
-    }
-
-    suspend fun flush(server: MinecraftServer) = collectPackets().forEach { server.broadcast(it) }
 }
 
 object EntityFlags {
