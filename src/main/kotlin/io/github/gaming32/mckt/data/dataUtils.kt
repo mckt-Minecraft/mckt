@@ -42,6 +42,12 @@ fun InputStream.readFully(b: ByteArray, off: Int, len: Int) {
     }
 }
 
+fun InputStream.readAvailable(): ByteArray {
+    val result = ByteArray(available())
+    readFully(result)
+    return result
+}
+
 fun InputStream.readByte(): Byte {
     val result = read()
     if (result < 0) {

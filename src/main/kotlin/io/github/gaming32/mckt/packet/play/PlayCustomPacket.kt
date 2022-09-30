@@ -8,7 +8,7 @@ import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
 import java.io.OutputStream
 
-class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
+class PlayCustomPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
     companion object {
         const val S2C_TYPE = 0x16
         const val C2S_TYPE = 0x0D
@@ -28,4 +28,4 @@ class PlayPluginPacket(val channel: Identifier, val data: ByteArray) : Packet(S2
 }
 
 inline fun PlayPluginPacket(channel: Identifier, builder: OutputStream.() -> Unit) =
-    PlayPluginPacket(channel, encodeData(builder))
+    PlayCustomPacket(channel, encodeData(builder))

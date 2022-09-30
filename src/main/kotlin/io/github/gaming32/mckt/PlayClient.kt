@@ -22,6 +22,7 @@ import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
 import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.KeepAlivePacket
+import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
@@ -37,6 +38,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -107,11 +109,15 @@ class PlayClient(
     private var ignoreMovementPackets = true
 
     var options = ClientOptions(this)
+    var brand: String? = null
+        internal set
     internal var ended = false
     var properties = mapOf<String, Pair<String, String?>>()
         private set
 
     var lastEquipment = mapOf<EquipmentSlot, ItemStack>()
+
+    val supportedChannels = mutableSetOf<Identifier>()
 
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
@@ -427,7 +433,17 @@ class PlayClient(
                             }
                     }
 
-                    is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
+                    is PlayCustomPacket -> {
+                        val handlers = server.getCustomPacketHandlers(packet.channel)
+                        if (handlers.isNotEmpty()) {
+                            handlers.forEach { handler ->
+                                launch { handler(packet.channel, this@PlayClient, ByteArrayInputStream(packet.data)) }
+                            }
+                        } else {
+                            LOGGER.warn("Client $username send unknown custom packet ${packet.channel}")
+                        }
+                    }
+
                     is KeepAlivePacket -> {}
                     is MovementPacket -> {
                         if (ignoreMovementPackets) continue

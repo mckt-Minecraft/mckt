@@ -14,9 +14,7 @@ import io.github.gaming32.mckt.blocks.SaplingBlockHandler
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.commands.BuiltinCommand
-import io.github.gaming32.mckt.data.readShort
-import io.github.gaming32.mckt.data.readString
-import io.github.gaming32.mckt.data.readVarInt
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.items.*
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
@@ -52,6 +50,7 @@ import org.jline.utils.AttributedStyle
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.set
@@ -67,6 +66,8 @@ private val STYLES = listOf(
     AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW),
     AttributedStyle.DEFAULT.foreground(AttributedStyle.MAGENTA)
 )
+
+typealias CustomPacketHandler = suspend (channel: Identifier, client: PlayClient, input: InputStream) -> Unit
 
 class MinecraftServer(
     val useJline: Boolean = false
@@ -99,6 +100,7 @@ class MinecraftServer(
     val commandDispatcher = CommandDispatcher<CommandSource>()
     internal val helpTexts = mutableMapOf<CommandNode<CommandSource>, Component?>()
 
+    internal val customPacketHandlers = mutableMapOf<Identifier, MutableList<CustomPacketHandler>>()
     internal val blockHandlers = mutableMapOf<Identifier, BlockHandler>()
     internal val itemHandlers = mutableMapOf<Identifier, ItemHandler>()
 
@@ -125,6 +127,7 @@ class MinecraftServer(
         LOGGER.info("Starting server...")
 
         registerCommands()
+        registerCustomPacketHandlers()
         registerBlockHandlers()
         registerItemHandlers()
 
@@ -298,6 +301,41 @@ class MinecraftServer(
                 }
             )
         )
+    }
+
+    fun registerCustomPacketHandler(channel: Identifier, handler: CustomPacketHandler) {
+        customPacketHandlers.computeIfAbsent(channel) { mutableListOf() }.add(handler)
+    }
+
+    fun registerCustomPacketHandler(channel: String, handler: CustomPacketHandler) =
+        registerCustomPacketHandler(Identifier.parse(channel), handler)
+
+    fun getCustomPacketHandlers(channel: Identifier): List<CustomPacketHandler> =
+        customPacketHandlers[channel] ?: listOf()
+
+    private fun registerCustomPacketHandlers() {
+        registerCustomPacketHandler("brand") { _, client, input ->
+            client.brand = input.readString()
+        }
+        registerCustomPacketHandler("register") { _, client, input ->
+            client.supportedChannels.addAll(
+                input.readAvailable()
+                    .toString(Charsets.US_ASCII)
+                    .split(0.toChar())
+                    .asSequence()
+                    .map(Identifier::parse)
+            )
+        }
+        registerCustomPacketHandler("unregister") { _, client, input ->
+            client.supportedChannels.removeAll(
+                input.readAvailable()
+                    .toString(Charsets.US_ASCII)
+                    .split(0.toChar())
+                    .asSequence()
+                    .map(Identifier::parse)
+                    .toSet()
+            )
+        }
     }
 
     fun registerBlockHandler(handler: BlockHandler, vararg blocks: Identifier) {
