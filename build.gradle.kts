@@ -8,8 +8,8 @@ val jlineVersion: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
+    kotlin("plugin.serialization") version "1.7.20"
     id("io.ktor.plugin") version "2.1.1"
 }
 
@@ -60,6 +60,8 @@ dependencies {
 
     implementation("org.jline:jline-reader:$jlineVersion")
     implementation("org.jline:jline-terminal-jansi:$jlineVersion")
+
+    implementation(kotlin("reflect"))
 }
 
 tasks.withType<KotlinCompile> {
