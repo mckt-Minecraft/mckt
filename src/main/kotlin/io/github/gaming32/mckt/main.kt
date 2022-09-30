@@ -362,9 +362,11 @@ class MinecraftServer(
     fun getItemHandler(item: Identifier?) = itemHandlers[item] ?: DefaultItemHandler
 
     private fun registerItemHandlers() {
-        DEFAULT_BLOCKSTATES.keys.forEach {
-            if (it in ITEM_ID_TO_PROTOCOL) {
-                registerItemHandler(BlockItemHandler(it), it)
+        ITEM_ID_TO_PROTOCOL.keys.forEach { itemId ->
+            if (itemId in DEFAULT_BLOCKSTATES) {
+                registerItemHandler(BlockItemHandler(itemId), itemId)
+            } else if (itemId.value.endsWith("_sword")) {
+                registerItemHandler(SwordItemHandler, itemId)
             }
         }
         registerItemHandler(BoneMealItemHandler, Identifier("bone_meal"))
