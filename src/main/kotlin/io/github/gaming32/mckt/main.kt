@@ -494,6 +494,24 @@ class MinecraftServer(
                 )
             )
         )
+        registerCommand(Component.text("Sets a block"), literal<CommandSource>("setblock")
+            .requires { it.hasPermission(1) }
+            .then(argument<CommandSource, PositionArgument>("pos", BlockPositionArgumentType)
+                .then(argument<CommandSource, BlockState>("block", BlockStateArgumentType)
+                    .executesSuspend {
+                        val location = getLoadedBlockPosition("pos")
+                        setBlock(location, getBlockState("block"))
+                        source.replyBroadcast(Component.translatable(
+                            "commands.setblock.success",
+                            Component.text(location.x),
+                            Component.text(location.y),
+                            Component.text(location.z)
+                        ))
+                        0
+                    }
+                )
+            )
+        )
         registerCommand(Component.text("Forcefully disconnect a player"), literal<CommandSource>("kick")
             .requires { it.hasPermission(2) }
             .then(argument<CommandSource, EntitySelector>("player", players())
