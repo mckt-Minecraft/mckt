@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.packet
 import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.getLogger
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
+import io.github.gaming32.mckt.packet.play.KeepAlivePacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
@@ -32,6 +33,7 @@ enum class PacketState(private val packets: Map<Int, (InputStream) -> Packet>) {
         /* 0x08 */ ClientOptionsPacket.TYPE to ::ClientOptionsPacket,
         /* 0x09 */ CommandCompletionsRequestPacket.TYPE to ::CommandCompletionsRequestPacket,
         /* 0x0D */ PlayPluginPacket.C2S_TYPE to ::PlayPluginPacket,
+        /* 0x12 */ KeepAlivePacket.C2S_TYPE to ::KeepAlivePacket,
         /* 0x14 */ PlayerPositionPacket.TYPE to ::PlayerPositionPacket,
         /* 0x15 */ PlayerPositionAndRotationPacket.TYPE to ::PlayerPositionAndRotationPacket,
         /* 0x16 */ PlayerRotationPacket.TYPE to ::PlayerRotationPacket,

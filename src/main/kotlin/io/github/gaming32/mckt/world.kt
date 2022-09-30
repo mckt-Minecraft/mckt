@@ -8,6 +8,8 @@ import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.packet.Packet
+import io.github.gaming32.mckt.packet.play.s2c.SectionMultiSetBlockPacket
 import io.github.gaming32.mckt.packet.play.s2c.SetBlockPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
@@ -791,9 +793,23 @@ data class RememberingBlockAccess(val inner: BlockAccess) : BlockAccess {
         memoryInternal.add(SetBlockPacket(location, block))
     }
 
-    suspend fun flush(server: MinecraftServer) {
-        memory.forEach { server.broadcast(it) }
+    fun collectPackets(): List<Packet> {
+        val sections = mutableMapOf<BlockPosition, MutableMap<BlockPosition, BlockState>>()
+        memory.forEach {
+            sections.computeIfAbsent(it.location shr 4) { mutableMapOf() }[it.location and 15] = it.blockState
+        }
+        val result = mutableListOf<Packet>()
+        sections.forEach { (sectionLocation, section) ->
+            if (section.size == 1) {
+                result.add(SetBlockPacket(sectionLocation shl 4 or section.keys.first(), section.values.first()))
+            } else {
+                result.add(SectionMultiSetBlockPacket(sectionLocation, section))
+            }
+        }
+        return result
     }
+
+    suspend fun flush(server: MinecraftServer) = collectPackets().forEach { server.broadcast(it) }
 }
 
 object EntityFlags {

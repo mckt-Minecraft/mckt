@@ -28,6 +28,12 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
     operator fun times(other: Int) = BlockPosition(x * other, y * other, z * other)
     operator fun div(other: Int) = BlockPosition(x / other, y / other, z / other)
 
+    infix fun shl(other: Int) = BlockPosition(x shl other, y shl other, z shl other)
+    infix fun shr(other: Int) = BlockPosition(x shr other, y shr other, z shr other)
+    infix fun ushr(other: Int) = BlockPosition(x ushr other, y ushr other, z ushr other)
+    infix fun and(other: Int) = BlockPosition(x and other, y and other, z and other)
+    infix fun or(other: BlockPosition) = BlockPosition(x or other.x, y or other.y, z or other.z)
+
     fun up() = BlockPosition(x, y + 1, z)
 
     fun down() = BlockPosition(x, y - 1, z)

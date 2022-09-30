@@ -1,6 +1,5 @@
 package io.github.gaming32.mckt.blocks
 
-import io.github.gaming32.mckt.RememberingBlockAccess
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
@@ -18,8 +17,8 @@ object SaplingBlockHandler : BlockHandler(), Fertilizable {
             world.setBlock(location, state.with("stage", "1"))
             return
         }
-        val memory = RememberingBlockAccess(world.toBlockAccess())
-        generateTree(memory, rand, location.x - 2, location.y, location.z - 2)
-        memory.flush(world.server)
+        world.server.updateBlocks {
+            generateTree(this, rand, location.x - 2, location.y, location.z - 2)
+        }
     }
 }

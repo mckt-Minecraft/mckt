@@ -21,6 +21,7 @@ import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
 import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
+import io.github.gaming32.mckt.packet.play.KeepAlivePacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
@@ -354,9 +355,10 @@ class PlayClient(
             val changes = mutableListOf<Pair<EquipmentSlot, ItemStack>>()
             for (slot in EquipmentSlot.values()) {
                 if (newEquipment[slot] != lastEquipment[slot]) {
-                    changes += slot to newEquipment[slot]!!
+                    changes += slot to (newEquipment[slot] ?: ItemStack.EMPTY)
                 }
             }
+            lastEquipment = newEquipment
             server.broadcastExcept(this, SetEquipmentPacket(entityId, *changes.toTypedArray()))
         }
     }
@@ -410,6 +412,7 @@ class PlayClient(
                             ))
                         }
                     }
+
                     is CommandCompletionsRequestPacket -> {
                         val reader = StringReader(packet.command)
                         if (reader.canRead() && reader.peek() == '/') {
@@ -425,6 +428,7 @@ class PlayClient(
                     }
 
                     is PlayPluginPacket -> LOGGER.info("Plugin packet {}", packet.channel)
+                    is KeepAlivePacket -> {}
                     is MovementPacket -> {
                         if (ignoreMovementPackets) continue
                         val shouldUseTeleport = packet.x != null && (
@@ -504,6 +508,44 @@ class PlayClient(
                         data.isFallFlying = false
                         data.pose = EntityPose.STANDING
                         server.broadcast(SyncTrackedDataPacket(entityId, data.flags, data.pose))
+                    }
+
+                    is PlayerActionPacket -> {
+                        when (packet.action) {
+                            PlayerActionPacket.Action.SWAP_OFFHAND -> {
+                                val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                                val newOffhand = data.inventory[data.selectedInventorySlot]
+                                data.inventory[data.selectedInventorySlot] = newMainhand
+                                data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
+                                sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
+                                sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                                server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                                    entityId,
+                                    EquipmentSlot.MAIN_HAND to newMainhand,
+                                    EquipmentSlot.OFFHAND to newOffhand
+                                ))
+                            }
+
+                            PlayerActionPacket.Action.START_DIGGING,
+                            PlayerActionPacket.Action.CANCEL_DIGGING,
+                            PlayerActionPacket.Action.FINISH_DIGGING -> {
+                                sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                                val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                                    PlayerActionPacket.Action.START_DIGGING
+                                } else {
+                                    PlayerActionPacket.Action.FINISH_DIGGING
+                                }
+                                if (packet.action == finishedAction) {
+                                    if (tryBreak(packet.location, this)) {
+                                        server.broadcast(SetBlockPacket(server.world, packet.location))
+                                    } else {
+                                        sendPacket(SetBlockPacket(server.world, packet.location))
+                                    }
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
+                        }
                     }
 
                     is PlayerCommandPacket -> {
@@ -598,44 +640,6 @@ class PlayClient(
                             if (packet.offhand) EntityAnimationPacket.SWING_OFFHAND else EntityAnimationPacket.SWING_MAINHAND
                         )
                     )
-
-                    is PlayerActionPacket -> {
-                        when (packet.action) {
-                            PlayerActionPacket.Action.SWAP_OFFHAND -> {
-                                val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
-                                val newOffhand = data.inventory[data.selectedInventorySlot]
-                                data.inventory[data.selectedInventorySlot] = newMainhand
-                                data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                                sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
-                                sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
-                                server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
-                                    entityId,
-                                    EquipmentSlot.MAIN_HAND to newMainhand,
-                                    EquipmentSlot.OFFHAND to newOffhand
-                                ))
-                            }
-
-                            PlayerActionPacket.Action.START_DIGGING,
-                            PlayerActionPacket.Action.CANCEL_DIGGING,
-                            PlayerActionPacket.Action.FINISH_DIGGING -> {
-                                sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                                val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
-                                    PlayerActionPacket.Action.START_DIGGING
-                                } else {
-                                    PlayerActionPacket.Action.FINISH_DIGGING
-                                }
-                                if (packet.action == finishedAction) {
-                                    if (tryBreak(packet.location, this)) {
-                                        server.broadcast(SetBlockPacket(server.world, packet.location))
-                                    } else {
-                                        sendPacket(SetBlockPacket(server.world, packet.location))
-                                    }
-                                }
-                            }
-
-                            else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
-                        }
-                    }
 
                     is UseItemOnBlockPacket -> {
                         sendPacket(AcknowledgeBlockChangePacket(packet.sequence))

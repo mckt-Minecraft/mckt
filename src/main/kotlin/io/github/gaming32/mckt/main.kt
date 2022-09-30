@@ -29,6 +29,7 @@ import io.github.gaming32.mckt.objects.Vector3d
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
+import io.github.gaming32.mckt.packet.play.KeepAlivePacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.github.gaming32.mckt.packet.sendPacket
@@ -63,6 +64,9 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.concurrent.thread
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
 import kotlin.math.min
@@ -187,6 +191,7 @@ class MinecraftServer(
                     "Is the server overloaded? Running {} seconds ({} ticks) behind.",
                     (tickTime - 50) / 1000.0, (tickTime - 50) / 50.0
                 )
+                broadcast(KeepAlivePacket(System.currentTimeMillis()))
             }
             startTime = System.nanoTime()
             val sleepTime = 50 - tickTime
@@ -696,6 +701,16 @@ class MinecraftServer(
     suspend fun setBlock(location: BlockPosition, block: BlockState) {
         world.setBlock(location, block)
         broadcast(SetBlockPacket(location, block))
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    suspend inline fun updateBlocks(block: BlockAccess.() -> Unit) {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        }
+        val memory = RememberingBlockAccess(world.toBlockAccess())
+        memory.block()
+        memory.flush(this)
     }
 
     suspend fun waitTicks(ticks: Int = 1) {
