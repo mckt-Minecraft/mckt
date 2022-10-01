@@ -163,6 +163,40 @@ object WorldeditCommands {
             )!!
     }
 
+    object ReplaceCommand : BuiltinCommand {
+        override val helpText = Component.text("Replace all blocks in the selection with another")
+
+        override val aliases = listOf("/re", "/rep")
+
+        override fun buildTree() = literal<CommandSource>("/replace")
+            .requires { it.hasPermission(1) }
+            .then(argument<CommandSource, BlockState>("from", BlockStateArgumentType)
+                .then(argument<CommandSource, BlockState>("to", BlockStateArgumentType)
+                    .executesSuspend { coroutineScope {
+                        val region = source.selection
+                        var replaced = 0
+                        runTask {
+                            val from = getBlockState("from")
+                            val to = getBlockState("to")
+                            val world = source.server.world
+                            var i = 0
+                            region.forEach { x, y, z ->
+                                if (world.getBlock(x, y, z) == from) {
+                                    world.setBlock(x, y, z, to)
+                                    replaced++
+                                }
+                                if (i++ == 2 shl 16) {
+                                    yield()
+                                }
+                            }
+                            source.replyBroadcast(Component.text("Replaced $replaced blocks"))
+                        }
+                        replaced
+                    } }
+                )
+            )!!
+    }
+
     object RegenCommand : BuiltinCommand {
         override val helpText = Component.text("Regenerates the contents of the selection")
 
