@@ -640,7 +640,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         @SerialName("Blocks")     val blocks: SimpleBitStorage
     )
 
-    internal val data = PalettedStorage(4096, Blocks.AIR) { out -> out.writeVarInt(globalId) }
+    internal val data = PalettedStorage(4096, Blocks.AIR) { writeVarInt(it.globalId) }
 
     var blockCount = 0
         private set

@@ -11,6 +11,8 @@ data class BlockBox(
     val sizeZ get() = maxZ - minZ + 1
     val size get() = BlockPosition(sizeX, sizeY, sizeZ)
     val volume get() = sizeX * sizeY * sizeZ
+    val min get() = BlockPosition(minX, minY, minZ)
+    val max get() = BlockPosition(maxX, maxY, maxZ)
 
     constructor(a: BlockPosition, b: BlockPosition) : this(
         min(a.x, b.x), min(a.y, b.y), min(a.z, b.z),
@@ -35,4 +37,14 @@ data class BlockBox(
         location.x in minX..maxX && location.y in minY..maxY && location.z in minZ..maxZ
 
     fun contains(x: Int, y: Int, z: Int) = x in minX..maxX && y in minY..maxY && z in minZ..maxZ
+
+    operator fun plus(position: BlockPosition) = BlockBox(
+        minX + position.x, minY + position.y, minZ + position.z,
+        maxX + position.x, maxY + position.y, maxZ + position.z
+    )
+
+    operator fun minus(position: BlockPosition) = BlockBox(
+        minX - position.x, minY - position.y, minZ - position.z,
+        maxX - position.x, maxY - position.y, maxZ - position.z
+    )
 }

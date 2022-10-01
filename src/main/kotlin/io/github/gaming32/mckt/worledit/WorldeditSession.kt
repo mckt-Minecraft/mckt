@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.objects.*
 import net.kyori.adventure.text.Component
 import java.util.*
 
-class WorldeditSelection(val client: PlayClient) {
+class WorldeditSession(val client: PlayClient) {
     companion object {
         val CUI_CHANNEL = Identifier("worldedit", "cui")
         val MARKER_POS1 = Identifier("worldedit", "pos1")
@@ -17,11 +17,14 @@ class WorldeditSelection(val client: PlayClient) {
     private var useMarkers = false
 
     var pos1: BlockPosition? = null
+        private set
     var pos2: BlockPosition? = null
-
-    fun toBlockBox(): BlockBox? {
+        private set
+    val selection: BlockBox? get() {
         return BlockBox(pos1 ?: return null, pos2 ?: return null)
     }
+
+    var clipboard: WorldeditClipboard? = null
 
     suspend fun setPos1(pos: BlockPosition) {
         pos1 = pos
@@ -72,12 +75,12 @@ class WorldeditSelection(val client: PlayClient) {
     private suspend fun syncCui(pos: BlockPosition?, index: Int) {
         if (pos == null) return
         client.sendCustomPacket(CUI_CHANNEL) {
-            write("p|$index|${pos.x}|${pos.y}|${pos.z}|${toBlockBox()?.volume ?: -1}".toByteArray())
+            write("p|$index|${pos.x}|${pos.y}|${pos.z}|${selection?.volume ?: -1}".toByteArray())
         }
     }
 
     private suspend fun addRegionMarker() {
-        val region = toBlockBox() ?: return
+        val region = selection ?: return
         if (region.volume < 1000) {
             client.addMarker(MARKER_REGION, BlockBoxMarker(region, 0x6000ff00))
         } else {
@@ -86,6 +89,6 @@ class WorldeditSelection(val client: PlayClient) {
     }
 }
 
-private val clientToSelection = WeakHashMap<PlayClient, WorldeditSelection>()
+private val clientToSession = WeakHashMap<PlayClient, WorldeditSession>()
 
-val PlayClient.worldeditSelection get() = clientToSelection.computeIfAbsent(this) { WorldeditSelection(it) }!!
+val PlayClient.worldeditSession get() = clientToSession.computeIfAbsent(this) { WorldeditSession(it) }!!

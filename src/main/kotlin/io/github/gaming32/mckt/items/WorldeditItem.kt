@@ -5,7 +5,7 @@ import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.castOrNull
 import io.github.gaming32.mckt.dt.DtInt
 import io.github.gaming32.mckt.objects.*
-import io.github.gaming32.mckt.worledit.worldeditSelection
+import io.github.gaming32.mckt.worledit.worldeditSession
 import kotlinx.coroutines.CoroutineScope
 
 object WorldeditItem : ItemHandler() {
@@ -25,7 +25,7 @@ object WorldeditItem : ItemHandler() {
             return super.canMine(state, world, location, client, scope)
         }
         when (type) {
-            TYPE_WAND -> client.worldeditSelection.setPos1(location)
+            TYPE_WAND -> client.worldeditSession.setPos1(location)
         }
         return false
     }
@@ -36,7 +36,7 @@ object WorldeditItem : ItemHandler() {
             return super.useOnBlock(ctx, scope)
         }
         when (type) {
-            TYPE_WAND -> ctx.client.worldeditSelection.setPos2(ctx.location)
+            TYPE_WAND -> ctx.client.worldeditSession.setPos2(ctx.location)
         }
         return ActionResult.success(true)
     }

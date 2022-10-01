@@ -12,7 +12,7 @@ import java.io.OutputStream
 class PalettedStorage<V>(
     val size: Int,
     private val defaultValue: V,
-    private val encoder: V.(out: OutputStream) -> Unit
+    private val encoder: OutputStream.(V) -> Unit
 ) {
     private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
         valueToKeyDefaultReturnValue = -1
@@ -52,7 +52,7 @@ class PalettedStorage<V>(
     fun encode(out: OutputStream) {
         out.writeByte(storage.bits)
         out.writeVarInt(palette.size)
-        palette.values.forEach { it.encoder(out) }
+        palette.values.forEach { out.encoder(it) }
         val longs = storage.data
         out.writeVarInt(longs.size)
         longs.forEach { out.writeLong(it) }

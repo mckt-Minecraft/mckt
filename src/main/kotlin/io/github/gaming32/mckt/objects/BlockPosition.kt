@@ -20,6 +20,8 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
         )
     }
 
+    val volume00 get() = x * y * z
+
     fun encodeToLong() =
         (x.toLong() and 0x3FFFFFFL shl 38) or (z.toLong() and 0x3FFFFFFL shl 12) or (y.toLong() and 0xFFFL)
 
@@ -39,6 +41,8 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
     fun down() = BlockPosition(x, y - 1, z)
 
     fun toVector3d() = Vector3d(x + 0.5, y.toDouble(), z + 0.5)
+
+    fun toBlockBox() = BlockBox(0, 0, 0, x - 1, y - 1, z - 1)
 
     override fun toString() = "$x, $y, $z"
 }
