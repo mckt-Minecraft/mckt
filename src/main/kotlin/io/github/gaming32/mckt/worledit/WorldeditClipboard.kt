@@ -20,7 +20,8 @@ data class WorldeditClipboard(
 
     override fun getBlock(x: Int, y: Int, z: Int) = data[blockIndex(x, y, z)]
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
+    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean {
         data[blockIndex(x, y, z)] = block
+        return true
     }
 }

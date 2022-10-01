@@ -308,9 +308,9 @@ interface BlockAccess {
 
     fun getBlock(location: BlockPosition): BlockState? = getBlock(location.x, location.y, location.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Unit = setBlock(BlockPosition(x, y, z), block)
+    fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean = setBlock(BlockPosition(x, y, z), block)
 
-    fun setBlock(location: BlockPosition, block: BlockState): Unit =
+    fun setBlock(location: BlockPosition, block: BlockState): Boolean =
         setBlock(location.x, location.y, location.z, block)
 }
 
@@ -504,7 +504,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
     override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block) ?: Unit
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block) ?: false
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -560,17 +560,17 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
     override fun getBlock(x: Int, y: Int, z: Int): BlockState {
-        if (y < -2064 || y > 2063) return Blocks.AIR
+        if (y < -2032 || y > 2031) return Blocks.AIR
         val section = sections[(y shr 4) + 127] ?: return Blocks.AIR
         return section.getBlock(x, y and 15, z)
     }
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
-        if (y < -2064 || y > 2063) return
+    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean {
+        if (y < -2032 || y > 2031) return false
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
             if (section == null) {
-                if (block == Blocks.AIR) return
+                if (block == Blocks.AIR) return true
                 section = ChunkSection(this, y shr 4)
                 sections[(y shr 4) + 127] = section
             }
@@ -579,6 +579,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
         if (ready) {
             world.dirtyBlocks.add(BlockPosition((this.x shl 4) + x, y, (this.z shl 4) + z))
         }
+        return true
     }
 
     internal fun toData() = synchronized(this) {

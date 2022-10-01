@@ -41,7 +41,9 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         }
         val useCtx = getPlacementContext(ctx, scope) ?: return ActionResult.FAIL
         val state = getPlacementState(useCtx, scope) ?: return ActionResult.FAIL
-        place(useCtx, state, scope)
+        if (!place(useCtx, state, scope)) {
+            return ActionResult.FAIL
+        }
         val location = useCtx.location
         val world = useCtx.world
         val client = useCtx.client
@@ -58,8 +60,8 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
                 soundGroup.placeSound,
                 SoundCategory.BLOCK,
                 Vector3d(location.x + 0.5, location.y + 0.5, location.z + 0.5),
-                soundGroup.volume,
-                soundGroup.pitch
+                (soundGroup.volume + 1f) / 2f,
+                (soundGroup.pitch * 0.8f)
             ))
         }
         if (!client.data.gamemode.defaultAbilities.creativeMode) {

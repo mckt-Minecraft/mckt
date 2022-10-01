@@ -698,7 +698,7 @@ class PlayClient(
                                 server.itemHandlers[item.itemId!!] is BlockItemHandler
                             ) {
                                 sendMessage(
-                                    Component.translatable("build.tooHigh", Component.text(2031)),
+                                    Component.translatable("build.tooHigh", NamedTextColor.RED, Component.text(2031)),
                                     MessageType.ACTION_BAR
                                 )
                             } else if (result.shouldSwingHand()) {
@@ -713,7 +713,7 @@ class PlayClient(
                             }
                         } else {
                             sendMessage(
-                                Component.translatable("build.tooHigh", Component.text(2031)),
+                                Component.translatable("build.tooHigh", NamedTextColor.RED, Component.text(2031)),
                                 MessageType.ACTION_BAR
                             )
                         }

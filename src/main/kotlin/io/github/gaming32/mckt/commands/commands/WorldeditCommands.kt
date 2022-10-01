@@ -193,9 +193,9 @@ object WorldeditCommands {
                         override fun getBlock(location: BlockPosition) = chunk.getBlock(location)
                         override fun getBlock(x: Int, y: Int, z: Int) = chunk.getBlock(x, y, z)
                         override fun setBlock(location: BlockPosition, block: BlockState) =
-                            if (location in chunkRegion) chunk.setBlock(location, block) else Unit
+                            if (location in chunkRegion) chunk.setBlock(location, block) else location.y in -2032..2031
                         override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-                            if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else Unit
+                            if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else y in -2031..2031
                     }, world, chunkX, chunkZ))
                     yield()
                 }
