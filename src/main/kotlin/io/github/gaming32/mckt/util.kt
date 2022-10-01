@@ -17,6 +17,7 @@ import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
+import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.max
@@ -242,4 +243,16 @@ inline infix fun Int.mod(other: Int) = builtinMod(other)
 fun setColorAlpha(rgb: Int, alpha: Int): Int {
     require(alpha in 0..255) { "Alpha not in range 0..255" }
     return rgb and 0xffffff or (alpha shl 24)
+}
+
+fun Long.coerceToInt() = when {
+    this > Int.MAX_VALUE.toLong() -> Int.MAX_VALUE
+    this < Int.MIN_VALUE.toLong() -> Int.MIN_VALUE
+    else -> this.toInt()
+}
+
+fun BigInteger.coerceToInt() = when {
+    this > Int.MAX_VALUE.toBigInteger() -> Int.MAX_VALUE
+    this < Int.MIN_VALUE.toBigInteger() -> Int.MIN_VALUE
+    else -> this.toInt()
 }

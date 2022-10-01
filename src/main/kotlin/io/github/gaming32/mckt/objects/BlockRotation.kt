@@ -1,5 +1,7 @@
 package io.github.gaming32.mckt.objects
 
+import io.github.gaming32.mckt.mod
+
 enum class BlockRotation {
     NONE,
     CLOCKWISE_90,
@@ -16,6 +18,15 @@ enum class BlockRotation {
                 COUNTERCLOCKWISE_90 -> rotateYCounterclockwise()
                 else -> this
             }
+
+        fun round(degrees: Int) = when (degrees mod 360) {
+            in 0 until 45 -> NONE
+            in 45 until 135 -> CLOCKWISE_90
+            in 135 until 225 -> CLOCKWISE_180
+            in 225 until 315 -> COUNTERCLOCKWISE_90
+            in 315 until 360 -> NONE
+            else -> throw AssertionError()
+        }
     }
 
     operator fun plus(other: BlockRotation) = when (other) {

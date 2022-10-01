@@ -2,6 +2,7 @@ package io.github.gaming32.mckt.commands.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import io.github.gaming32.mckt.coerceToInt
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.executesSuspend
@@ -26,9 +27,9 @@ object FillCommand : BuiltinCommand {
                         }
                         source.reply(Component.translatable(
                             "commands.fill.success",
-                            Component.text(box.volume)
+                            Component.text(box.volume.toString())
                         ))
-                        box.volume
+                        box.volume.coerceToInt()
                     }
                 )
             )

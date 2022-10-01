@@ -5,10 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
-import io.github.gaming32.mckt.BlockAccess
-import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.GeneratorArgs
-import io.github.gaming32.mckt.World
+import io.github.gaming32.mckt.*
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.executesSuspend
@@ -20,13 +17,25 @@ import io.github.gaming32.mckt.items.WorldeditItem
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worledit.WorldeditClipboard
 import io.github.gaming32.mckt.worledit.worldeditSession
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
 object WorldeditCommands {
     val NO_SELECTION_EXCEPTION = SimpleCommandExceptionType(Component.text("No selection!").wrap())
     val NO_CLIPBOARD_EXCEPTION = SimpleCommandExceptionType(Component.text("No clipboard!").wrap())
+
+    private val tasks = mutableSetOf<Job>()
+
+    private suspend fun <T> runTask(task: suspend CoroutineScope.() -> T) = coroutineScope {
+        val job = launch { task() }
+        tasks += job
+        try {
+            job.join()
+        } finally {
+            tasks -= job
+        }
+    }
 
     object Pos1Command : BuiltinCommand {
         override val helpText = Component.text("Set position 1")
@@ -131,24 +140,26 @@ object WorldeditCommands {
         override fun buildTree() = literal<CommandSource>("/set")
             .requires { it.hasPermission(1) }
             .then(argument<CommandSource, BlockState>("block", BlockStateArgumentType)
-                .executesSuspend {
+                .executesSuspend { coroutineScope {
                     val region = source.selection
-                    val block = getBlockState("block")
-                    val world = source.server.world
-                    var i = 0
-                    region.forEach { x, y, z ->
-                        world.setBlock(x, y, z, block)
-                        if (i++ == 2 shl 16) {
-                            i = 0
-                            yield()
+                    runTask {
+                        val block = getBlockState("block")
+                        val world = source.server.world
+                        var i = 0
+                        region.forEach { x, y, z ->
+                            world.setBlock(x, y, z, block)
+                            if (i++ == 2 shl 16) {
+                                i = 0
+                                yield()
+                            }
                         }
+                        source.replyBroadcast(Component.translatable(
+                            "commands.fill.success",
+                            Component.text(region.volume.toString())
+                        ))
                     }
-                    source.replyBroadcast(Component.translatable(
-                        "commands.fill.success",
-                        Component.text(region.volume)
-                    ))
-                    region.volume
-                }
+                    region.volume.coerceToInt()
+                } }
             )!!
     }
 
@@ -172,36 +183,38 @@ object WorldeditCommands {
             world: World, generator: suspend (GeneratorArgs) -> Unit
         ): Int {
             val region = source.selection
-            for (chunkX in (region.minX shr 4)..(region.maxX shr 4)) {
-                for (chunkZ in (region.minZ shr 4)..(region.maxZ shr 4)) {
-                    val chunk = world.getChunk(chunkX, chunkZ)
-                        ?: continue // The chunk was never loaded, so therefore it will be generated on first load.
-                    val chunkRegion = BlockBox(
-                        region.minX - (chunkX shl 4),
-                        region.minY,
-                        region.minZ - (chunkZ shl 4),
-                        region.maxX - (chunkX shl 4),
-                        region.maxY,
-                        region.maxZ - (chunkZ shl 4)
-                    )
-                    chunkRegion.forEach { x, y, z ->
-                        if (x in 0..15 && z in 0..15) {
-                            chunk.setBlock(x, y, z, Blocks.AIR)
+            runTask {
+                for (chunkX in (region.minX shr 4)..(region.maxX shr 4)) {
+                    for (chunkZ in (region.minZ shr 4)..(region.maxZ shr 4)) {
+                        val chunk = world.getChunk(chunkX, chunkZ)
+                            ?: continue // The chunk was never loaded, so therefore it will be generated on first load.
+                        val chunkRegion = BlockBox(
+                            region.minX - (chunkX shl 4),
+                            region.minY,
+                            region.minZ - (chunkZ shl 4),
+                            region.maxX - (chunkX shl 4),
+                            region.maxY,
+                            region.maxZ - (chunkZ shl 4)
+                        )
+                        chunkRegion.forEach { x, y, z ->
+                            if (x in 0..15 && z in 0..15) {
+                                chunk.setBlock(x, y, z, Blocks.AIR)
+                            }
                         }
+                        generator(GeneratorArgs(object : BlockAccess {
+                            override fun getBlock(location: BlockPosition) = chunk.getBlock(location)
+                            override fun getBlock(x: Int, y: Int, z: Int) = chunk.getBlock(x, y, z)
+                            override fun setBlock(location: BlockPosition, block: BlockState) =
+                                if (location in chunkRegion) chunk.setBlock(location, block) else location.y in -2032..2031
+                            override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+                                if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else y in -2031..2031
+                        }, world, chunkX, chunkZ))
+                        yield()
                     }
-                    generator(GeneratorArgs(object : BlockAccess {
-                        override fun getBlock(location: BlockPosition) = chunk.getBlock(location)
-                        override fun getBlock(x: Int, y: Int, z: Int) = chunk.getBlock(x, y, z)
-                        override fun setBlock(location: BlockPosition, block: BlockState) =
-                            if (location in chunkRegion) chunk.setBlock(location, block) else location.y in -2032..2031
-                        override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-                            if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else y in -2031..2031
-                    }, world, chunkX, chunkZ))
-                    yield()
                 }
+                source.replyBroadcast(Component.text("Regenerated ${region.volume} blocks"))
             }
-            source.replyBroadcast(Component.text("Regenerated ${region.volume} blocks"))
-            return region.volume
+            return region.volume.coerceToInt()
         }
     }
 
@@ -212,23 +225,27 @@ object WorldeditCommands {
             .requires { it.hasPermission(1) }
             .executesSuspend {
                 val region = source.selection
-                val world = source.server.world
-                val clipboard = WorldeditClipboard(region.size, region.min - source.entity.position.toBlockPosition())
-                var i = 0
-                (region - region.min).forEach { x, y, z ->
-                    clipboard.setBlock(x, y, z, world.getLoadedBlock(
-                        region.minX + x,
-                        region.minY + y,
-                        region.minZ + z
-                    ))
-                    if (i++ == 2 shl 16) {
-                        i = 0
-                        yield()
+                runTask {
+                    val world = source.server.world
+                    val clipboard = WorldeditClipboard(
+                        region.size, region.min - source.entity.position.toBlockPosition()
+                    )
+                    var i = 0
+                    (region - region.min).forEach { x, y, z ->
+                        clipboard.setBlock(x, y, z, world.getLoadedBlock(
+                            region.minX + x,
+                            region.minY + y,
+                            region.minZ + z
+                        ))
+                        if (i++ == 2 shl 16) {
+                            i = 0
+                            yield()
+                        }
                     }
+                    source.entity.worldeditSession.clipboard = clipboard
+                    source.reply(Component.text("Copied ${region.volume} blocks"))
                 }
-                source.entity.worldeditSession.clipboard = clipboard
-                source.reply(Component.text("Copied ${region.volume} blocks"))
-                region.volume
+                region.volume.coerceToInt()
             }!!
     }
 
@@ -244,29 +261,31 @@ object WorldeditCommands {
 
         private suspend fun CommandContext<CommandSource>.cut(replacement: BlockState): Int {
             val region = source.selection
-            val world = source.server.world
-            val clipboard = WorldeditClipboard(region.size, region.min - source.entity.position.toBlockPosition())
-            var i = 0
-            (region - region.min).forEach { x, y, z ->
-                clipboard.setBlock(x, y, z, world.getLoadedBlock(
-                    region.minX + x,
-                    region.minY + y,
-                    region.minZ + z
-                ))
-                world.setBlock(
-                    region.minX + x,
-                    region.minY + y,
-                    region.minZ + z,
-                    replacement
-                )
-                if (i++ == 2 shl 16) {
-                    i = 0
-                    yield()
+            runTask {
+                val world = source.server.world
+                val clipboard = WorldeditClipboard(region.size, region.min - source.entity.position.toBlockPosition())
+                var i = 0
+                (region - region.min).forEach { x, y, z ->
+                    clipboard.setBlock(x, y, z, world.getLoadedBlock(
+                        region.minX + x,
+                        region.minY + y,
+                        region.minZ + z
+                    ))
+                    world.setBlock(
+                        region.minX + x,
+                        region.minY + y,
+                        region.minZ + z,
+                        replacement
+                    )
+                    if (i++ == 2 shl 16) {
+                        i = 0
+                        yield()
+                    }
                 }
+                source.entity.worldeditSession.clipboard = clipboard
+                source.reply(Component.text("Cut ${region.volume} blocks"))
             }
-            source.entity.worldeditSession.clipboard = clipboard
-            source.reply(Component.text("Cut ${region.volume} blocks"))
-            return region.volume
+            return region.volume.coerceToInt()
         }
     }
 
@@ -277,17 +296,19 @@ object WorldeditCommands {
             .requires { it.hasPermission(1) }
             .executesSuspend {
                 val clipboard = source.clipboard
-                val origin = source.entity.position.toBlockPosition() + clipboard.pasteOffset
-                val world = source.server.world
-                var i = 0
-                clipboard.size.toBlockBox().forEach { x, y, z ->
-                    world.setBlock(origin.x + x, origin.y + y, origin.z + z, clipboard.getBlock(x, y, z))
-                    if (i++ == 2 shl 16) {
-                        i = 0
-                        yield()
+                runTask {
+                    val origin = source.entity.position.toBlockPosition() + clipboard.pasteOffset
+                    val world = source.server.world
+                    var i = 0
+                    clipboard.size.toBlockBox().forEach { x, y, z ->
+                        world.setBlock(origin.x + x, origin.y + y, origin.z + z, clipboard.getBlock(x, y, z))
+                        if (i++ == 2 shl 16) {
+                            i = 0
+                            yield()
+                        }
                     }
+                    source.replyBroadcast(Component.text("Pasted ${clipboard.size.volume00} blocks"))
                 }
-                source.replyBroadcast(Component.text("Pasted ${clipboard.size.volume00} blocks"))
                 clipboard.size.volume00
             }!!
     }
@@ -300,6 +321,19 @@ object WorldeditCommands {
             .executesSuspend {
                 source.entity.worldeditSession.clipboard = null
                 source.reply(Component.text("Cleared your clipboard"))
+                0
+            }!!
+    }
+
+    object CancelCommand : BuiltinCommand {
+        override val helpText = Component.text("Cancels all worldedit tasks")
+
+        override fun buildTree() = literal<CommandSource>("/cancel")
+            .requires { it.hasPermission(1) }
+            .executesSuspend {
+                val taskCount = tasks.size
+                tasks.forEach { it.cancel() }
+                source.replyBroadcast(Component.text("Cancelled $taskCount tasks"))
                 0
             }!!
     }

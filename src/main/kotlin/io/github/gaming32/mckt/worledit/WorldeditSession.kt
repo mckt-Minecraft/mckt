@@ -85,7 +85,7 @@ class WorldeditSession(val client: PlayClient) {
 
     private suspend fun addRegionMarker() {
         val region = selection ?: return
-        if (region.volume < 1000) {
+        if (region.volume < 1000.toBigInteger()) {
             client.addMarker(MARKER_REGION, BlockBoxMarker(region, 0x6000ff00))
         } else {
             client.removeMarkers(MARKER_REGION)

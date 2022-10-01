@@ -51,7 +51,10 @@ object DebugStickItemHandler : ItemHandler() {
             return false
         }
         val stickData = item.getOrCreateSubNbt("DebugProperty")
-        val selectedName = stickData.getString(blockIdString)
+        var selectedName = stickData.getString(blockIdString)
+        if (selectedName.isEmpty()) {
+            selectedName = properties.keys.first()
+        }
         if (update) {
             val newState = cycle(state, properties, selectedName, client.data.isSneaking)
             world.setBlock(location, newState)

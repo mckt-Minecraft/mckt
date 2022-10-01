@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.EntitySelector
-import io.github.gaming32.mckt.commands.arguments.getInteger
+import io.github.gaming32.mckt.commands.arguments.getInt
 import io.github.gaming32.mckt.commands.arguments.getPlayers
 import io.github.gaming32.mckt.commands.arguments.players
 import io.github.gaming32.mckt.commands.executesSuspend
@@ -23,7 +23,7 @@ object OpCommand : BuiltinCommand {
             .executesSuspend { setLevel(min(2, source.operator)) }
             .then(argument<CommandSource, Int>("level", integer(0))
                 .executesSuspend {
-                    val level = getInteger("level")
+                    val level = getInt("level")
                     if (level > source.operator) {
                         source.reply(Component.text(
                             "Cannot give player a higher operator level than you",

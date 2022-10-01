@@ -10,7 +10,7 @@ data class BlockBox(
     val sizeY get() = maxY - minY + 1
     val sizeZ get() = maxZ - minZ + 1
     val size get() = BlockPosition(sizeX, sizeY, sizeZ)
-    val volume get() = sizeX * sizeY * sizeZ
+    val volume get() = sizeX.toBigInteger() * sizeY.toBigInteger() * sizeZ.toBigInteger()
     val min get() = BlockPosition(minX, minY, minZ)
     val max get() = BlockPosition(maxX, maxY, maxZ)
 
