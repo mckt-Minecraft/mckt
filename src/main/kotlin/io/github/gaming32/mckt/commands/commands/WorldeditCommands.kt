@@ -60,6 +60,25 @@ object WorldeditCommands {
             )!!
     }
 
+    object ChunkCommand : BuiltinCommand {
+        override val helpText = Component.text("Set the selection to your current chunk.")
+
+        override fun buildTree() = literal<CommandSource>("/chunk")
+            .executesSuspend { selectChunk(source.entity.position.toBlockPosition()) }
+            .then(argument<CommandSource, PositionArgument>("location", BlockPositionArgumentType)
+                .executesSuspend { selectChunk(getBlockPosition("location")) }
+            )!!
+
+        private suspend fun CommandContext<CommandSource>.selectChunk(pos: BlockPosition): Int {
+            val cx = pos.x shr 4 shl 4
+            val cz = pos.z shr 4 shl 4
+            source.entity.worldeditSession.setPos1(BlockPosition(cx, -2032, cz))
+            source.entity.worldeditSession.setPos2(BlockPosition(cx + 15, 2031, cz + 15))
+            source.reply(Component.text("Selected the chunk ${cx shr 4}, ${cz shr 4}"))
+            return 0
+        }
+    }
+
     object WandCommand : BuiltinCommand {
         override val helpText = Component.text("Get the wand item")
 

@@ -26,9 +26,11 @@ class WorldeditSession(val client: PlayClient) {
 
     var clipboard: WorldeditClipboard? = null
 
-    suspend fun setPos1(pos: BlockPosition) {
+    suspend fun setPos1(pos: BlockPosition, silent: Boolean = false) {
         pos1 = pos
-        client.sendMessage(Component.text("Set position 1 to ${pos.x}, ${pos.y}, ${pos.z}"))
+        if (!silent) {
+            client.sendMessage(Component.text("Set position 1 to ${pos.x}, ${pos.y}, ${pos.z}"))
+        }
         if (!initializedCui) resetCui()
         if (useMarkers) {
             client.addMarker(MARKER_POS1, BlockMarker(pos, 0xff0000ff.toInt(), "Position 1"))
@@ -38,9 +40,11 @@ class WorldeditSession(val client: PlayClient) {
         }
     }
 
-    suspend fun setPos2(pos: BlockPosition) {
+    suspend fun setPos2(pos: BlockPosition, silent: Boolean = false) {
         pos2 = pos
-        client.sendMessage(Component.text("Set position 2 to ${pos.x}, ${pos.y}, ${pos.z}"))
+        if (!silent) {
+            client.sendMessage(Component.text("Set position 2 to ${pos.x}, ${pos.y}, ${pos.z}"))
+        }
         if (!initializedCui) resetCui()
         if (useMarkers) {
             client.addMarker(MARKER_POS2, BlockMarker(pos, 0xffff0000.toInt(), "Position 2"))
