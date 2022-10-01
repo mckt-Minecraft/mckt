@@ -311,7 +311,7 @@ class World(val server: MinecraftServer, val name: String) {
     val regionsDir = File(worldDir, "regions").apply { mkdirs() }
 
     internal val openRegions = IntIntPair2ObjectMap<WorldRegion>()
-    internal val dirtyBlocks = ConcurrentSet<BlockPosition>()
+    internal var dirtyBlocks = ConcurrentSet<BlockPosition>()
     var isSaving = false
         private set
 

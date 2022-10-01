@@ -36,4 +36,6 @@ data class Vector3d(val x: Double, val y: Double, val z: Double) {
         (x - other.x) * (x - other.x) +
         (y - other.y) * (y - other.y) +
         (z - other.z) * (z - other.z)
+
+    override fun toString() = "$x, $y, $z"
 }

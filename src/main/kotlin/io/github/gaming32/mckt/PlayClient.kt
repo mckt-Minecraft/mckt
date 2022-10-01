@@ -24,7 +24,6 @@ import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.KeepAlivePacket
 import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
-import io.github.gaming32.mckt.packet.play.PlayPluginPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
 import io.ktor.client.call.*
@@ -38,10 +37,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
+import java.io.*
 import java.util.*
 import kotlin.math.*
 import kotlin.time.Duration.Companion.nanoseconds
@@ -119,6 +115,8 @@ class PlayClient(
 
     val supportedChannels = mutableSetOf<Identifier>()
 
+    private val markers = mutableMapOf<Identifier, WritableBlockMarker>()
+
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
         if (loginStart == null) {
@@ -175,7 +173,7 @@ class PlayClient(
             isFlat = server.world.meta.worldGenerator == WorldGenerator.FLAT,
             deathLocation = null
         ))
-        sendPacket(PlayPluginPacket(Identifier("brand")) {
+        sendPacket(PlayCustomPacket(Identifier("brand")) {
             writeString("mckt")
         })
         sendPacket(SyncTagsPacket(DEFAULT_TAGS))
@@ -267,6 +265,48 @@ class PlayClient(
         ignoreMovementPackets = false
         loadChunksAroundPlayer()
     }
+
+    suspend fun addMarker(id: Identifier, marker: WritableBlockMarker) {
+        if (markers.put(id, marker) != null) {
+            resyncMarkers()
+        } else {
+            sendMarker(marker)
+        }
+    }
+
+    suspend fun removeMarkers(vararg ids: Identifier) {
+        var anyRemoved = false
+        ids.forEach {
+            if (markers.remove(it) != null) {
+                anyRemoved = true
+            }
+        }
+        if (anyRemoved) {
+            resyncMarkers()
+        }
+    }
+
+    fun getMarker(id: Identifier) = markers[id]
+
+    private suspend fun resyncMarkers() {
+        val time = System.currentTimeMillis()
+        val newMarkers = markers.filterTo(mutableMapOf()) { it.value.expiration <= time }
+        markers.clear()
+        markers += newMarkers
+        sendCustomPacket(Identifier("debug/game_test_clear"))
+        newMarkers.forEach { sendMarker(it.value) }
+    }
+
+    private suspend fun sendMarker(marker: WritableBlockMarker) {
+        marker.writers.forEach {
+            sendCustomPacket(Identifier("debug/game_test_add_marker")) {
+                it(this, System.currentTimeMillis())
+            }
+        }
+    }
+
+    suspend inline fun sendCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit = {}) =
+        sendPacket(PlayCustomPacket(channel, builder))
 
     suspend fun setOperatorLevel(level: Int) {
         data.operatorLevel = level
@@ -440,7 +480,7 @@ class PlayClient(
                                 launch { handler(packet.channel, this@PlayClient, ByteArrayInputStream(packet.data)) }
                             }
                         } else {
-                            LOGGER.warn("Client $username send unknown custom packet ${packet.channel}")
+                            LOGGER.warn("Client $username sent unknown custom packet ${packet.channel}")
                         }
                     }
 
@@ -636,17 +676,7 @@ class PlayClient(
                         )
                     }
 
-                    is SetCreativeInventorySlotPacket -> {
-                        data.inventory[packet.slot] = packet.item.orEmpty()
-                        sendPacket(SetContainerSlotPacket(0, packet.slot, packet.item))
-                        val syncSlot = EquipmentSlot.getSlot(packet.slot)
-                        if (
-                            syncSlot != null &&
-                            (syncSlot != EquipmentSlot.MAIN_HAND || packet.slot == data.selectedInventorySlot)
-                        ) {
-                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(entityId, syncSlot to packet.item))
-                        }
-                    }
+                    is SetCreativeInventorySlotPacket -> setInventorySlot(packet.slot, packet.item)
 
                     is SwingArmPacket -> server.broadcastExcept(
                         this@PlayClient, EntityAnimationPacket(
@@ -795,6 +825,18 @@ class PlayClient(
             handler.afterBreak(server.world, this, location, oldBlock, newItem, scope)
         }
         return true
+    }
+
+    suspend fun setInventorySlot(slot: Int, item: ItemStack) {
+        data.inventory[slot] = item
+        sendPacket(SetContainerSlotPacket(0, slot, item))
+        val syncSlot = EquipmentSlot.getSlot(slot)
+        if (
+            syncSlot != null &&
+            (syncSlot != EquipmentSlot.MAIN_HAND || slot == data.selectedInventorySlot)
+        ) {
+            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(entityId, syncSlot to item))
+        }
     }
 
     suspend fun teleport(

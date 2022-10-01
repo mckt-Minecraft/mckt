@@ -19,4 +19,6 @@ data class Vector2f(val x: Float, val y: Float) {
     val magnitudeSquared get() = x * x + y * y
     val magnitude get() = sqrt(magnitudeSquared)
     val normalized get() = magnitude.let { if (it == 0f) ZERO else this / it }
+
+    override fun toString() = "$x, $y"
 }

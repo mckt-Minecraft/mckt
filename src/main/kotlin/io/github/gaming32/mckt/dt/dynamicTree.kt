@@ -87,6 +87,8 @@ value class DtCompound(
     override fun toNbt() = NbtCompound(content.asSequence().associate { (key, value) -> key to value.toNbt() })
     override fun deepCopy() = DtCompound(content.toMutableMap())
 
+    constructor(vararg content: Pair<String, DtElement<*, *>>) : this(mutableMapOf(*content))
+
     fun getCompound(key: String) = content[key] as? DtCompound ?: DtCompound()
 
     fun getString(key: String) = content[key]?.castOrNull<DtString>()?.value ?: ""

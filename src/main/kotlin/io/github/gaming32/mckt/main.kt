@@ -34,6 +34,7 @@ import io.ktor.client.request.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.collections.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -219,7 +220,13 @@ class MinecraftServer(
         world.dirtyBlocks.forEach {
             sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = world.getBlock(it) ?: return@forEach
         }
-        world.dirtyBlocks.clear()
+        if (world.dirtyBlocks.size < 2 shl 16) {
+            world.dirtyBlocks.clear()
+        } else {
+            // Profiling! I noticed after changing an obscene number of blocks on 1 tick that the server was lagging,
+            // so I ran a quick profile and found that the thing lagging out the server was the above clear() call.
+            world.dirtyBlocks = ConcurrentSet()
+        }
         val jobs = mutableListOf<Job>()
         sections.forEach { (sectionLocation, section) ->
             val packet = if (section.size == 1) {
@@ -373,6 +380,7 @@ class MinecraftServer(
         registerItemHandler(DebugStickItemHandler, Identifier("debug_stick"))
         registerItemHandler(FireworkRocketHandler, Identifier("firework_rocket"))
         registerItemHandler(FlintAndSteelHandler, Identifier("flint_and_steel"))
+        registerItemHandler(WorldeditItem, Identifier("wooden_axe"))
     }
 
     fun getPlayerByName(name: String) = clients[name]

@@ -39,4 +39,6 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
     fun down() = BlockPosition(x, y - 1, z)
 
     fun toVector3d() = Vector3d(x + 0.5, y.toDouble(), z + 0.5)
+
+    override fun toString() = "$x, $y, $z"
 }

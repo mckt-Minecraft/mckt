@@ -27,5 +27,5 @@ class PlayCustomPacket(val channel: Identifier, val data: ByteArray) : Packet(S2
     override fun toString() = "PlayPluginPacket(channel=$channel, data=...)"
 }
 
-inline fun PlayPluginPacket(channel: Identifier, builder: OutputStream.() -> Unit) =
+inline fun PlayCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit) =
     PlayCustomPacket(channel, encodeData(builder))

@@ -26,9 +26,9 @@ object FillCommand : BuiltinCommand {
                         }
                         source.reply(Component.translatable(
                             "commands.fill.success",
-                            Component.text(box.size)
+                            Component.text(box.volume)
                         ))
-                        box.size
+                        box.volume
                     }
                 )
             )

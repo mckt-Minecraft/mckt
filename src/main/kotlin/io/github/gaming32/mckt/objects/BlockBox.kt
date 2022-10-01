@@ -1,16 +1,16 @@
 package io.github.gaming32.mckt.objects
 
-import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
 
 data class BlockBox(
     val minX: Int, val minY: Int, val minZ: Int, val maxX: Int, val maxY: Int, val maxZ: Int
 ) : Iterable<BlockPosition> {
-    val sizeX get() = maxX - minX
-    val sizeY get() = maxY - minY
-    val sizeZ get() = maxZ - minZ
-    val size get() = sizeX * sizeY * sizeZ
+    val sizeX get() = maxX - minX + 1
+    val sizeY get() = maxY - minY + 1
+    val sizeZ get() = maxZ - minZ + 1
+    val size get() = BlockPosition(sizeX, sizeY, sizeZ)
+    val volume get() = sizeX * sizeY * sizeZ
 
     constructor(a: BlockPosition, b: BlockPosition) : this(
         min(a.x, b.x), min(a.y, b.y), min(a.z, b.z),
@@ -27,14 +27,7 @@ data class BlockBox(
         }
     }
 
-    inline fun forEach(action: (BlockPosition) -> Unit) = forEach { x, y, z -> action(BlockPosition(x, y, z)) }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun forEach(action: Consumer<in BlockPosition>) = forEach(action as (BlockPosition) -> Unit)
-
-    fun asSequence() = sequence {
-        forEach { yield(it) }
+    override fun iterator() = iterator {
+        forEach { x, y, z -> yield(BlockPosition(x, y, z)) }
     }
-
-    override fun iterator() = asSequence().iterator()
 }
