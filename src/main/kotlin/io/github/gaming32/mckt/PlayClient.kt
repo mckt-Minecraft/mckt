@@ -425,7 +425,7 @@ class PlayClient(
                         LOGGER.warn("Client sent unknown teleportId {}", packet.teleportId)
                     }
 
-                    is CommandPacket -> commandSource.runCommand(packet.command, server.commandDispatcher)
+                    is CommandPacket -> launch { commandSource.runCommand(packet.command, server.commandDispatcher) }
                     is ServerboundChatPacket -> {
                         LOGGER.info("CHAT: <{}> {}", username, packet.message)
                         server.broadcast(SystemChatPacket(

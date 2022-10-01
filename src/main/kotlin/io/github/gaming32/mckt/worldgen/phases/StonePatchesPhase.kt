@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt.worldgen.phases
 
+import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
@@ -21,13 +22,13 @@ class StonePatchesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(genera
         }
     }
 
-    override fun generateChunk(chunk: WorldChunk, rand: Random) {
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
         repeat(16) { x ->
-            val absX = (chunk.x shl 4) + x
+            val absX = (chunkX shl 4) + x
             repeat(16) { z ->
-                val absZ = (chunk.z shl 4) + z
+                val absZ = (chunkZ shl 4) + z
                 for (sectionY in -127..69) {
-                    if (chunk.getSection(sectionY) == null) continue
+                    if (chunk is WorldChunk && chunk.getSection(sectionY) == null) continue
                     repeat(16) { y ->
                         val absY = (sectionY shl 4) + y
                         noises.forEach { (block, noise) ->

@@ -3,6 +3,9 @@ package io.github.gaming32.mckt.commands.commands
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
+import io.github.gaming32.mckt.BlockAccess
+import io.github.gaming32.mckt.Blocks
+import io.github.gaming32.mckt.GeneratorArgs
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.executesSuspend
@@ -11,9 +14,7 @@ import io.github.gaming32.mckt.dt.DtCompound
 import io.github.gaming32.mckt.dt.DtInt
 import io.github.gaming32.mckt.dt.DtString
 import io.github.gaming32.mckt.items.WorldeditItem
-import io.github.gaming32.mckt.objects.BlockState
-import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.objects.ItemStack
+import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worledit.worldeditSelection
 import kotlinx.coroutines.yield
 import net.kyori.adventure.text.Component
@@ -116,9 +117,48 @@ object WorldeditCommands {
                         Component.text(region.volume)
                     ))
                     region.volume
-                    0
                 }
             )!!
+    }
+
+    object RegenCommand : BuiltinCommand {
+        override val helpText = Component.text("Put the region back to its earliest seed-generated form.")
+
+        override fun buildTree() = literal<CommandSource>("/regen")
+            .executesSuspend {
+                val region = source.entity.worldeditSelection.toBlockBox() ?: throw NO_SELECTION_EXCEPTION.create()
+                val world = source.server.world
+                for (chunkX in (region.minX shr 4)..(region.maxX shr 4)) {
+                    for (chunkZ in (region.minZ shr 4)..(region.maxZ shr 4)) {
+                        val chunk = world.getChunk(chunkX, chunkZ)
+                            ?: continue // The chunk was never loaded, so therefore it will be generated on first load.
+                        val chunkRegion = BlockBox(
+                            region.minX - (chunkX shl 4),
+                            region.minY,
+                            region.minZ - (chunkZ shl 4),
+                            region.maxX - (chunkX shl 4),
+                            region.maxY,
+                            region.maxZ - (chunkZ shl 4)
+                        )
+                        chunkRegion.forEach { x, y, z ->
+                            if (x in 0..15 && z in 0..15) {
+                                chunk.setBlock(x, y, z, Blocks.AIR)
+                            }
+                        }
+                        world.worldGenerator(GeneratorArgs(object : BlockAccess {
+                            override fun getBlock(location: BlockPosition) = chunk.getBlock(location)
+                            override fun getBlock(x: Int, y: Int, z: Int) = chunk.getBlock(x, y, z)
+                            override fun setBlock(location: BlockPosition, block: BlockState) =
+                                if (location in chunkRegion) chunk.setBlock(location, block) else Unit
+                            override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+                                if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else Unit
+                        }, world, chunkX, chunkZ))
+                        yield()
+                    }
+                }
+                source.replyBroadcast(Component.text("Regenerated ${region.volume} blocks"))
+                region.volume
+            }!!
     }
 
     fun createWand() = ItemStack(

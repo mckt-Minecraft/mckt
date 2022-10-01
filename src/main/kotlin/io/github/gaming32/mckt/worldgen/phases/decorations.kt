@@ -2,7 +2,6 @@ package io.github.gaming32.mckt.worldgen.phases
 
 import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
@@ -21,9 +20,9 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
 
     private val perlin = PerlinNoise(generator.seed xor FLIP_CONSTANT)
 
-    override fun generateChunk(chunk: WorldChunk, rand: Random) {
-        val cx = chunk.x shl 4
-        val cz = chunk.z shl 4
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+        val cx = chunkX shl 4
+        val cz = chunkZ shl 4
         val noise = perlin.noise2d(cx / SCALE, cz / SCALE)
         if (noise < REQUIREMENT) return
         val offsetX = rand.nextInt(12)

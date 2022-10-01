@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.worldgen.phases
 
+import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise
@@ -26,9 +26,9 @@ class SkyIslandsPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generato
     private fun getSurfaceHeight(x: Int, z: Int) =
         (perlin.noise2d(x / X_SCALE_SURFACE, z / X_SCALE_SURFACE) * Y_SCALE_SURFACE).toInt() + Y_OFFSET_SURFACE
 
-    override fun generateChunk(chunk: WorldChunk, rand: Random) {
-        val cx = chunk.x shl 4
-        val cz = chunk.z shl 4
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+        val cx = chunkX shl 4
+        val cz = chunkZ shl 4
         repeat(16) { x ->
             val absX = cx + x
             repeat(16) zLoop@ { z ->

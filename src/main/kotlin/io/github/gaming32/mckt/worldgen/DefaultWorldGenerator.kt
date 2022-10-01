@@ -1,6 +1,6 @@
 package io.github.gaming32.mckt.worldgen
 
-import io.github.gaming32.mckt.WorldChunk
+import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.worldgen.phases.*
 import kotlin.random.Random
 
@@ -19,8 +19,8 @@ class DefaultWorldGenerator(val seed: Long) {
         BottomPhase(this)
     )
 
-    fun generateChunk(chunk: WorldChunk) {
-        val rand = Random(seed xor (chunk.x.toLong() shl 32) xor chunk.z.toLong() xor RAND_FLIP)
-        phases.forEach { it.generateChunk(chunk, rand) }
+    fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
+        val rand = Random(seed xor (chunkX.toLong() shl 32) xor chunkZ.toLong() xor RAND_FLIP)
+        phases.forEach { it.generateChunk(chunk, chunkX, chunkZ, rand) }
     }
 }

@@ -272,10 +272,20 @@ object Blocks {
     val BIRCH_LEAVES = getBlock("birch_leaves")
 }
 
+data class GeneratorArgs(
+    val chunk: BlockAccess,
+    val world: World,
+    val chunkX: Int,
+    val chunkZ: Int
+) {
+    constructor(chunk: WorldChunk) : this(chunk, chunk.world, chunk.x, chunk.z)
+}
+
 @Serializable
-enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (chunk: WorldChunk) -> Unit) {
+enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (GeneratorArgs) -> Unit) {
     @SerialName("flat") FLAT({
-        { chunk ->
+        { args ->
+            val chunk = args.chunk
             repeat(16) { x ->
                 repeat(16) { z ->
                     chunk.setBlock(x, 0, z, Blocks.BEDROCK)
@@ -286,9 +296,9 @@ enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (chunk: W
             }
         }
     }),
-    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed).let { generator -> { chunk ->
-        coroutineScope { launch(chunk.world.worldgenPool) {
-            generator.generateChunk(chunk)
+    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed).let { generator -> { args ->
+        coroutineScope { launch(args.world.worldgenPool) {
+            generator.generateChunk(args.chunk, args.chunkX, args.chunkZ)
         } }
     } } })
 }
@@ -354,7 +364,7 @@ class World(val server: MinecraftServer, val name: String) {
     suspend fun getChunk(x: Int, z: Int): WorldChunk? =
         getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
-    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (WorldChunk) -> Unit = {}) =
+    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (GeneratorArgs) -> Unit = {}) =
         getRegion(x shr 5, z shr 5).getChunkOrElse(x and 31, z and 31, generate)
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
@@ -473,12 +483,12 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
 
     fun getChunk(x: Int, z: Int): WorldChunk? = chunks[(x shl 5) + z]
 
-    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (WorldChunk) -> Unit = {}): WorldChunk {
+    suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (GeneratorArgs) -> Unit = {}): WorldChunk {
         var chunk = chunks[x * 32 + z]
         if (chunk == null) {
             chunk = WorldChunk(this, x, z)
             chunks[x * 32 + z] = chunk
-            generate(chunk)
+            generate(GeneratorArgs(chunk))
             chunk.ready = true
         }
         return chunk

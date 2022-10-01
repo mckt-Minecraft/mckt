@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.worldgen.phases
 
+import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.WorldChunk
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.OpenSimplex
@@ -28,9 +28,9 @@ class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
         return result
     }
 
-    override fun generateChunk(chunk: WorldChunk, rand: Random) {
-        val cx = chunk.x shl 4
-        val cz = chunk.z shl 4
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+        val cx = chunkX shl 4
+        val cz = chunkZ shl 4
         repeat(16) { x ->
             val absX = cx + x
             repeat(16) { z ->

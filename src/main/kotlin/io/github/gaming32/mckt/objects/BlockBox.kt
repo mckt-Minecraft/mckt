@@ -30,4 +30,9 @@ data class BlockBox(
     override fun iterator() = iterator {
         forEach { x, y, z -> yield(BlockPosition(x, y, z)) }
     }
+
+    operator fun contains(location: BlockPosition) =
+        location.x in minX..maxX && location.y in minY..maxY && location.z in minZ..maxZ
+
+    fun contains(x: Int, y: Int, z: Int) = x in minX..maxX && y in minY..maxY && z in minZ..maxZ
 }
