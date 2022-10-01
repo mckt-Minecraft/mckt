@@ -14,7 +14,7 @@ data class SetBlockPacket(val location: BlockPosition, val blockState: BlockStat
         const val TYPE = 0x09
     }
 
-    constructor(world: World, location: BlockPosition) : this(location, world.getLoadedBlock(location))
+    constructor(world: World, location: BlockPosition) : this(location, world.getBlockImmediate(location))
 
     override fun write(out: OutputStream) {
         out.writeBlockPosition(location)

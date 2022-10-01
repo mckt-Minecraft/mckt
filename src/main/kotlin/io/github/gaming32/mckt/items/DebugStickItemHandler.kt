@@ -24,7 +24,7 @@ object DebugStickItemHandler : ItemHandler() {
         val client = ctx.client
         val world = ctx.world
         val location = ctx.location
-        if (!use(client, world.getLoadedBlock(location), world, location, true, ctx.itemStack)) {
+        if (!use(client, world.getBlockImmediate(location), world, location, true, ctx.itemStack)) {
             return ActionResult.FAIL
         }
         return ActionResult.success(false)

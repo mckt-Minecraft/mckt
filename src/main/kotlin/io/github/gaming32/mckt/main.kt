@@ -7,10 +7,7 @@ import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
-import io.github.gaming32.mckt.blocks.BlockHandler
-import io.github.gaming32.mckt.blocks.DefaultBlockHandler
-import io.github.gaming32.mckt.blocks.PillarBlockHandler
-import io.github.gaming32.mckt.blocks.SaplingBlockHandler
+import io.github.gaming32.mckt.blocks.*
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.commands.BuiltinCommand
@@ -358,8 +355,11 @@ class MinecraftServer(
                 registerBlockHandler(PillarBlockHandler, it)
             } else if (it.value.endsWith("_sapling")) {
                 registerBlockHandler(SaplingBlockHandler, it)
+            } else if (it.value.endsWith("glass_pane")) {
+                registerBlockHandler(PaneBlockHandler, it)
             }
         }
+        registerBlockHandler(PaneBlockHandler, Identifier("iron_bars"))
     }
 
     fun registerItemHandler(handler: ItemHandler, vararg items: Identifier) {

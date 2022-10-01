@@ -34,9 +34,9 @@ class StonePatchesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(genera
                         noises.forEach { (block, noise) ->
                             if (
                                 noise.noise3d(absX / SCALE, absY / SCALE, absZ / SCALE) >= REQUIREMENT &&
-                                chunk.getBlock(x, absY, z) == Blocks.STONE
+                                chunk.getBlockImmediate(x, absY, z) == Blocks.STONE
                             ) {
-                                chunk.setBlock(x, absY, z, block)
+                                chunk.setBlockImmediate(x, absY, z, block)
                             }
                         }
                     }

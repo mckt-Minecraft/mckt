@@ -86,7 +86,7 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
 fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int, trunk: BlockState, leaves: BlockState) {
     val endY = rand.nextInt(y + 3, y + 7)
     for (oy in y..endY) {
-        into.setBlock(x + 2, oy, z + 2, trunk)
+        into.setBlockImmediate(x + 2, oy, z + 2, trunk)
     }
     for (oy in endY - 2 until endY) {
         for (ox in 0 until 5) {
@@ -98,22 +98,22 @@ fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int, trunk:
                     (ox == 0 && oz == 4 && rand.nextBoolean()) ||
                     (ox == 4 && oz == 4 && rand.nextBoolean())
                 ) continue
-                into.setBlock(x + ox, oy, z + oz, leaves)
+                into.setBlockImmediate(x + ox, oy, z + oz, leaves)
             }
         }
     }
-    into.setBlock(x + 1, endY, z + 2, leaves)
-    into.setBlock(x + 3, endY, z + 2, leaves)
-    into.setBlock(x + 2, endY, z + 1, leaves)
-    into.setBlock(x + 2, endY, z + 3, leaves)
-    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 1, leaves)
-    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 1, leaves)
-    if (rand.nextBoolean()) into.setBlock(x + 1, endY, z + 3, leaves)
-    if (rand.nextBoolean()) into.setBlock(x + 3, endY, z + 3, leaves)
-    into.setBlock(x + 1, endY + 1, z + 2, leaves)
-    into.setBlock(x + 3, endY + 1, z + 2, leaves)
-    into.setBlock(x + 2, endY + 1, z + 1, leaves)
-    into.setBlock(x + 2, endY + 1, z + 3, leaves)
-    into.setBlock(x + 2, endY + 1, z + 2, leaves)
-    into.setBlock(x + 2, y - 1, z + 2, Blocks.DIRT)
+    into.setBlockImmediate(x + 1, endY, z + 2, leaves)
+    into.setBlockImmediate(x + 3, endY, z + 2, leaves)
+    into.setBlockImmediate(x + 2, endY, z + 1, leaves)
+    into.setBlockImmediate(x + 2, endY, z + 3, leaves)
+    if (rand.nextBoolean()) into.setBlockImmediate(x + 1, endY, z + 1, leaves)
+    if (rand.nextBoolean()) into.setBlockImmediate(x + 3, endY, z + 1, leaves)
+    if (rand.nextBoolean()) into.setBlockImmediate(x + 1, endY, z + 3, leaves)
+    if (rand.nextBoolean()) into.setBlockImmediate(x + 3, endY, z + 3, leaves)
+    into.setBlockImmediate(x + 1, endY + 1, z + 2, leaves)
+    into.setBlockImmediate(x + 3, endY + 1, z + 2, leaves)
+    into.setBlockImmediate(x + 2, endY + 1, z + 1, leaves)
+    into.setBlockImmediate(x + 2, endY + 1, z + 3, leaves)
+    into.setBlockImmediate(x + 2, endY + 1, z + 2, leaves)
+    into.setBlockImmediate(x + 2, y - 1, z + 2, Blocks.DIRT)
 }

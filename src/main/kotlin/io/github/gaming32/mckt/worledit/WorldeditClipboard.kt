@@ -18,9 +18,9 @@ data class WorldeditClipboard(
 
     private fun blockIndex(x: Int, y: Int, z: Int) = y * size.x * size.z + z * size.x + x
 
-    override fun getBlock(x: Int, y: Int, z: Int) = data[blockIndex(x, y, z)]
+    override fun getBlockImmediate(x: Int, y: Int, z: Int) = data[blockIndex(x, y, z)]
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean {
+    override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState): Boolean {
         data[blockIndex(x, y, z)] = block
         return true
     }

@@ -76,4 +76,13 @@ abstract class BlockHandler {
     ) = Unit
 
     open fun rotate(state: BlockState, rotation: BlockRotation) = state
+
+    open suspend fun getStateForNeighborUpdate(
+        state: BlockState,
+        direction: Direction,
+        neighborState: BlockState,
+        world: World,
+        pos: BlockPosition,
+        neighborPos: BlockPosition
+    ) = state
 }

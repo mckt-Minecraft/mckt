@@ -21,7 +21,7 @@ object BoneMealItemHandler : ItemHandler() {
     }
 
     suspend fun useOnFertilizable(stack: ItemStack, world: World, location: BlockPosition): Boolean {
-        val block = world.getLoadedBlock(location)
+        val block = world.getBlockImmediate(location)
         val handler = block.getHandler(world.server)
         if (handler is Fertilizable && handler.isFertilizable(world, location, block)) {
             if (handler.canGrow(world, Random, location, block)) {

@@ -23,7 +23,7 @@ object SaplingBlockHandler : BlockHandler(), Fertilizable {
 
         val baseBlock = state.blockId.toShortString().removeSuffix("sapling")
         generateTree(
-            world.toBlockAccess(), rand, location.x - 2, location.y, location.z - 2,
+            world, rand, location.x - 2, location.y, location.z - 2,
             DEFAULT_BLOCKSTATES[Identifier.parse(baseBlock + "log")] ?: Blocks.OAK_LOG,
             DEFAULT_BLOCKSTATES[Identifier.parse(baseBlock + "leaves")] ?: Blocks.OAK_LEAVES
         )

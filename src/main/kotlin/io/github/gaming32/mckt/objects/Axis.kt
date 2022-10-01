@@ -9,5 +9,7 @@ enum class Axis(val unit: BlockPosition, private val opposite: BlockPosition) {
         fun String.toAxis() = valueOf(uppercase())
     }
 
+    val isHorizontal get() = this == X || this == Z
+
     fun direction(direction: Int) = if (direction < 0) opposite else unit
 }

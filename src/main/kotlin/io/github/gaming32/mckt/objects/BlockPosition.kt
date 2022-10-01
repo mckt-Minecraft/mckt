@@ -37,8 +37,11 @@ data class BlockPosition(val x: Int, val y: Int, val z: Int) {
     infix fun or(other: BlockPosition) = BlockPosition(x or other.x, y or other.y, z or other.z)
 
     fun up() = BlockPosition(x, y + 1, z)
-
     fun down() = BlockPosition(x, y - 1, z)
+    fun north() = BlockPosition(x, y, z - 1)
+    fun south() = BlockPosition(x, y, z + 1)
+    fun west() = BlockPosition(x - 1, y, z)
+    fun east() = BlockPosition(x + 1, y, z)
 
     fun toVector3d() = Vector3d(x + 0.5, y.toDouble(), z + 0.5)
 

@@ -36,10 +36,10 @@ class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
             repeat(16) { z ->
                 val absZ = cz + z
                 for (y in -2031..-80) {
-                    if (chunk.getBlock(x, y, z) == Blocks.AIR) continue
+                    if (chunk.getBlockImmediate(x, y, z) == Blocks.AIR) continue
                     val noise = noise(absX / X_SCALE, y / Y_SCALE, absZ / X_SCALE) + Y_OFFSET
                     if (noise <= BOUND) continue
-                    chunk.setBlock(x, y, z, Blocks.AIR)
+                    chunk.setBlockImmediate(x, y, z, Blocks.AIR)
                 }
             }
         }

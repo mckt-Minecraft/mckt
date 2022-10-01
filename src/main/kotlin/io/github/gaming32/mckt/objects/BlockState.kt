@@ -210,8 +210,12 @@ class BlockState internal constructor(
     fun with(key: String, value: String) =
         BlockState(blockId, properties = properties.toMutableMap().apply { put(key, value) }).canonicalize()
 
-    internal fun with(properties: Map<String, String>) =
-        BlockState(blockId, properties = this.properties + properties).canonicalize()
+    fun with(properties: Map<String, String>) =
+        if (properties.isEmpty()) {
+            this
+        } else {
+            BlockState(blockId, properties = this.properties + properties).canonicalize()
+        }
 
     operator fun get(property: String) =
         properties[property]
@@ -232,4 +236,13 @@ class BlockState internal constructor(
 
     fun canReplace(ctx: ItemHandler.ItemUsageContext) =
         getHandler(ctx.server).canReplace(this, ctx)
+
+    suspend fun getStateForNeighborUpdate(
+        server: MinecraftServer,
+        direction: Direction,
+        neighborState: BlockState,
+        world: World,
+        pos: BlockPosition,
+        neighborPos: BlockPosition
+    ) = getHandler(server).getStateForNeighborUpdate(this, direction, neighborState, world, pos, neighborPos)
 }

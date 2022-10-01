@@ -755,7 +755,7 @@ class PlayClient(
         scope: CoroutineScope
     ): ActionResult {
         val location = hit.location
-        val block = server.world.getLoadedBlock(location)
+        val block = server.world.getBlockImmediate(location)
         val hasItem = data.mainHand.isNotEmpty() || data.offhand.isNotEmpty()
         val dontUseBlock = data.isSneaking && hasItem
 //        val stackCopy = item.copy()
@@ -803,7 +803,7 @@ class PlayClient(
     }
 
     private suspend fun tryBreak(location: BlockPosition, scope: CoroutineScope): Boolean {
-        val oldBlock = server.world.getLoadedBlock(location)
+        val oldBlock = server.world.getBlockImmediate(location)
         if (!data.mainHand.getHandler(server).canMine(oldBlock, server.world, location, this, scope)) {
             return false
         }
@@ -812,7 +812,7 @@ class PlayClient(
             return false
         }
         handler.onBreak(server.world, location, oldBlock, this, scope)
-        server.world.setBlock(location, Blocks.AIR)
+        server.world.setBlock(location, Blocks.AIR, SetBlockFlags.PERFORM_BLOCK_UPDATE)
         handler.onBroken(server.world, location, oldBlock, scope)
         if (data.gamemode.defaultAbilities.creativeMode) {
             return true

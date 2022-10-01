@@ -191,7 +191,7 @@ object FlintAndSteelHandler : ItemHandler() {
             }
         }
         return if (canPlace) {
-            ctx.client.server.world.setBlock(placeAt, Blocks.FIRE.with(properties).canonicalize())
+            ctx.client.server.world.setBlock(placeAt, Blocks.FIRE.with(properties))
             ActionResult.success(false)
         } else {
             ActionResult.FAIL

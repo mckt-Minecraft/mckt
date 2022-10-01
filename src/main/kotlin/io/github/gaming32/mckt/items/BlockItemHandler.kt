@@ -1,9 +1,6 @@
 package io.github.gaming32.mckt.items
 
-import io.github.gaming32.mckt.BLOCK_PROPERTIES
-import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
-import io.github.gaming32.mckt.cast
+import io.github.gaming32.mckt.*
 import io.github.gaming32.mckt.dt.DtString
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.PlaySoundPacket
@@ -21,7 +18,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         constructor(ctx: ItemUsageContext) : this(ctx.client, ctx.hand, ctx.hit, ctx.world, ctx.itemStack)
 
         val placementPos = hit.location + hit.side.vector
-        val replaceable = world.getLoadedBlock(hit.location).canReplace(this)
+        val replaceable = world.getBlockImmediate(hit.location).canReplace(this)
 
         override val location = if (replaceable) {
             super.location
@@ -29,7 +26,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
             placementPos
         }
 
-        fun canPlace() = replaceable || world.getLoadedBlock(location).canReplace(this)
+        fun canPlace() = replaceable || world.getBlockImmediate(location).canReplace(this)
     }
 
     override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope) =
@@ -48,7 +45,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         val world = useCtx.world
         val client = useCtx.client
         val stack = useCtx.itemStack
-        var newState = world.getLoadedBlock(location)
+        var newState = world.getBlockImmediate(location)
         if (newState.blockId == state.blockId) {
             newState = placeFromTag(location, world, stack, newState)
             postPlacement(location, world, client, stack, newState)
@@ -71,7 +68,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
     }
 
     open suspend fun place(ctx: ItemPlacementContext, state: BlockState, scope: CoroutineScope) =
-        ctx.world.setBlock(ctx.location, state)
+        ctx.world.setBlock(ctx.location, state, SetBlockFlags.PERFORM_BLOCK_UPDATE)
 
     open suspend fun getPlacementContext(ctx: ItemPlacementContext, scope: CoroutineScope): ItemPlacementContext? = ctx
 
@@ -99,7 +96,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
             }
         }
         if (newState != state) {
-            world.setBlock(location, newState)
+            world.setBlock(location, newState, SetBlockFlags.PERFORM_BLOCK_UPDATE)
         }
         return newState
     }

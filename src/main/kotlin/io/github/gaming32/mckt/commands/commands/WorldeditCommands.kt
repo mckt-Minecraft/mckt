@@ -198,16 +198,26 @@ object WorldeditCommands {
                         )
                         chunkRegion.forEach { x, y, z ->
                             if (x in 0..15 && z in 0..15) {
-                                chunk.setBlock(x, y, z, Blocks.AIR)
+                                chunk.setBlockImmediate(x, y, z, Blocks.AIR)
                             }
                         }
                         generator(GeneratorArgs(object : BlockAccess {
-                            override fun getBlock(location: BlockPosition) = chunk.getBlock(location)
-                            override fun getBlock(x: Int, y: Int, z: Int) = chunk.getBlock(x, y, z)
-                            override fun setBlock(location: BlockPosition, block: BlockState) =
-                                if (location in chunkRegion) chunk.setBlock(location, block) else location.y in -2032..2031
-                            override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-                                if (chunkRegion.contains(x, y, z)) chunk.setBlock(x, y, z, block) else y in -2031..2031
+                            override fun getBlockImmediate(pos: BlockPosition) = chunk.getBlockImmediate(pos)
+                            override fun getBlockImmediate(x: Int, y: Int, z: Int) = chunk.getBlockImmediate(x, y, z)
+
+                            override fun setBlockImmediate(pos: BlockPosition, block: BlockState) =
+                                if (pos in chunkRegion) {
+                                    chunk.setBlockImmediate(pos, block)
+                                } else {
+                                    pos.y in -2032..2031
+                                }
+
+                            override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
+                                if (chunkRegion.contains(x, y, z)) {
+                                    chunk.setBlockImmediate(x, y, z, block)
+                                } else {
+                                    y in -2031..2031
+                                }
                         }, world, chunkX, chunkZ))
                         yield()
                     }
@@ -232,7 +242,7 @@ object WorldeditCommands {
                     )
                     var i = 0
                     (region - region.min).forEach { x, y, z ->
-                        clipboard.setBlock(x, y, z, world.getLoadedBlock(
+                        clipboard.setBlock(x, y, z, world.getBlockImmediate(
                             region.minX + x,
                             region.minY + y,
                             region.minZ + z
@@ -266,7 +276,7 @@ object WorldeditCommands {
                 val clipboard = WorldeditClipboard(region.size, region.min - source.entity.position.toBlockPosition())
                 var i = 0
                 (region - region.min).forEach { x, y, z ->
-                    clipboard.setBlock(x, y, z, world.getLoadedBlock(
+                    clipboard.setBlock(x, y, z, world.getBlockImmediate(
                         region.minX + x,
                         region.minY + y,
                         region.minZ + z

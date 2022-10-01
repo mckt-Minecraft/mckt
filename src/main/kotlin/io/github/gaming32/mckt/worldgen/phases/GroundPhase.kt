@@ -28,12 +28,12 @@ class GroundPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
             repeat(16) { z ->
                 val height = getHeight(absX, cz + z)
                 for (y in -2032 until height - 4) {
-                    chunk.setBlock(x, y, z, Blocks.STONE)
+                    chunk.setBlockImmediate(x, y, z, Blocks.STONE)
                 }
                 for (y in height - 4 until height) {
-                    chunk.setBlock(x, y, z, Blocks.DIRT)
+                    chunk.setBlockImmediate(x, y, z, Blocks.DIRT)
                 }
-                chunk.setBlock(x, height, z, Blocks.GRASS_BLOCK)
+                chunk.setBlockImmediate(x, height, z, Blocks.GRASS_BLOCK)
             }
         }
     }

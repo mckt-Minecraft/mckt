@@ -8,6 +8,7 @@ import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
@@ -22,6 +23,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.benwoodworth.knbt.*
 import net.kyori.adventure.text.Component
+import org.intellij.lang.annotations.MagicConstant
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.OutputStream
@@ -303,18 +305,44 @@ enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (Generato
     } } })
 }
 
-interface BlockAccess {
-    fun getBlock(x: Int, y: Int, z: Int): BlockState? = getBlock(BlockPosition(x, y, z))
+interface SuspendingBlockAccess {
+    suspend fun getBlock(x: Int, y: Int, z: Int): BlockState = getBlock(BlockPosition(x, y, z))
 
-    fun getBlock(location: BlockPosition): BlockState? = getBlock(location.x, location.y, location.z)
+    suspend fun getBlock(pos: BlockPosition): BlockState = getBlock(pos.x, pos.y, pos.z)
 
-    fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean = setBlock(BlockPosition(x, y, z), block)
+    suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean = setBlock(BlockPosition(x, y, z), block)
 
-    fun setBlock(location: BlockPosition, block: BlockState): Boolean =
-        setBlock(location.x, location.y, location.z, block)
+    suspend fun setBlock(pos: BlockPosition, block: BlockState): Boolean =
+        setBlock(pos.x, pos.y, pos.z, block)
 }
 
-class World(val server: MinecraftServer, val name: String) {
+interface BlockAccess : SuspendingBlockAccess {
+    override suspend fun getBlock(pos: BlockPosition) = super.getBlock(pos)
+    override suspend fun getBlock(x: Int, y: Int, z: Int) = super.getBlock(x, y, z)
+    override suspend fun setBlock(pos: BlockPosition, block: BlockState) = super.setBlock(pos, block)
+    override suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) = super.setBlock(x, y, z, block)
+
+    fun getBlockImmediate(x: Int, y: Int, z: Int): BlockState = getBlockImmediate(BlockPosition(x, y, z))
+
+    fun getBlockImmediate(pos: BlockPosition): BlockState =
+        getBlockImmediate(pos.x, pos.y, pos.z)
+
+    fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState): Boolean =
+        setBlockImmediate(BlockPosition(x, y, z), block)
+
+    fun setBlockImmediate(pos: BlockPosition, block: BlockState): Boolean =
+        setBlockImmediate(pos.x, pos.y, pos.z, block)
+}
+
+object SetBlockFlags {
+    const val PERFORM_BLOCK_UPDATE = 0x1
+
+    const val REQUIRES_SUSPEND = PERFORM_BLOCK_UPDATE
+    const val DEFAULT_FLAGS = 0
+    const val DEFAULT_IMMEDIATE_FLAGS = DEFAULT_FLAGS and REQUIRES_SUSPEND.inv()
+}
+
+class World(val server: MinecraftServer, val name: String) : BlockAccess {
     val worldDir = File("worlds", name).apply { mkdirs() }
     val metaFile = File(worldDir, "meta.json")
     val playersDir = File(worldDir, "players").apply { mkdirs() }
@@ -341,11 +369,6 @@ class World(val server: MinecraftServer, val name: String) {
 
     val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
 
-    private val loadedAccessor = object : BlockAccess {
-        override fun getBlock(x: Int, y: Int, z: Int) = getLoadedBlockOrNull(x, y, z)
-        override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) = setLoadedBlock(x, y, z, block)
-    }
-
     suspend fun getRegion(x: Int, z: Int) = coroutineScope {
         var region = openRegions[x, z]
         if (region == null) {
@@ -369,36 +392,82 @@ class World(val server: MinecraftServer, val name: String) {
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
 
-    suspend fun getBlock(x: Int, y: Int, z: Int) =
-        getRegion(x shr 9, z shr 9).getBlock(x and 511, y, z and 511)
-
-    suspend fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
+    override suspend fun getBlock(x: Int, y: Int, z: Int) =
+        getRegion(x shr 9, z shr 9).getBlockImmediate(x and 511, y, z and 511)
 
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlockOrGenerate(x and 511, y, z and 511)
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    fun getLoadedBlockOrNull(x: Int, y: Int, z: Int) = openRegions[x shr 9, z shr 9]?.getBlock(x and 511, y, z and 511)
+    fun getBlockImmediateOrNull(x: Int, y: Int, z: Int) = openRegions[x shr 9, z shr 9]?.getBlockImmediate(x and 511, y, z and 511)
 
-    fun getLoadedBlockOrNull(pos: BlockPosition) = getLoadedBlockOrNull(pos.x, pos.y, pos.z)
+    fun getBlockImmediateOrNull(pos: BlockPosition) = getBlockImmediateOrNull(pos.x, pos.y, pos.z)
 
-    fun getLoadedBlock(x: Int, y: Int, z: Int) =
-        getLoadedBlockOrNull(x, y, z)
-            ?: throw IllegalStateException("Failed to get unloaded block $x $y $z")
+    override fun getBlockImmediate(x: Int, y: Int, z: Int) = getBlockImmediateOrNull(x, y, z) ?: Blocks.AIR
 
-    fun getLoadedBlock(pos: BlockPosition) = getLoadedBlock(pos.x, pos.y, pos.z)
+    suspend fun setBlock(
+        pos: BlockPosition, block: BlockState,
+        @MagicConstant(valuesFromClass = SetBlockFlags::class) flags: Int,
+        maxUpdateDepth: Int = 512
+    ): Boolean {
+        if (maxUpdateDepth <= 0) return false
+        if (!getRegion(pos.x shr 9, pos.z shr 9).setBlockImmediate(pos.x and 511, pos.y, pos.z and 511, block)) {
+            return false
+        }
+        if ((flags and SetBlockFlags.PERFORM_BLOCK_UPDATE) != 0) {
+            Direction.values().forEach { direction ->
+                val neighborPos = pos + direction.vector
+                val oldState = getBlock(neighborPos)
+                val newState = oldState.getStateForNeighborUpdate(
+                    server, direction.opposite, block, this, pos, neighborPos
+                )
+                if (newState != oldState) {
+                    if (newState == Blocks.AIR) {
+                        breakBlock(neighborPos, maxUpdateDepth)
+                    } else {
+                        setBlock(neighborPos, newState, flags, maxUpdateDepth - 1)
+                    }
+                }
+            }
+        }
+        return true
+    }
 
-    suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-        getRegion(x shr 9, z shr 9).setBlock(x and 511, y, z and 511, block)
+    suspend fun setBlock(
+        x: Int, y: Int, z: Int, block: BlockState,
+        @MagicConstant(valuesFromClass = SetBlockFlags::class) flags: Int
+    ) = setBlock(BlockPosition(x, y, z), block, flags)
 
-    suspend fun setBlock(pos: BlockPosition, block: BlockState) = setBlock(pos.x, pos.y, pos.z, block)
+    suspend fun breakBlock(pos: BlockPosition, maxUpdateDepth: Int = 512) {
+        val block = getBlock(pos)
+//        if (block.getHandler(server) !is FireBlockHandler) {
+            server.broadcast(WorldEventPacket(WorldEventPacket.BREAK_BLOCK, pos, block.globalId))
+//        }
+        setBlock(pos, block, SetBlockFlags.PERFORM_BLOCK_UPDATE, maxUpdateDepth)
+    }
 
-    fun setLoadedBlock(x: Int, y: Int, z: Int, block: BlockState) =
-        openRegions[x shr 9, z shr 9]?.setBlock(x and 511, y, z and 511, block)
-            ?: throw IllegalStateException("Failed to set unloaded block $x $y $z")
+    override suspend fun setBlock(pos: BlockPosition, block: BlockState) =
+        setBlock(pos, block, SetBlockFlags.DEFAULT_FLAGS)
 
-    fun setLoadedBlock(pos: BlockPosition, block: BlockState) = setLoadedBlock(pos.x, pos.y, pos.z, block)
+    fun setBlockImmediate(
+        x: Int, y: Int, z: Int, block: BlockState,
+        @MagicConstant(valuesFromClass = SetBlockFlags::class) flags: Int
+    ): Boolean {
+        if ((flags and SetBlockFlags.REQUIRES_SUSPEND) != 0) {
+            throw IllegalArgumentException("Some flags passed to setBlockImmediate require setBlock")
+        }
+        if (openRegions[x shr 9, z shr 9]?.setBlockImmediate(x and 511, y, z and 511, block) != true) return false
+        return true
+    }
+
+    fun setBlockImmediate(
+        pos: BlockPosition, block: BlockState,
+        @MagicConstant(valuesFromClass = SetBlockFlags::class) flags: Int
+    ) = setBlockImmediate(pos.x, pos.y, pos.z, block, flags)
+
+    override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
+        setBlockImmediate(x, y, z, block, SetBlockFlags.DEFAULT_IMMEDIATE_FLAGS)
 
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {
@@ -431,8 +500,6 @@ class World(val server: MinecraftServer, val name: String) {
     fun isChunkLoaded(chunkX: Int, chunkZ: Int) = isRegionLoaded(chunkX shr 5, chunkZ shr 5)
 
     fun isRegionLoaded(regionX: Int, regionZ: Int) = openRegions.contains(regionX, regionZ)
-
-    fun toBlockAccess() = loadedAccessor
 
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun saveAndLog(commandSource: CommandSource = server.serverCommandSender) = coroutineScope {
@@ -496,15 +563,16 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
 
     suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
 
-    override fun getBlock(x: Int, y: Int, z: Int) = chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlock(x and 15, y, z and 15)
+    override fun getBlockImmediate(x: Int, y: Int, z: Int) =
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlockImmediate(x and 15, y, z and 15) ?: Blocks.AIR
 
     suspend fun getBlockOrGenerate(x: Int, y: Int, z: Int) =
-        getChunkOrGenerate(x shr 4, z shr 4).getBlock(x and 15, y, z and 15)
+        getChunkOrGenerate(x shr 4, z shr 4).getBlockImmediate(x and 15, y, z and 15)
 
     suspend fun getBlockOrGenerate(pos: BlockPosition) = getBlockOrGenerate(pos.x, pos.y, pos.z)
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
-        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlock(x and 15, y, z and 15, block) ?: false
+    override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
+        chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlockImmediate(x and 15, y, z and 15, block) ?: false
 
     internal fun toData(): RegionData {
         val chunksPresent = BitSet(chunks.size)
@@ -559,13 +627,13 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
-    override fun getBlock(x: Int, y: Int, z: Int): BlockState {
+    override fun getBlockImmediate(x: Int, y: Int, z: Int): BlockState {
         if (y < -2032 || y > 2031) return Blocks.AIR
         val section = sections[(y shr 4) + 127] ?: return Blocks.AIR
         return section.getBlock(x, y and 15, z)
     }
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState): Boolean {
+    override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState): Boolean {
         if (y < -2032 || y > 2031) return false
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
@@ -792,10 +860,16 @@ class PlayerData(
 data class BlocksView(val inner: BlockAccess, val offsetX: Int, val offsetY: Int, val offsetZ: Int) : BlockAccess {
     constructor(inner: BlockAccess, offset: BlockPosition) : this(inner, offset.x, offset.y, offset.z)
 
-    override fun getBlock(x: Int, y: Int, z: Int) = inner.getBlock(x + offsetX, y + offsetY, z + offsetZ)
+    override suspend fun getBlock(x: Int, y: Int, z: Int) = inner.getBlock(x + offsetX, y + offsetY, z + offsetZ)
 
-    override fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
+    override suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) =
         inner.setBlock(x + offsetX, y + offsetY, z + offsetZ, block)
+
+    override fun getBlockImmediate(x: Int, y: Int, z: Int) =
+        inner.getBlockImmediate(x + offsetX, y + offsetY, z + offsetZ)
+
+    override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
+        inner.setBlockImmediate(x + offsetX, y + offsetY, z + offsetZ, block)
 }
 
 object EntityFlags {

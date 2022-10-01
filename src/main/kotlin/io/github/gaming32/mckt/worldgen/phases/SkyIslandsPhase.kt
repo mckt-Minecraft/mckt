@@ -38,12 +38,12 @@ class SkyIslandsPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generato
                 if (islandHeight > surfaceHeight) return@zLoop
                 for (y in islandHeight until surfaceHeight) {
                     if (surfaceHeight - y < 4) {
-                        chunk.setBlock(x, y, z, Blocks.DIRT)
+                        chunk.setBlockImmediate(x, y, z, Blocks.DIRT)
                     } else {
-                        chunk.setBlock(x, y, z, Blocks.STONE)
+                        chunk.setBlockImmediate(x, y, z, Blocks.STONE)
                     }
                 }
-                chunk.setBlock(x, surfaceHeight, z, Blocks.GRASS_BLOCK)
+                chunk.setBlockImmediate(x, surfaceHeight, z, Blocks.GRASS_BLOCK)
             }
         }
     }
