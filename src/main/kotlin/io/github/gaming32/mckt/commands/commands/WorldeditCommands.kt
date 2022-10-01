@@ -32,6 +32,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Set position 1")
 
         override fun buildTree() = literal<CommandSource>("/pos1")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 source.entity.worldeditSession.setPos1(source.entity.position.toBlockPosition())
                 0
@@ -48,6 +49,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Set position 2")
 
         override fun buildTree() = literal<CommandSource>("/pos2")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 source.entity.worldeditSession.setPos2(source.entity.position.toBlockPosition())
                 0
@@ -64,6 +66,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Set the selection to your current chunk.")
 
         override fun buildTree() = literal<CommandSource>("/chunk")
+            .requires { it.hasPermission(1) }
             .executesSuspend { selectChunk(source.entity.position.toBlockPosition()) }
             .then(argument<CommandSource, PositionArgument>("location", BlockPositionArgumentType)
                 .executesSuspend { selectChunk(getBlockPosition("location")) }
@@ -83,6 +86,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Get the wand item")
 
         override fun buildTree() = literal<CommandSource>("/wand")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 source.entity.setInventorySlot(source.entity.data.selectedInventorySlot, createWand())
                 0
@@ -93,6 +97,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Get information about the selection")
 
         override fun buildTree() = literal<CommandSource>("/size")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 val region = source.entity.worldeditSession.selection
                 if (region == null) {
@@ -112,6 +117,7 @@ object WorldeditCommands {
         override val aliases = listOf(";", "/desel", "/deselect")
 
         override fun buildTree() = literal<CommandSource>("/sel")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 source.entity.worldeditSession.clear()
                 source.reply(Component.text("Selection cleared"))
@@ -123,6 +129,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Sets all the blocks in the region")
 
         override fun buildTree() = literal<CommandSource>("/set")
+            .requires { it.hasPermission(1) }
             .then(argument<CommandSource, BlockState>("block", BlockStateArgumentType)
                 .executesSuspend {
                     val region = source.selection
@@ -149,6 +156,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Regenerates the contents of the selection")
 
         override fun buildTree() = literal<CommandSource>("/regen")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 val world = source.server.world
                 generate(world, world.worldGenerator)
@@ -201,6 +209,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Copy the selection to the clipboard")
 
         override fun buildTree() = literal<CommandSource>("/copy")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 val region = source.selection
                 val world = source.server.world
@@ -227,6 +236,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Copy the selection to the clipboard")
 
         override fun buildTree() = literal<CommandSource>("/cut")
+            .requires { it.hasPermission(1) }
             .executesSuspend { cut(Blocks.AIR) }
             .then(argument<CommandSource, BlockState>("replacement", BlockStateArgumentType)
                 .executesSuspend { cut(getBlockState("replacement")) }
@@ -264,6 +274,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Paste the clipboard's contents")
 
         override fun buildTree() = literal<CommandSource>("/paste")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 val clipboard = source.clipboard
                 val origin = source.entity.position.toBlockPosition() + clipboard.pasteOffset
@@ -285,6 +296,7 @@ object WorldeditCommands {
         override val helpText = Component.text("Clear your clipboard")
 
         override fun buildTree() = literal<CommandSource>("clearclipboard")
+            .requires { it.hasPermission(1) }
             .executesSuspend {
                 source.entity.worldeditSession.clipboard = null
                 source.reply(Component.text("Cleared your clipboard"))
