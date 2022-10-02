@@ -14,7 +14,7 @@ class PalettedStorage<V>(
     private val defaultValue: V,
     private val encoder: OutputStream.(V) -> Unit
 ) {
-    private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
+    internal var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
         valueToKeyDefaultReturnValue = -1
     }
     internal var storage = SimpleBitStorage(4, size)

@@ -256,3 +256,9 @@ fun BigInteger.coerceToInt() = when {
     this < Int.MIN_VALUE.toBigInteger() -> Int.MIN_VALUE
     else -> this.toInt()
 }
+
+fun <T> MutableList<T>.swap(idx1: Int, idx2: Int) {
+    if (idx1 != idx2) {
+        this[idx1] = set(idx2, this[idx1])
+    }
+}

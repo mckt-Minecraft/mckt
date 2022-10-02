@@ -3,6 +3,7 @@ package io.github.gaming32.mckt
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
@@ -215,7 +216,7 @@ class MinecraftServer(
     private suspend fun syncDirtyBlocks() = coroutineScope {
         val sections = mutableMapOf<BlockPosition, MutableMap<BlockPosition, BlockState>>()
         world.dirtyBlocks.forEach {
-            sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = world.getBlock(it) ?: return@forEach
+            sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = world.getBlock(it)
         }
         if (world.dirtyBlocks.size < 2 shl 16) {
             world.dirtyBlocks.clear()
@@ -304,6 +305,22 @@ class MinecraftServer(
                     0
                 }
             )
+            .then(literal<CommandSource>("palette-info")
+                .then(argument<CommandSource, PositionArgument>("pos", BlockPositionArgumentType)
+                    .executesSuspend {
+                        val pos = getLoadedBlockPosition("pos")
+                        val palette = world
+                            .getChunk(pos.x shr 4, pos.z shr 4)
+                            ?.getSection(pos.y shr 4)
+                            ?.data?.palette?.values ?: setOf()
+                        source.reply(Component.text("The section has a palette of size ${palette.size}:"))
+                        palette.forEach {
+                            source.reply(Component.text("  + $it"))
+                        }
+                        palette.size
+                    }
+                )
+            )
         )
     }
 
@@ -339,6 +356,9 @@ class MinecraftServer(
                     .map(Identifier::parse)
                     .toSet()
             )
+        }
+        registerCustomPacketHandler("worldedit:cui") { _, client, input ->
+            LOGGER.info("CUI Packet from ${client.username}: ${input.readAvailable().toString(Charsets.US_ASCII)}")
         }
     }
 
