@@ -65,7 +65,7 @@ private val STYLES = listOf(
     AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW),
     AttributedStyle.DEFAULT.foreground(AttributedStyle.MAGENTA)
 )
-internal val DEBUG = java.lang.Boolean.getBoolean("mckt.debug")
+internal val DEBUG = System.getProperty("mckt.debug").toBoolean()
 
 typealias CustomPacketHandler = suspend (channel: Identifier, client: PlayClient, input: InputStream) -> Unit
 
@@ -313,7 +313,7 @@ class MinecraftServer(
                         val palette = world
                             .getChunk(pos.x shr 4, pos.z shr 4)
                             ?.getSection(pos.y shr 4)
-                            ?.data?.palette?.values ?: setOf()
+                            ?.data?.paletteItems?.toSet() ?: setOf()
                         source.reply(Component.text("The section has a palette of size ${palette.size}:"))
                         palette.forEach {
                             source.reply(Component.text("  + $it"))

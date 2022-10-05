@@ -14,7 +14,7 @@ class PalettedStorage<V>(
     private val defaultValue: V,
     private val encoder: OutputStream.(V) -> Unit
 ) {
-    internal var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
+    private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
         valueToKeyDefaultReturnValue = -1
     }
     internal var storage = SimpleBitStorage(4, size)
@@ -47,12 +47,12 @@ class PalettedStorage<V>(
         storage[index] = paletteIndex
     }
 
-    fun getPaletteItems() = (0 until palette.size).asSequence().map { palette.getValue(it) }
+    val paletteItems: Sequence<V> get() = (0 until palette.size).asSequence().map { palette.getValue(it)!! }
 
     fun encode(out: OutputStream) {
         out.writeByte(storage.bits)
         out.writeVarInt(palette.size)
-        palette.values.forEach { out.encoder(it) }
+        paletteItems.forEach { out.encoder(it) }
         val longs = storage.data
         out.writeVarInt(longs.size)
         longs.forEach { out.writeLong(it) }
