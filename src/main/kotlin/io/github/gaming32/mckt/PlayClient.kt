@@ -11,14 +11,18 @@ import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.data.encodeData
+import io.github.gaming32.mckt.data.readIdentifierArray
+import io.github.gaming32.mckt.data.writeIdentifierArray
 import io.github.gaming32.mckt.data.writeString
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.Packet
 import io.github.gaming32.mckt.packet.PacketState
+import io.github.gaming32.mckt.packet.login.c2s.LoginPluginResponsePacket
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginDisconnectPacket
+import io.github.gaming32.mckt.packet.login.s2c.LoginPluginRequestPacket
 import io.github.gaming32.mckt.packet.login.s2c.LoginSuccessPacket
 import io.github.gaming32.mckt.packet.login.s2c.SetCompressionPacket
 import io.github.gaming32.mckt.packet.play.KeepAlivePacket
@@ -113,6 +117,8 @@ class PlayClient(
 
     var lastEquipment = mapOf<EquipmentSlot, ItemStack>()
 
+    var hasFabricApi = false
+        private set
     val supportedChannels = mutableSetOf<Identifier>()
 
     private val markers = mutableMapOf<Identifier, WritableBlockMarker>()
@@ -120,26 +126,64 @@ class PlayClient(
     val horizontalFacing get() = Direction.fromYaw(data.yaw)
 
     suspend fun handshake() {
-        val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
-        if (loginStart == null) {
-            sendPacket(LoginDisconnectPacket(Component.text("Unexpected packet")))
+        try {
+            val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
+            if (loginStart == null) {
+                sendPacket(LoginDisconnectPacket(Component.text("Unexpected packet")))
+                socket.dispose()
+                return
+            }
+            username = loginStart.username
+            if (!(username matches USERNAME_REGEX)) {
+                sendPacket(
+                    LoginDisconnectPacket(Component.text("Username doesn't match regex $USERNAME_REGEX"))
+                )
+                socket.dispose()
+                return
+            }
+            uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".encodeToByteArray())
+            val useCompression = server.config.networkCompressionThreshold
+            if (useCompression != -1) {
+                sendPacket(SetCompressionPacket(useCompression))
+                compression = useCompression
+            }
+
+            sendPacket(LoginPluginRequestPacket(0, Identifier("fabric-networking-api-v1", "early_registration")) {
+                writeIdentifierArray(listOf())
+            })
+            val earlyRegistrationResponse =
+                PacketState.LOGIN.readPacket<LoginPluginResponsePacket>(receiveChannel, useCompression != -1)
+            if (earlyRegistrationResponse == null) {
+                sendPacket(LoginDisconnectPacket(Component.text("Expected response to plugin request packet")))
+                socket.dispose()
+                return
+            }
+            if (earlyRegistrationResponse.messageId != 0) {
+                sendPacket(LoginDisconnectPacket(
+                    Component.text("Unexpected message ID: ${earlyRegistrationResponse.messageId}")
+                ))
+                socket.dispose()
+                return
+            }
+            if (earlyRegistrationResponse.understood) {
+                hasFabricApi = true
+                try {
+                    supportedChannels += ByteArrayInputStream(earlyRegistrationResponse.data).readIdentifierArray()
+                } catch (_: EOFException) {
+                    sendPacket(LoginDisconnectPacket(
+                        Component.text("Unexpected end of data in plugin response")
+                    ))
+                    socket.dispose()
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            LOGGER.error("Unexpected error during client login", e)
+            sendPacket(LoginDisconnectPacket(Component.text(e.toString(), NamedTextColor.RED)))
             socket.dispose()
             return
         }
-        username = loginStart.username
-        if (!(username matches USERNAME_REGEX)) {
-            sendPacket(
-                LoginDisconnectPacket(Component.text("Username doesn't match regex $USERNAME_REGEX"))
-            )
-            socket.dispose()
-            return
-        }
-        uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".encodeToByteArray())
-        val useCompression = server.config.networkCompressionThreshold
-        if (useCompression != -1) {
-            sendPacket(SetCompressionPacket(useCompression))
-            compression = useCompression
-        }
+
         sendPacket(LoginSuccessPacket(uuid, username))
 
         dataFile = File(server.world.playersDir, "$username.json")
@@ -154,7 +198,6 @@ class PlayClient(
         }
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     suspend fun postHandshake() = coroutineScope {
         sendPacket(PlayLoginPacket(
             entityId = entityId,

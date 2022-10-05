@@ -42,12 +42,6 @@ fun InputStream.readFully(b: ByteArray, off: Int, len: Int) {
     }
 }
 
-fun InputStream.readAvailable(): ByteArray {
-    val result = ByteArray(available())
-    readFully(result)
-    return result
-}
-
 fun InputStream.readByte(): Byte {
     val result = read()
     if (result < 0) {
@@ -137,6 +131,8 @@ fun InputStream.readByteArray() = ByteArray(readVarInt()).also { readFully(it) }
 
 fun InputStream.readLongArray() = LongArray(readVarInt()) { readLong() }
 
+inline fun <reified T> InputStream.readArray(reader: InputStream.() -> T) = Array(readVarInt()) { reader() }
+
 fun InputStream.readString(maxLength: Int = 32767): String {
     val length = readVarInt()
     if (length > maxLength) {
@@ -150,6 +146,8 @@ fun InputStream.readString(maxLength: Int = 32767): String {
 fun InputStream.readText() = GsonComponentSerializer.gson().deserialize(readString(262144))
 
 fun InputStream.readIdentifier() = Identifier.parse(readString(32767))
+
+fun InputStream.readIdentifierArray() = readArray { readIdentifier() }
 
 inline fun <reified T : Enum<T>> InputStream.readEnum() = enumValues<T>()[readVarInt()]
 

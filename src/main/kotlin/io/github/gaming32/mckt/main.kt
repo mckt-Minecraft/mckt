@@ -254,6 +254,7 @@ class MinecraftServer(
         for (alias in aliases) {
             registerCommand(description, literal<CommandSource>(alias)
                 .requires(commandNode.requirement)
+                .executes(commandNode.command)
                 .redirect(commandNode)
             )
         }
@@ -337,11 +338,21 @@ class MinecraftServer(
 
     private fun registerCustomPacketHandlers() {
         registerCustomPacketHandler("brand") { _, client, input ->
-            client.brand = input.readString()
+            val brand = input.readString()
+            client.brand = brand
+            if (client.hasFabricApi && brand == "vanilla") {
+                val message = "${client.username} says their client is Vanilla, but they have Fabric API installed."
+                LOGGER.warn(message)
+                if (config.enableVanillaClientSpoofAlerts) {
+                    broadcast(SystemChatPacket(
+                        Component.text(message, NamedTextColor.YELLOW)
+                    )) { it.data.operatorLevel >= 2 }
+                }
+            }
         }
         registerCustomPacketHandler("register") { _, client, input ->
             client.supportedChannels.addAll(
-                input.readAvailable()
+                input.readBytes()
                     .toString(Charsets.US_ASCII)
                     .split(0.toChar())
                     .asSequence()
@@ -350,7 +361,7 @@ class MinecraftServer(
         }
         registerCustomPacketHandler("unregister") { _, client, input ->
             client.supportedChannels.removeAll(
-                input.readAvailable()
+                input.readBytes()
                     .toString(Charsets.US_ASCII)
                     .split(0.toChar())
                     .asSequence()
@@ -359,7 +370,7 @@ class MinecraftServer(
             )
         }
         registerCustomPacketHandler("worldedit:cui") { _, client, input ->
-            LOGGER.info("CUI Packet from ${client.username}: ${input.readAvailable().toString(Charsets.US_ASCII)}")
+            LOGGER.info("CUI Packet from ${client.username}: ${input.readBytes().toString(Charsets.US_ASCII)}")
         }
     }
 

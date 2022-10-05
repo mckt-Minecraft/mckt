@@ -323,10 +323,10 @@ interface SuspendingBlockAccess {
 }
 
 interface BlockAccess : SuspendingBlockAccess {
-    override suspend fun getBlock(pos: BlockPosition) = super.getBlock(pos)
-    override suspend fun getBlock(x: Int, y: Int, z: Int) = super.getBlock(x, y, z)
-    override suspend fun setBlock(pos: BlockPosition, block: BlockState) = super.setBlock(pos, block)
-    override suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) = super.setBlock(x, y, z, block)
+    override suspend fun getBlock(x: Int, y: Int, z: Int) = getBlockImmediate(x, y, z)
+    override suspend fun getBlock(pos: BlockPosition) = getBlockImmediate(pos)
+    override suspend fun setBlock(x: Int, y: Int, z: Int, block: BlockState) = setBlockImmediate(x, y, z, block)
+    override suspend fun setBlock(pos: BlockPosition, block: BlockState) = setBlockImmediate(pos, block)
 
     fun getBlockImmediate(x: Int, y: Int, z: Int): BlockState = getBlockImmediate(BlockPosition(x, y, z))
 
@@ -750,7 +750,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         data.compact()
         return SectionData(
             blockCount,
-            data.getPaletteItems()
+            data.paletteItems
                 .map { it!!.toMap() }
                 .toList(),
             data.storage

@@ -2,6 +2,7 @@ package io.github.gaming32.mckt.packet
 
 import io.github.gaming32.mckt.data.readVarInt
 import io.github.gaming32.mckt.getLogger
+import io.github.gaming32.mckt.packet.login.c2s.LoginPluginResponsePacket
 import io.github.gaming32.mckt.packet.login.c2s.LoginStartPacket
 import io.github.gaming32.mckt.packet.play.KeepAlivePacket
 import io.github.gaming32.mckt.packet.play.PlayCustomPacket
@@ -24,7 +25,8 @@ enum class PacketState(private val packets: Map<Int, (InputStream) -> Packet>) {
         /* 0x01 */ StatusPingPacket.TYPE to ::StatusPingPacket
     )),
     LOGIN(mapOf(
-        /* 0x00 */ LoginStartPacket.TYPE to ::LoginStartPacket
+        /* 0x00 */ LoginStartPacket.TYPE to ::LoginStartPacket,
+        /* 0x02 */ LoginPluginResponsePacket.TYPE to ::LoginPluginResponsePacket
     )),
     PLAY(mapOf(
         /* 0x00 */ ConfirmTeleportationPacket.TYPE to ::ConfirmTeleportationPacket,

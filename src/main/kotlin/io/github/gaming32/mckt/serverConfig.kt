@@ -49,5 +49,6 @@ class ServerConfig(
     var defaultWorldGenerator: WorldGenerator = WorldGenerator.NORMAL,
     var defaultSaveFormat: SaveFormat = SaveFormat.NBT,
     var networkCompressionThreshold: Int = 256,
-    var autosavePeriod: Int = 6000
+    var autosavePeriod: Int = 6000,
+    var enableVanillaClientSpoofAlerts: Boolean = true
 )
