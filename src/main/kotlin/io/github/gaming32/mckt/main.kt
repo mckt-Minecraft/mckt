@@ -65,6 +65,7 @@ private val STYLES = listOf(
     AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW),
     AttributedStyle.DEFAULT.foreground(AttributedStyle.MAGENTA)
 )
+internal val DEBUG = java.lang.Boolean.getBoolean("mckt.debug")
 
 typealias CustomPacketHandler = suspend (channel: Identifier, client: PlayClient, input: InputStream) -> Unit
 
@@ -377,6 +378,8 @@ class MinecraftServer(
                 registerBlockHandler(SaplingBlockHandler, it)
             } else if (it.value.endsWith("glass_pane")) {
                 registerBlockHandler(PaneBlockHandler, it)
+            } else if (it.value.endsWith("_door")) {
+                registerBlockHandler(DoorBlockHandler, it)
             }
         }
         registerBlockHandler(PaneBlockHandler, Identifier("iron_bars"))

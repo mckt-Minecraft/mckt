@@ -3,7 +3,6 @@ package io.github.gaming32.mckt.items
 import io.github.gaming32.mckt.GlobalPalette
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
-import io.github.gaming32.mckt.mod
 import io.github.gaming32.mckt.objects.*
 import kotlinx.coroutines.CoroutineScope
 import net.kyori.adventure.text.Component
@@ -83,7 +82,7 @@ object DebugStickItemHandler : ItemHandler() {
     ): BlockState {
         val possibleValues = properties[property] ?: listOf()
         val currentIndex = possibleValues.indexOf(state.properties[property])
-        return state.with(property, possibleValues[(currentIndex + if (inverse) -1 else 1) mod possibleValues.size])
+        return state.with(property, possibleValues[(currentIndex + if (inverse) -1 else 1).mod(possibleValues.size)])
     }
 
     private fun cycle(
@@ -93,6 +92,6 @@ object DebugStickItemHandler : ItemHandler() {
     ): String {
         val possibleValues = properties.keys.toTypedArray()
         val currentIndex = possibleValues.indexOf(property)
-        return possibleValues[(currentIndex + if (inverse) -1 else 1) mod possibleValues.size]
+        return possibleValues[(currentIndex + if (inverse) -1 else 1).mod(possibleValues.size)]
     }
 }

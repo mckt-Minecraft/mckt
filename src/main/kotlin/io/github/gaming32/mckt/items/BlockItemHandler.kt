@@ -68,12 +68,12 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
     }
 
     open suspend fun place(ctx: ItemPlacementContext, state: BlockState, scope: CoroutineScope) =
-        ctx.world.setBlock(ctx.location, state, SetBlockFlags.PERFORM_BLOCK_UPDATE)
+        ctx.world.setBlock(ctx.location, state, SetBlockFlags.PERFORM_NEIGHBOR_UPDATE)
 
     open suspend fun getPlacementContext(ctx: ItemPlacementContext, scope: CoroutineScope): ItemPlacementContext? = ctx
 
     open suspend fun getPlacementState(ctx: ItemPlacementContext, scope: CoroutineScope) =
-        ctx.server.getBlockHandler(block).getPlacementState(block, ctx, scope)
+        ctx.server.getBlockHandler(block).getPlacementState(block, ctx)
 
     private suspend fun placeFromTag(
         location: BlockPosition,
@@ -96,7 +96,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
             }
         }
         if (newState != state) {
-            world.setBlock(location, newState, SetBlockFlags.PERFORM_BLOCK_UPDATE)
+            world.setBlock(location, newState, 0)
         }
         return newState
     }

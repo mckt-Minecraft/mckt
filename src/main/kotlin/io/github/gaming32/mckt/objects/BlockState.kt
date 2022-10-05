@@ -238,11 +238,27 @@ class BlockState internal constructor(
         getHandler(ctx.server).canReplace(this, ctx)
 
     suspend fun getStateForNeighborUpdate(
-        server: MinecraftServer,
         direction: Direction,
         neighborState: BlockState,
         world: World,
         pos: BlockPosition,
         neighborPos: BlockPosition
-    ) = getHandler(server).getStateForNeighborUpdate(this, direction, neighborState, world, pos, neighborPos)
+    ) = getHandler(world.server).getStateForNeighborUpdate(this, direction, neighborState, world, pos, neighborPos)
+
+    suspend fun canPlaceAt(world: World, pos: BlockPosition) = getHandler(world.server).canPlaceAt(this, world, pos)
+
+    suspend fun prepare(
+        world: World,
+        pos: BlockPosition,
+        flags: Int,
+        maxUpdateDepth: Int = 512
+    ) = getHandler(world.server).prepare(this, world, pos, flags, maxUpdateDepth)
+
+    suspend fun neighborUpdate(
+        world: World,
+        pos: BlockPosition,
+        block: Identifier,
+        fromPos: BlockPosition,
+        notify: Boolean
+    ) = getHandler(world.server).neighborUpdate(this, world, pos, block, fromPos, notify)
 }

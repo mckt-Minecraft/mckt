@@ -237,9 +237,6 @@ inline fun <reified T> Any?.cast() = this as T
 
 fun Random.nextTriangular(mode: Double, deviation: Double) = mode + deviation * (nextDouble() - nextDouble())
 
-@Suppress("NOTHING_TO_INLINE")
-inline infix fun Int.mod(other: Int) = builtinMod(other)
-
 fun setColorAlpha(rgb: Int, alpha: Int): Int {
     require(alpha in 0..255) { "Alpha not in range 0..255" }
     return rgb and 0xffffff or (alpha shl 24)

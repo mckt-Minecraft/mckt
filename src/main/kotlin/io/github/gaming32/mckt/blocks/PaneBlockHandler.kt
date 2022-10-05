@@ -8,13 +8,11 @@ import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.objects.Identifier
-import kotlinx.coroutines.CoroutineScope
 
 object PaneBlockHandler : BlockHandler() {
     override suspend fun getPlacementState(
         block: Identifier,
-        ctx: BlockItemHandler.ItemPlacementContext,
-        scope: CoroutineScope
+        ctx: BlockItemHandler.ItemPlacementContext
     ): BlockState {
         val state = DEFAULT_BLOCKSTATES[block]!!
         val world = ctx.world

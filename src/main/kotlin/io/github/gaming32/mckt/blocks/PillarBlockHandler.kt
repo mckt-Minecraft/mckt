@@ -7,13 +7,11 @@ import io.github.gaming32.mckt.objects.Axis.Companion.toAxis
 import io.github.gaming32.mckt.objects.BlockRotation
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
-import kotlinx.coroutines.CoroutineScope
 
 object PillarBlockHandler : BlockHandler() {
     override suspend fun getPlacementState(
         block: Identifier,
-        ctx: BlockItemHandler.ItemPlacementContext,
-        scope: CoroutineScope
+        ctx: BlockItemHandler.ItemPlacementContext
     ) = GlobalPalette.DEFAULT_BLOCKSTATES[block]?.with("axis", ctx.side.axis.name.lowercase())
 
     override fun rotate(state: BlockState, rotation: BlockRotation) = when (rotation) {

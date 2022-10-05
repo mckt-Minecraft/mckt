@@ -1,5 +1,8 @@
 package io.github.gaming32.mckt.objects
 
+import kotlin.math.abs
+import kotlin.math.floor
+
 enum class Direction(
     val axis: Axis,
     val direction: Int
@@ -10,6 +13,14 @@ enum class Direction(
     SOUTH(Axis.Z, 1),
     WEST(Axis.X, -1),
     EAST(Axis.X, 1);
+
+    companion object {
+        private val HORIZONTAL = arrayOf(SOUTH, WEST, NORTH, EAST)
+
+        fun fromHorizontal(id: Int) = HORIZONTAL[abs(id % HORIZONTAL.size)]
+
+        fun fromYaw(yaw: Float) = fromHorizontal(floor(yaw / 90f + 0.5f).toInt() and 3)
+    }
 
     val vector get() = axis.direction(direction)
     val opposite get() = values()[if ((ordinal and 1) == 0) ordinal + 1 else ordinal - 1]

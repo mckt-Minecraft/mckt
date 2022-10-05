@@ -255,8 +255,7 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
 
 object Blocks {
     private fun getBlock(id: String) =
-        DEFAULT_BLOCKSTATES[Identifier.parse(id)]
-            ?: throw Error("Standard block $id not found")
+        DEFAULT_BLOCKSTATES[Identifier.parse(id)] ?: throw Error("Standard block $id not found")
 
     val AIR = getBlock("air")
     val STONE = getBlock("stone")
@@ -272,6 +271,13 @@ object Blocks {
     val FIRE = getBlock("fire")
     val BIRCH_LOG = getBlock("birch_log")
     val BIRCH_LEAVES = getBlock("birch_leaves")
+}
+
+object Materials {
+    private fun getMaterial(name: String) =
+        BLOCK_MATERIALS[name] ?: throw Error("Standard block $name not found")
+
+    val METAL = getMaterial("metal")
 }
 
 data class GeneratorArgs(
@@ -335,11 +341,10 @@ interface BlockAccess : SuspendingBlockAccess {
 }
 
 object SetBlockFlags {
-    const val PERFORM_BLOCK_UPDATE = 0x1
+    const val PERFORM_NEIGHBOR_UPDATE = 0x01
+    const val NO_BLOCK_UPDATE = 0x10
 
-    const val REQUIRES_SUSPEND = PERFORM_BLOCK_UPDATE
     const val DEFAULT_FLAGS = 0
-    const val DEFAULT_IMMEDIATE_FLAGS = DEFAULT_FLAGS and REQUIRES_SUSPEND.inv()
 }
 
 class World(val server: MinecraftServer, val name: String) : BlockAccess {
@@ -412,17 +417,23 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
         maxUpdateDepth: Int = 512
     ): Boolean {
         if (maxUpdateDepth <= 0) return false
-        if (!getRegion(pos.x shr 9, pos.z shr 9).setBlockImmediate(pos.x and 511, pos.y, pos.z and 511, block)) {
+        val region = getRegion(pos.x shr 9, pos.z shr 9)
+        val oldState = region.getBlockImmediate(pos.x and 511, pos.y, pos.z and 511)
+        if (!region.setBlockImmediate(pos.x and 511, pos.y, pos.z and 511, block)) {
             return false
         }
-        if ((flags and SetBlockFlags.PERFORM_BLOCK_UPDATE) != 0) {
+//        if ((flags and SetBlockFlags.PERFORM_BLOCK_UPDATE) != 0) {
+//        }
+        if ((flags and SetBlockFlags.NO_BLOCK_UPDATE) == 0) {
+            val updateFlags = flags and SetBlockFlags.PERFORM_NEIGHBOR_UPDATE.inv()
+            oldState.prepare(this, pos, updateFlags, maxUpdateDepth - 1)
             Direction.values().forEach { direction ->
                 val neighborPos = pos + direction.vector
-                val oldState = getBlock(neighborPos)
-                val newState = oldState.getStateForNeighborUpdate(
-                    server, direction.opposite, block, this, pos, neighborPos
+                val oldNeighborState = getBlock(neighborPos)
+                val newState = oldNeighborState.getStateForNeighborUpdate(
+                    direction.opposite, block, this, pos, neighborPos
                 )
-                if (newState != oldState) {
+                if (newState != oldNeighborState) {
                     if (newState == Blocks.AIR) {
                         breakBlock(neighborPos, maxUpdateDepth)
                     } else {
@@ -430,6 +441,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
                     }
                 }
             }
+            block.prepare(this, pos, updateFlags, maxUpdateDepth)
         }
         return true
     }
@@ -441,10 +453,11 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
 
     suspend fun breakBlock(pos: BlockPosition, maxUpdateDepth: Int = 512) {
         val block = getBlock(pos)
+        if (block == Blocks.AIR) return
 //        if (block.getHandler(server) !is FireBlockHandler) {
             server.broadcast(WorldEventPacket(WorldEventPacket.BREAK_BLOCK, pos, block.globalId))
 //        }
-        setBlock(pos, block, SetBlockFlags.PERFORM_BLOCK_UPDATE, maxUpdateDepth)
+        setBlock(pos, Blocks.AIR, SetBlockFlags.PERFORM_NEIGHBOR_UPDATE, maxUpdateDepth)
     }
 
     override suspend fun setBlock(pos: BlockPosition, block: BlockState) =
@@ -454,9 +467,6 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
         x: Int, y: Int, z: Int, block: BlockState,
         @MagicConstant(valuesFromClass = SetBlockFlags::class) flags: Int
     ): Boolean {
-        if ((flags and SetBlockFlags.REQUIRES_SUSPEND) != 0) {
-            throw IllegalArgumentException("Some flags passed to setBlockImmediate require setBlock")
-        }
         if (openRegions[x shr 9, z shr 9]?.setBlockImmediate(x and 511, y, z and 511, block) != true) return false
         return true
     }
@@ -467,7 +477,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
     ) = setBlockImmediate(pos.x, pos.y, pos.z, block, flags)
 
     override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
-        setBlockImmediate(x, y, z, block, SetBlockFlags.DEFAULT_IMMEDIATE_FLAGS)
+        setBlockImmediate(x, y, z, block, SetBlockFlags.DEFAULT_FLAGS)
 
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {

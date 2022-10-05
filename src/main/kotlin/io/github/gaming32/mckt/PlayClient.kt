@@ -117,6 +117,8 @@ class PlayClient(
 
     private val markers = mutableMapOf<Identifier, WritableBlockMarker>()
 
+    val horizontalFacing get() = Direction.fromYaw(data.yaw)
+
     suspend fun handshake() {
         val loginStart = PacketState.LOGIN.readPacket<LoginStartPacket>(receiveChannel, false)
         if (loginStart == null) {
@@ -812,7 +814,7 @@ class PlayClient(
             return false
         }
         handler.onBreak(server.world, location, oldBlock, this, scope)
-        server.world.setBlock(location, Blocks.AIR, SetBlockFlags.PERFORM_BLOCK_UPDATE)
+        server.world.setBlock(location, Blocks.AIR, SetBlockFlags.PERFORM_NEIGHBOR_UPDATE)
         handler.onBroken(server.world, location, oldBlock, scope)
         if (data.gamemode.defaultAbilities.creativeMode) {
             return true

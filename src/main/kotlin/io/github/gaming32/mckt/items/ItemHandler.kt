@@ -23,6 +23,8 @@ abstract class ItemHandler {
         val side by hit::side
         val position by hit::position
         val insideBlock by hit::insideBlock
+        val hitPos by hit::position
+        val playerFacing by client::horizontalFacing
     }
 
     open suspend fun canMine(
