@@ -653,6 +653,9 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sections[(y shr 4) + 127] = section
             }
             section.setBlock(x, y and 15, z, block)
+            if (section.blockCount == 0) { // The section is now empty
+                sections[(y shr 4) + 127] = null
+            }
         }
         if (ready) {
             world.dirtyBlocks.add(BlockPosition((this.x shl 4) + x, y, (this.z shl 4) + z))
