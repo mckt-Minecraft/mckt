@@ -13,7 +13,7 @@ data class UpdateTimePacket(val worldTime: Long, val freezeDayTime: Long? = null
     override fun write(out: OutputStream) {
         out.writeLong(worldTime)
         if (freezeDayTime == null) {
-            out.writeLong(worldTime % 24000)
+            out.writeLong(worldTime)
         } else {
             out.writeLong(-freezeDayTime.absoluteValue)
         }
