@@ -43,6 +43,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     implementation("net.kyori:adventure-api:$adventureVersion")
+    implementation("net.kyori:adventure-extra-kotlin:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")

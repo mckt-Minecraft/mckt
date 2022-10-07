@@ -6,6 +6,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.getString
 import io.github.gaming32.mckt.commands.executesSuspend
+import net.kyori.adventure.extra.kotlin.join
+import net.kyori.adventure.extra.kotlin.text
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.format.NamedTextColor
@@ -16,18 +18,17 @@ object HelpCommand : BuiltinCommand {
     override fun buildTree() = literal<CommandSource>("help")
         .executesSuspend {
             source.reply(Component.text("Here's a list of the commands you can use:\n")
-                .append(Component.join(
-                    JoinConfiguration.newlines(),
-                    source.server.helpTexts.asSequence()
-                        .filter { it.key.canUse(source) }
-                        .map { (command, description) -> Component.text { builder ->
-                            builder.append(Component.text("  + /${command.usageText} -- "))
-                            if (description != null) {
-                                builder.append(description)
-                            }
-                        } }
-                        .toList()
-                ))
+                .append(source.server.helpTexts.asSequence()
+                    .filter { it.key.canUse(source) }
+                    .map { (command, description) -> text {
+                        append(Component.text("  + /${command.usageText} -- "))
+                        if (description != null) {
+                            append(description)
+                        }
+                    } }
+                    .toList()
+                    .join(JoinConfiguration.newlines())
+                )
             )
             0
         }
@@ -37,24 +38,22 @@ object HelpCommand : BuiltinCommand {
                 val commandName = getString("command")
                 var result = 0
                 source.reply(if (commandName == "all") {
-                    Component.join(
-                        JoinConfiguration.newlines(),
-                        commandDispatcher.root.children
-                            .asSequence()
-                            .filter { it.canUse(source) }
-                            .flatMap { command ->
-                                commandDispatcher.getAllUsage(command, source, true)
-                                    .map {
-                                        if (it.startsWith("${command.usageText} ->")) {
-                                            "/$it" // Command alias
-                                        } else {
-                                            "/${command.usageText} $it"
-                                        }
+                    commandDispatcher.root.children
+                        .asSequence()
+                        .filter { it.canUse(source) }
+                        .flatMap { command ->
+                            commandDispatcher.getAllUsage(command, source, true)
+                                .map {
+                                    if (it.startsWith("${command.usageText} ->")) {
+                                        "/$it" // Command alias
+                                    } else {
+                                        "/${command.usageText} $it"
                                     }
-                            }
-                            .map(Component::text)
-                            .toList()
-                    )
+                                }
+                        }
+                        .map(Component::text)
+                        .toList()
+                        .join(JoinConfiguration.newlines())
                 } else {
                     val command = commandDispatcher.root.getChild(commandName)
                     if (command == null || !command.canUse(source)) {
@@ -69,14 +68,13 @@ object HelpCommand : BuiltinCommand {
                         while (commandForUsage.redirect != null) {
                             commandForUsage = commandForUsage.redirect
                         }
-                        Component.text { builder ->
-                            builder.append(Component.join(
-                                JoinConfiguration.newlines(),
-                                commandDispatcher.getAllUsage(commandForUsage, source, true)
-                                    .map { Component.text("/${command.usageText} $it") }
-                            ))
+                        text {
+                            append(commandDispatcher.getAllUsage(commandForUsage, source, true)
+                                .map { Component.text("/${command.usageText} $it") }
+                                .join(JoinConfiguration.newlines())
+                            )
                             source.server.helpTexts[command]?.let { description ->
-                                builder.append(Component.newline()).append(description)
+                                append(Component.newline()).append(description)
                             }
                         }
                     }
