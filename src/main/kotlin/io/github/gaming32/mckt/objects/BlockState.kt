@@ -12,7 +12,6 @@ import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.commands.wrap
 import io.github.gaming32.mckt.items.ItemHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -231,8 +230,8 @@ class BlockState internal constructor(
 
     fun getHandler(server: MinecraftServer) = server.getBlockHandler(blockId)
 
-    suspend fun onUse(world: World, client: PlayClient, hand: Hand, hit: BlockHitResult, scope: CoroutineScope) =
-        getHandler(world.server).onUse(this, world, hit.location, client, hand, hit, scope)
+    suspend fun onUse(world: World, client: PlayClient, hand: Hand, hit: BlockHitResult) =
+        getHandler(world.server).onUse(this, world, hit.location, client, hand, hit)
 
     fun canReplace(ctx: ItemHandler.ItemUsageContext) =
         getHandler(ctx.server).canReplace(this, ctx)

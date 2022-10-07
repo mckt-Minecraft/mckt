@@ -4,7 +4,6 @@ import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.objects.Identifier
-import kotlinx.coroutines.CoroutineScope
 
 object FlintAndSteelHandler : ItemHandler() {
     private val burnChancesInternal = mutableMapOf<Identifier, Int>()
@@ -173,7 +172,7 @@ object FlintAndSteelHandler : ItemHandler() {
         registerFlammable(Identifier("glow_lichen"), 15, 100)
     }
 
-    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
+    override suspend fun useOnBlock(ctx: ItemUsageContext): ActionResult {
         if (ctx.world.getBlock(ctx.hit.location) == Blocks.AIR) return ActionResult.PASS
         val placeAt = ctx.location + ctx.side.vector
         var canPlace = false

@@ -6,7 +6,6 @@ import io.github.gaming32.mckt.castOrNull
 import io.github.gaming32.mckt.dt.DtInt
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worledit.worldeditSession
-import kotlinx.coroutines.CoroutineScope
 
 object WorldeditItem : ItemHandler() {
     const val TYPE_NONE = -1
@@ -16,13 +15,12 @@ object WorldeditItem : ItemHandler() {
         state: BlockState,
         world: World,
         location: BlockPosition,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ): Boolean {
         val item = client.data.getHeldItem(Hand.MAINHAND)
         val type = item.worldeditType
         if (type == TYPE_NONE) {
-            return super.canMine(state, world, location, client, scope)
+            return super.canMine(state, world, location, client)
         }
         when (type) {
             TYPE_WAND -> client.worldeditSession.setPos1(location)
@@ -30,10 +28,10 @@ object WorldeditItem : ItemHandler() {
         return false
     }
 
-    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
+    override suspend fun useOnBlock(ctx: ItemUsageContext): ActionResult {
         val type = ctx.itemStack.worldeditType
         if (type == TYPE_NONE) {
-            return super.useOnBlock(ctx, scope)
+            return super.useOnBlock(ctx)
         }
         when (type) {
             TYPE_WAND -> ctx.client.worldeditSession.setPos2(ctx.location)

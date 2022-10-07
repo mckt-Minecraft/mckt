@@ -123,8 +123,14 @@ class MinecraftServer(
         }
     }
 
+    private var mainCoroutineScopeInternal: CoroutineScope? = null
+    val mainCoroutineScope get() =
+        mainCoroutineScopeInternal ?: throw IllegalStateException("MinecraftServer not running!")
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
+
+        mainCoroutineScopeInternal = this
 
         registerCommands()
         registerCustomPacketHandlers()
@@ -211,6 +217,8 @@ class MinecraftServer(
             threadPoolContext.close()
         }
         httpClient.close()
+
+        mainCoroutineScopeInternal = null
         LOGGER.info("Server stopped")
     }
 

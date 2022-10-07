@@ -4,7 +4,6 @@ import io.github.gaming32.mckt.GlobalPalette
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.*
-import kotlinx.coroutines.CoroutineScope
 import net.kyori.adventure.text.Component
 
 object DebugStickItemHandler : ItemHandler() {
@@ -12,14 +11,13 @@ object DebugStickItemHandler : ItemHandler() {
         state: BlockState,
         world: World,
         location: BlockPosition,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ): Boolean {
         use(client, state, world, location, false, client.data.getHeldItem(Hand.MAINHAND))
         return false
     }
 
-    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
+    override suspend fun useOnBlock(ctx: ItemUsageContext): ActionResult {
         val client = ctx.client
         val world = ctx.world
         val location = ctx.location

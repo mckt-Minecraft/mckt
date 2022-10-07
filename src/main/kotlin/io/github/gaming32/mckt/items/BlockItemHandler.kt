@@ -5,7 +5,6 @@ import io.github.gaming32.mckt.dt.DtString
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.PlaySoundPacket
 import io.github.gaming32.mckt.packet.play.s2c.SoundCategory
-import kotlinx.coroutines.CoroutineScope
 
 open class BlockItemHandler(val block: Identifier) : ItemHandler() {
     class ItemPlacementContext(
@@ -29,16 +28,16 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         fun canPlace() = replaceable || world.getBlockImmediate(location).canReplace(this)
     }
 
-    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope) =
-        place(ItemPlacementContext(ctx), scope)
+    override suspend fun useOnBlock(ctx: ItemUsageContext) =
+        place(ItemPlacementContext(ctx))
 
-    open suspend fun place(ctx: ItemPlacementContext, scope: CoroutineScope): ActionResult {
+    open suspend fun place(ctx: ItemPlacementContext): ActionResult {
         if (!ctx.canPlace()) {
             return ActionResult.FAIL
         }
-        val useCtx = getPlacementContext(ctx, scope) ?: return ActionResult.FAIL
-        val state = getPlacementState(useCtx, scope) ?: return ActionResult.FAIL
-        if (!place(useCtx, state, scope)) {
+        val useCtx = getPlacementContext(ctx) ?: return ActionResult.FAIL
+        val state = getPlacementState(useCtx) ?: return ActionResult.FAIL
+        if (!place(useCtx, state)) {
             return ActionResult.FAIL
         }
         val location = useCtx.location
@@ -67,12 +66,12 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         return ActionResult.success(false)
     }
 
-    open suspend fun place(ctx: ItemPlacementContext, state: BlockState, scope: CoroutineScope) =
+    open suspend fun place(ctx: ItemPlacementContext, state: BlockState) =
         ctx.world.setBlock(ctx.location, state, SetBlockFlags.PERFORM_NEIGHBOR_UPDATE)
 
-    open suspend fun getPlacementContext(ctx: ItemPlacementContext, scope: CoroutineScope): ItemPlacementContext? = ctx
+    open suspend fun getPlacementContext(ctx: ItemPlacementContext): ItemPlacementContext? = ctx
 
-    open suspend fun getPlacementState(ctx: ItemPlacementContext, scope: CoroutineScope) =
+    open suspend fun getPlacementState(ctx: ItemPlacementContext) =
         ctx.server.getBlockHandler(block).getPlacementState(block, ctx)
 
     private suspend fun placeFromTag(

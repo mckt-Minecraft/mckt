@@ -3,7 +3,6 @@ package io.github.gaming32.mckt.items
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.*
-import kotlinx.coroutines.CoroutineScope
 
 abstract class ItemHandler {
     open class ItemUsageContext protected constructor(
@@ -31,13 +30,12 @@ abstract class ItemHandler {
         state: BlockState,
         world: World,
         location: BlockPosition,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ) = true
 
-    open suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope) = ActionResult.PASS
+    open suspend fun useOnBlock(ctx: ItemUsageContext) = ActionResult.PASS
 
-    open suspend fun use(world: World, client: PlayClient, hand: Hand, scope: CoroutineScope) =
+    open suspend fun use(world: World, client: PlayClient, hand: Hand) =
         client.data.getHeldItem(hand).pass()
 
     open suspend fun postMine(
@@ -45,7 +43,6 @@ abstract class ItemHandler {
         world: World,
         state: BlockState,
         location: BlockPosition,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ) = false
 }

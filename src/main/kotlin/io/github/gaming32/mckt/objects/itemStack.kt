@@ -7,7 +7,6 @@ import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.dt.DtCompound
 import io.github.gaming32.mckt.dt.NbtTagType
 import io.github.gaming32.mckt.items.ItemHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -59,21 +58,20 @@ data class ItemStack(
 
     fun getHandler(server: MinecraftServer) = server.getItemHandler(itemId)
 
-    suspend fun useOnBlock(ctx: ItemHandler.ItemUsageContext, scope: CoroutineScope) =
-        getHandler(ctx.client.server).useOnBlock(ctx, scope)
+    suspend fun useOnBlock(ctx: ItemHandler.ItemUsageContext) =
+        getHandler(ctx.client.server).useOnBlock(ctx)
 
     suspend fun postMine(
         world: World,
         state: BlockState,
         location: BlockPosition,
-        miner: PlayClient,
-        scope: CoroutineScope
+        miner: PlayClient
     ) {
-        getHandler(miner.server).postMine(this, world, state, location, miner, scope)
+        getHandler(miner.server).postMine(this, world, state, location, miner)
     }
 
-    suspend fun use(world: World, client: PlayClient, hand: Hand, scope: CoroutineScope) =
-        getHandler(client.server).use(world, client, hand, scope)
+    suspend fun use(world: World, client: PlayClient, hand: Hand) =
+        getHandler(client.server).use(world, client, hand)
 
     fun getOrCreateSubNbt(key: String): DtCompound {
         val nbt = extraNbtInternal

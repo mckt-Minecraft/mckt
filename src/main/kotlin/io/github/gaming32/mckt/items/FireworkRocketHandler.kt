@@ -8,7 +8,6 @@ import io.github.gaming32.mckt.packet.play.s2c.PlaySoundPacket
 import io.github.gaming32.mckt.packet.play.s2c.SetEntityVelocityPacket
 import io.github.gaming32.mckt.packet.play.s2c.SoundCategory
 import io.github.gaming32.mckt.util.GaussianGenerator
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -18,8 +17,7 @@ object FireworkRocketHandler : ItemHandler() {
     override suspend fun use(
         world: World,
         client: PlayClient,
-        hand: Hand,
-        scope: CoroutineScope
+        hand: Hand
     ): ActionResultInfo<ItemStack> {
         val stack = client.data.getHeldItem(hand)
         if (!client.data.isFallFlying) return stack.pass()
@@ -30,7 +28,7 @@ object FireworkRocketHandler : ItemHandler() {
             3f, 1f
         ))
         val lifetime = 10 * DURATION * Random.nextInt(6) + Random.nextInt(7)
-        scope.launch {
+        client.server.mainCoroutineScope.launch {
             val server = client.server
             var velocity = Vector3d.ZERO
             for (i in 1..lifetime) {

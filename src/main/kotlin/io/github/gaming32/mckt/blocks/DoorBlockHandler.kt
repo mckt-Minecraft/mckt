@@ -5,7 +5,6 @@ import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
-import kotlinx.coroutines.CoroutineScope
 
 object DoorBlockHandler : BlockHandler() {
     override suspend fun getStateForNeighborUpdate(
@@ -41,13 +40,12 @@ object DoorBlockHandler : BlockHandler() {
         world: World,
         pos: BlockPosition,
         state: BlockState,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ) {
         if (client.data.gamemode.defaultAbilities.creativeMode) {
             TallPlantBlockHandler.onBreakInCreative(world, pos, state, client)
         }
-        super.onBreak(world, pos, state, client, scope)
+        super.onBreak(world, pos, state, client)
     }
 
     override suspend fun getPlacementState(
@@ -124,8 +122,7 @@ object DoorBlockHandler : BlockHandler() {
         pos: BlockPosition,
         client: PlayClient,
         hand: Hand,
-        hit: BlockHitResult,
-        scope: CoroutineScope
+        hit: BlockHitResult
     ) = if (BLOCK_PROPERTIES[state.blockId]?.material == Materials.METAL) {
         ActionResult.PASS
     } else {

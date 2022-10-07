@@ -8,7 +8,6 @@ import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
-import kotlinx.coroutines.CoroutineScope
 
 abstract class BlockHandler {
     open val requiresOperator get() = 0
@@ -19,8 +18,7 @@ abstract class BlockHandler {
         pos: BlockPosition,
         client: PlayClient,
         hand: Hand,
-        hit: BlockHitResult,
-        scope: CoroutineScope
+        hit: BlockHitResult
     ) = ActionResult.PASS
 
     protected open suspend fun spawnBreakParticles(
@@ -37,15 +35,13 @@ abstract class BlockHandler {
         world: World,
         pos: BlockPosition,
         state: BlockState,
-        client: PlayClient,
-        scope: CoroutineScope
+        client: PlayClient
     ) = spawnBreakParticles(world, client, pos, state)
 
     open suspend fun onBroken(
         world: World,
         location: BlockPosition,
-        state: BlockState,
-        scope: CoroutineScope
+        state: BlockState
     ) = Unit
 
     open suspend fun afterBreak(
@@ -53,8 +49,7 @@ abstract class BlockHandler {
         client: PlayClient,
         location: BlockPosition,
         state: BlockState,
-        stack: ItemStack,
-        scope: CoroutineScope
+        stack: ItemStack
     ) = Unit
 
     open fun canReplace(state: BlockState, ctx: ItemHandler.ItemUsageContext) =

@@ -6,11 +6,10 @@ import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
-import kotlinx.coroutines.CoroutineScope
 import kotlin.random.Random
 
 object BoneMealItemHandler : ItemHandler() {
-    override suspend fun useOnBlock(ctx: ItemUsageContext, scope: CoroutineScope): ActionResult {
+    override suspend fun useOnBlock(ctx: ItemUsageContext): ActionResult {
         val world = ctx.world
         val location = ctx.location
         if (useOnFertilizable(ctx.itemStack, world, location)) {
