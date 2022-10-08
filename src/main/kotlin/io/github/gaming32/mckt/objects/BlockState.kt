@@ -84,18 +84,22 @@ class BlockState internal constructor(
                     state.substring(0, bracketIndex)
                 }
             )
-            if (bracketIndex == -1) return BlockState(blockId)
-            if (state[state.length - 1] != ']') {
-                throw IllegalArgumentException("Mismatched [")
-            }
-            val properties = state.substring(bracketIndex + 1, state.length - 1).split(",").associate { prop ->
-                val info = prop.split("=", limit = 2)
-                if (info.size < 2) {
-                    throw IllegalArgumentException("Missing \"=\": $prop")
+            val properties = if (bracketIndex != -1) {
+                if (state[state.length - 1] != ']') {
+                    throw IllegalArgumentException("Mismatched [")
                 }
-                info[0] to info[1]
+                state.substring(bracketIndex + 1, state.length - 1).split(",").associate { prop ->
+                    val info = prop.split("=", limit = 2)
+                    if (info.size < 2) {
+                        throw IllegalArgumentException("Missing \"=\": $prop")
+                    }
+                    info[0] to info[1]
+                }
+            } else {
+                mapOf()
             }
-            return BlockState(blockId, properties = properties).canonicalize()
+            return DEFAULT_BLOCKSTATES[blockId]?.with(properties)?.canonicalize()
+                ?: throw IllegalArgumentException("Unknown block ID $blockId")
         }
 
         fun parse(reader: StringReader): BlockState {

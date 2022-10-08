@@ -10,10 +10,10 @@ import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.executesSuspend
 import io.github.gaming32.mckt.commands.wrap
-import io.github.gaming32.mckt.dt.DtCompound
-import io.github.gaming32.mckt.dt.DtInt
-import io.github.gaming32.mckt.dt.DtString
 import io.github.gaming32.mckt.items.WorldeditItem
+import io.github.gaming32.mckt.nbt.buildNbtCompound
+import io.github.gaming32.mckt.nbt.put
+import io.github.gaming32.mckt.nbt.putNbtCompound
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worledit.WorldeditClipboard
 import io.github.gaming32.mckt.worledit.worldeditSession
@@ -389,13 +389,13 @@ object WorldeditCommands {
 
     fun createWand() = ItemStack(
         Identifier("wooden_axe"),
-        extraNbtInternal = DtCompound(
-            "display" to DtCompound(
-                "Name" to DtString("{\"text\":\"WorldEdit Wand\",\"color\":\"light_purple\",\"italic\":\"false\"}")
-            ),
-            "Worldedit" to DtCompound(
-                "Type" to DtInt(WorldeditItem.TYPE_WAND)
-            )
-        )
+        extraNbtInternal = buildNbtCompound {
+            putNbtCompound("display") {
+                put("Name", "{\"text\":\"WorldEdit Wand\",\"color\":\"light_purple\",\"italic\":\"false\"}")
+            }
+            putNbtCompound("Worldedit") {
+                put("Type", WorldeditItem.TYPE_WAND)
+            }
+        }
     )
 }

@@ -4,8 +4,8 @@ package io.github.gaming32.mckt.objects
 
 import io.github.gaming32.mckt.data.toGson
 import io.github.gaming32.mckt.data.toKotlinx
-import io.github.gaming32.mckt.dt.DtCompound
-import io.github.gaming32.mckt.dt.toDt
+import io.github.gaming32.mckt.nbt.NbtCompound
+import io.github.gaming32.mckt.nbt.toNbt
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -13,8 +13,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
-import net.benwoodworth.knbt.NbtCompound
-import net.benwoodworth.knbt.StringifiedNbt
+import net.kyori.adventure.nbt.TagStringIO
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.util.*
@@ -53,14 +52,13 @@ object BitSetSerializer : KSerializer<BitSet> {
         BitSet.valueOf(decoder.decodeSerializableValue(delegateSerializer))
 }
 
-object DtCompoundSerializer : KSerializer<DtCompound> {
-    override val descriptor = PrimitiveSerialDescriptor("DtCompound", PrimitiveKind.STRING)
+object SnbtCompoundSerializer : KSerializer<NbtCompound> {
+    override val descriptor = PrimitiveSerialDescriptor("CompoundBinaryTag", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: DtCompound) =
-        encoder.encodeString(StringifiedNbt.encodeToString(value.toNbt()))
+    override fun serialize(encoder: Encoder, value: NbtCompound) =
+        encoder.encodeString(TagStringIO.get().asString(value.toAdventure()))
 
-    override fun deserialize(decoder: Decoder) =
-        StringifiedNbt.decodeFromString<NbtCompound>(decoder.decodeString()).toDt()
+    override fun deserialize(decoder: Decoder) = TagStringIO.get().asCompound(decoder.decodeString())!!.toNbt()
 }
 
 object BlockPositionSerializer : KSerializer<BlockPosition> {

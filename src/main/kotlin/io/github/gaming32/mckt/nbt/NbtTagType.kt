@@ -1,5 +1,9 @@
-package io.github.gaming32.mckt.dt
+package io.github.gaming32.mckt.nbt
 
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+private annotation class DontUse
+
+@DontUse
 object NbtTagType {
     const val NULL = 0
     const val BYTE = 1

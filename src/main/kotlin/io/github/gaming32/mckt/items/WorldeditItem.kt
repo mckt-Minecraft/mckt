@@ -3,7 +3,7 @@ package io.github.gaming32.mckt.items
 import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.castOrNull
-import io.github.gaming32.mckt.dt.DtInt
+import io.github.gaming32.mckt.nbt.NbtInt
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worledit.worldeditSession
 
@@ -40,8 +40,8 @@ object WorldeditItem : ItemHandler() {
     }
 
     var ItemStack.worldeditType: Int
-        get() = this["Worldedit"]?.get("Type").castOrNull<DtInt>()?.value ?: TYPE_NONE
+        get() = this["Worldedit"]?.get("Type").castOrNull<NbtInt>()?.value ?: TYPE_NONE
         set(type) {
-            getOrCreateSubNbt("Worldedit")["Type"] = DtInt(type)
+            getOrCreateSubNbt("Worldedit")["Type"] = NbtInt(type)
         }
 }

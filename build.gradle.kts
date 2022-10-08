@@ -47,8 +47,7 @@ dependencies {
     implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
-
-    implementation("net.benwoodworth.knbt:knbt:0.11.2")
+    implementation("net.kyori:adventure-nbt:$adventureVersion")
 
     implementation("com.mojang:brigadier:1.0.18")
 

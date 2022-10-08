@@ -1,7 +1,7 @@
 package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.*
-import io.github.gaming32.mckt.dt.DtString
+import io.github.gaming32.mckt.nbt.NbtString
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.PlaySoundPacket
 import io.github.gaming32.mckt.packet.play.s2c.SoundCategory
@@ -86,7 +86,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
             val blockNbt = nbt.getCompound("BlockStateTag")
             blockNbt.forEach { (key, value) ->
                 try {
-                    newState = newState.with(key, value.cast<DtString>().value)
+                    newState = newState.with(key, value.cast<NbtString>().value)
                 } catch (e: IllegalArgumentException) {
                     // Unknown property
                 } catch (e: ClassCastException) {

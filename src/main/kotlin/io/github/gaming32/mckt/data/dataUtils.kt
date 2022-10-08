@@ -4,15 +4,9 @@ package io.github.gaming32.mckt.data
 
 import io.github.gaming32.mckt.ITEM_ID_TO_PROTOCOL
 import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
-import io.github.gaming32.mckt.NETWORK_NBT
-import io.github.gaming32.mckt.dt.DtCompound
-import io.github.gaming32.mckt.dt.toDt
+import io.github.gaming32.mckt.nbt.NbtCompound
 import io.github.gaming32.mckt.objects.*
 import io.ktor.utils.io.*
-import net.benwoodworth.knbt.NbtCompound
-import net.benwoodworth.knbt.NbtTag
-import net.benwoodworth.knbt.decodeFromStream
-import net.benwoodworth.knbt.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.io.*
@@ -159,17 +153,11 @@ fun InputStream.readItemStack(): ItemStack {
     return ItemStack(
         ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
         readUByte().toInt(),
-        readNbtTag().toDt() as DtCompound
+        readNbt()
     )
 }
 
-fun InputStream.readNbtTag(): NbtTag {
-    val result = NETWORK_NBT.decodeFromStream<NbtTag>(this)
-    if (result is NbtCompound && result.size == 1 && result.keys.first() == "") {
-        return result[""]!!
-    }
-    return result
-}
+fun InputStream.readNbt() = io.github.gaming32.mckt.nbt.readNbt(this)
 
 fun InputStream.readBlockPosition() = BlockPosition.decodeFromLong(readLong())
 
@@ -327,25 +315,18 @@ fun OutputStream.writeItemStack(item: ItemStack) {
     if (item.isNotEmpty()) {
         writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
         writeVarInt(item.count)
-        val dt = item.extraNbt
-        if (dt.isNullOrEmpty()) {
+        val nbt = item.extraNbt
+        if (nbt.isNullOrEmpty()) {
             write(0) // TAG_End
         } else {
-            writeNbtTag(dt.toNbt())
+            writeNbt(nbt)
         }
     }
 }
 
 fun OutputStream.writeItemStackArray(items: Array<out ItemStack>) = writeArray(items) { writeItemStack(it) }
 
-fun OutputStream.writeNbtTag(tag: NbtTag) {
-    if (tag is NbtCompound) {
-        NETWORK_NBT.encodeToStream(NbtCompound(mapOf("" to tag)), this)
-    } else {
-        NETWORK_NBT.encodeToStream(tag, this)
-
-    }
-}
+fun OutputStream.writeNbt(nbt: NbtCompound) = io.github.gaming32.mckt.nbt.writeNbt(nbt, this)
 
 fun OutputStream.writeBlockPosition(pos: BlockPosition) = writeLong(pos.encodeToLong())
 

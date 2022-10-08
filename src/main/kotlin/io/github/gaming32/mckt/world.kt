@@ -7,6 +7,7 @@ import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt
+import io.github.gaming32.mckt.nbt.*
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
@@ -21,7 +22,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import net.benwoodworth.knbt.*
 import net.kyori.adventure.text.Component
 import org.intellij.lang.annotations.MagicConstant
 import java.io.File
@@ -30,7 +30,6 @@ import java.io.OutputStream
 import java.util.*
 import kotlin.io.path.moveTo
 import kotlin.random.Random
-import kotlin.reflect.typeOf
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
 
@@ -39,7 +38,7 @@ private val LOGGER = getLogger()
 val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
     putNbtCompound("minecraft:dimension_type") {
         put("type", "minecraft:dimension_type")
-        putNbtList("value") {
+        putNbtList<NbtCompound>("value") {
             addNbtCompound {
                 put("name", "minecraft:overworld")
                 put("id", 0)
@@ -68,7 +67,7 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
     }
     putNbtCompound("minecraft:worldgen/biome") {
         put("type", "minecraft:worldgen/biome")
-        putNbtList("value") {
+        putNbtList<NbtCompound>("value") {
             addNbtCompound {
                 put("name", "minecraft:plains")
                 put("id", 0)
@@ -98,23 +97,23 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
     }
     putNbtCompound("minecraft:chat_type") {
         put("type", "minecraft:chat_type")
-        putNbtList("value") {
+        putNbtList<NbtCompound>("value") {
             addNbtCompound {
                 put("name", "minecraft:chat")
                 put("id", 0)
                 putNbtCompound("element") {
                     putNbtCompound("chat") {
                         put("translation_key", "chat.type.text")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -125,16 +124,16 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                 putNbtCompound("element") {
                     putNbtCompound("chat") {
                         put("translation_key", "chat.type.announcement")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -149,16 +148,16 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                             put("color", "gray")
                             put("italic", true)
                         }
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -173,16 +172,16 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                             put("color", "gray")
                             put("italic", true)
                         }
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -193,17 +192,17 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                 putNbtCompound("element") {
                     putNbtCompound("chat") {
                         put("translation_key", "chat.type.team.text")
-                        putNbtList("parameters") {
-                            this.add("target")
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("target")
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -214,17 +213,17 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                 putNbtCompound("element") {
                     putNbtCompound("chat") {
                         put("translation_key", "chat.type.team.sent")
-                        putNbtList("parameters") {
-                            this.add("target")
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("target")
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.text.narrate")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -235,16 +234,16 @@ val DEFAULT_REGISTRY_CODEC = buildNbtCompound {
                 putNbtCompound("element") {
                     putNbtCompound("chat") {
                         put("translation_key", "chat.type.emote")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                     putNbtCompound("narration") {
                         put("translation_key", "chat.type.emote")
-                        putNbtList("parameters") {
-                            this.add("sender")
-                            this.add("content")
+                        putNbtList<NbtString>("parameters") {
+                            add("sender")
+                            add("content")
                         }
                     }
                 }
@@ -537,7 +536,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
 }
 
 class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, BlockAccess {
-    val regionFile = File(world.regionsDir, "region_${x}_${z}${world.meta.saveFormat.fileExtension}")
+    val regionFile = File(world.regionsDir, "region_${x}_${z}.nbt")
 
     @Serializable
     internal class RegionData(
@@ -551,7 +550,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
 
     fun load() {
         try {
-            regionFile.inputStream().use { fromData(world.meta.saveFormat.decodeFromStream(it, typeOf<RegionData>())) }
+            regionFile.inputStream().use { fromNbt(readCompressedNbt(it)) }
         } catch (_: FileNotFoundException) {
         } catch (e: Exception) {
             LOGGER.error("Failed to load region from file", e)
@@ -584,25 +583,28 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
     override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
         chunks[(x shr 4 shl 5) + (z shr 4)]?.setBlockImmediate(x and 15, y, z and 15, block) ?: false
 
-    internal fun toData(): RegionData {
+    private fun toNbt() = buildNbtCompound {
         val chunksPresent = BitSet(chunks.size)
-        val chunksData = mutableListOf<WorldChunk.ChunkData>()
-        chunks.toList().forEachIndexed { i, chunk ->
-            if (chunk != null) {
-                chunksPresent.set(i)
-                chunksData.add(chunk.toData())
+        putNbtList<NbtCompound>("Chunks") {
+            chunks.toList().forEachIndexed { i, chunk ->
+                if (chunk != null) {
+                    chunksPresent.set(i)
+                    add(chunk.toNbt())
+                }
             }
         }
-        return RegionData(chunksPresent, chunksData.toTypedArray())
+        put("ChunksPresent", chunksPresent.toLongArray())
     }
 
-    internal fun fromData(input: RegionData) {
+    private fun fromNbt(nbt: NbtCompound) {
+        val chunksPresent = BitSet.valueOf(nbt.getLongArray("ChunksPresent"))
+        val chunksNbt = nbt.getList<NbtCompound>("Chunks").content
         var dataIndex = 0
         repeat(32) { x ->
             repeat(32) { z ->
                 val memIndex = (x shl 5) + z
-                if (input.chunksPresent[memIndex]) {
-                    chunks[memIndex] = WorldChunk(this, x, z).also { it.fromData(input.chunks[dataIndex++]) }
+                if (chunksPresent[memIndex]) {
+                    chunks[memIndex] = WorldChunk(this, x, z).also { it.fromNbt(chunksNbt[dataIndex++]) }
                 } else {
                     chunks[memIndex] = null
                 }
@@ -613,7 +615,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
     fun save() {
         val tempFile = File.createTempFile("mckt-save", ".nbt")
         tempFile.outputStream().use { out ->
-            world.meta.saveFormat.encodeToStream(toData(), out, typeOf<RegionData>())
+            writeNbtCompressed(toNbt(), out)
         }
         tempFile.toPath().moveTo(regionFile.toPath(), true)
     }
@@ -663,23 +665,28 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
         return true
     }
 
-    internal fun toData() = synchronized(this) {
-        val sectionsPresent = BitSet(sections.size)
-        val sectionsData = mutableListOf<ChunkSection.SectionData>()
-        sections.forEachIndexed { i, section ->
-            if (section != null) {
-                sectionsPresent.set(i)
-                sectionsData.add(section.toData())
+    internal fun toNbt() = synchronized(this) {
+        buildNbtCompound {
+            val sectionsPresent = BitSet(sections.size)
+            putNbtList<NbtCompound>("Sections") {
+                sections.forEachIndexed { i, section ->
+                    if (section != null && section.blockCount > 0) {
+                        sectionsPresent.set(i)
+                        add(section.toNbt())
+                    }
+                }
             }
+            put("SectionsPresent", sectionsPresent.toLongArray())
         }
-        ChunkData(sectionsPresent, sectionsData.toTypedArray())
     }
 
-    internal fun fromData(input: ChunkData) {
+    internal fun fromNbt(nbt: NbtCompound) {
+        val sectionsPresent = BitSet.valueOf(nbt.getLongArray("SectionsPresent"))
+        val sectionsNbt = nbt.getList<NbtCompound>("Sections").content
         var dataIndex = 0
         repeat(254) { i ->
-            if (input.sectionsPresent[i]) {
-                sections[i] = ChunkSection(this, i - 127).also { it.fromData(input.sections[dataIndex++]) }
+            if (sectionsPresent[i]) {
+                sections[i] = ChunkSection(this, i - 127).also { it.fromNbt(sectionsNbt[dataIndex++]) }
             } else {
                 sections[i] = null
             }
@@ -688,6 +695,9 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     }
 
     fun networkEncode(out: OutputStream) {
+        if (x == -15 && z == -11) {
+            println("hi")
+        }
         for (section in sections) {
             if (section == null) {
                 out.writeShort(0) // Block count
@@ -746,21 +756,33 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         }
     }
 
-    internal fun toData(): SectionData {
+    internal fun toNbt() = buildNbtCompound {
         data.compact()
-        return SectionData(
-            blockCount,
-            data.paletteItems
-                .map { it!!.toMap() }
-                .toList(),
-            data.storage
-        )
+        put("BlockCount", blockCount)
+        putNbtList<NbtString>("Palette") {
+            for (state in data.paletteItems) {
+                add(state.toString())
+            }
+        }
+        putNbtCompound("Blocks") {
+            put("bits", data.storage.bits)
+            put("data", data.storage.data)
+        }
     }
 
-    internal fun fromData(input: SectionData) {
-        blockCount = input.blockCount
-        data.setPaletteItems(input.palette.map { BlockState.fromMap(it) })
-        data.storage = input.blocks
+    internal fun fromNbt(nbt: NbtCompound) {
+        blockCount = nbt.getInt("BlockCount")
+        data.setPaletteItems(nbt.getList<NbtElement<*, *>>("Palette").map {
+            if (it is NbtString) {
+                BlockState.parse(it.value)
+            } else {
+                BlockState.fromMap(it.cast<Map<String, NbtString>>().entries.associate { (key, value) ->
+                    key to value.value
+                })
+            }
+        })
+        val blocks = nbt.getCompound("Blocks")
+        data.storage = SimpleBitStorage(blocks.getInt("bits"), 4096, blocks.getLongArray("data"))
     }
 }
 
@@ -770,13 +792,11 @@ class WorldMeta() {
     var seed = 0L
     var spawnPos = BlockPosition.ZERO
     var worldGenerator = WorldGenerator.NORMAL
-    var saveFormat = SaveFormat.NBT
     var autosave = true
 
     constructor(config: ServerConfig) : this() {
         seed = config.seed ?: Random.nextLong()
         worldGenerator = config.defaultWorldGenerator
-        saveFormat = config.defaultSaveFormat
     }
 }
 

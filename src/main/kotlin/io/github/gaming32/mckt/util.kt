@@ -1,10 +1,9 @@
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.objects.Identifier
 import it.unimi.dsi.fastutil.ints.IntIntPair
 import kotlinx.serialization.json.Json
-import net.benwoodworth.knbt.Nbt
-import net.benwoodworth.knbt.NbtCompression
-import net.benwoodworth.knbt.NbtVariant
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TranslatableComponent
@@ -17,12 +16,12 @@ import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
+import java.io.OutputStream
 import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.max
 import kotlin.random.Random
-import kotlin.mod as builtinMod
 
 val TRANSLATABLE_FLATTENER = ComponentFlattener.basic().toBuilder().apply {
     complexMapper(TranslatableComponent::class.java) { component, handler ->
@@ -70,22 +69,12 @@ val ADVENTURE_TO_JLINE_STYLES = mapOf(
     )
 )
 
-val NETWORK_NBT = Nbt {
-    variant = NbtVariant.Java
-    compression = NbtCompression.None
-}
-
-val SAVE_NBT = Nbt {
-    variant = NbtVariant.Java
-    compression = NbtCompression.Gzip
-    ignoreUnknownKeys = true
-}
-
 val PRETTY_JSON = Json {
     prettyPrint = true
     encodeDefaults = true
     isLenient = true
     coerceInputValues = true
+    ignoreUnknownKeys = true
 }
 
 val USERNAME_REGEX = Regex("^\\w{1,16}\$")
@@ -258,4 +247,16 @@ fun <T> MutableList<T>.swap(idx1: Int, idx2: Int) {
     if (idx1 != idx2) {
         this[idx1] = set(idx2, this[idx1])
     }
+}
+
+fun Key.toIdentifier() = Identifier(namespace(), value())
+
+fun Identifier.toKey() = Key.key(namespace, value)
+
+class NonCloseableOutputStream(private val inner: OutputStream) : OutputStream() {
+    override fun write(b: Int) = inner.write(b)
+
+    override fun write(b: ByteArray) = inner.write(b)
+
+    override fun write(b: ByteArray, off: Int, len: Int) = inner.write(b, off, len)
 }

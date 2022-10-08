@@ -1,9 +1,9 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.data.*
+import io.github.gaming32.mckt.nbt.buildNbtCompound
+import io.github.gaming32.mckt.nbt.put
 import io.github.gaming32.mckt.packet.Packet
-import net.benwoodworth.knbt.buildNbtCompound
-import net.benwoodworth.knbt.put
 import java.io.OutputStream
 import java.util.*
 
@@ -21,7 +21,7 @@ data class ChunkAndLightDataPacket(
     override fun write(out: OutputStream) {
         out.writeInt(x)
         out.writeInt(z)
-        out.writeNbtTag(buildNbtCompound {
+        out.writeNbt(buildNbtCompound {
             put("MOTION_BLOCKING", HEIGHTMAP)
         })
         out.writeVarInt(chunk.size)

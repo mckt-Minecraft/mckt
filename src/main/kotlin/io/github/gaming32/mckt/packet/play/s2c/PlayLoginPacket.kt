@@ -2,10 +2,10 @@ package io.github.gaming32.mckt.packet.play.s2c
 
 import io.github.gaming32.mckt.Gamemode
 import io.github.gaming32.mckt.data.*
+import io.github.gaming32.mckt.nbt.NbtCompound
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.Packet
-import net.benwoodworth.knbt.NbtCompound
 import java.io.OutputStream
 
 data class PlayLoginPacket(
@@ -37,7 +37,7 @@ data class PlayLoginPacket(
         out.writeByte(gamemode.ordinal)
         out.writeByte(previousGamemode?.ordinal ?: -1)
         out.writeIdentifierArray(dimensions)
-        out.writeNbtTag(registryCodec)
+        out.writeNbt(registryCodec)
         out.writeIdentifier(dimensionType)
         out.writeIdentifier(dimensionName)
         out.writeLong(hashedSeed)
