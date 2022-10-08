@@ -182,7 +182,7 @@ object FlintAndSteelHandler : ItemHandler() {
         } else {
             for (direction in Direction.values()) {
                 if (direction == Direction.DOWN) continue
-                val block = ctx.world.getBlock(placeAt + direction.vector)?.blockId
+                val block = ctx.world.getBlock(placeAt + direction.vector).blockId
                 if (block != null && isFlammable(block)) {
                     properties[direction.name.lowercase()] = "true"
                     canPlace = true

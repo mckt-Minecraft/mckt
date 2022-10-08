@@ -19,7 +19,7 @@ object GetBlockCommand : BuiltinCommand {
         .then(argument<CommandSource, PositionArgument>("position", BlockPositionArgumentType)
             .executesSuspend {
                 val position = getLoadedBlockPosition("position")
-                val block = source.server.world.getBlock(position)!!
+                val block = source.server.world.getBlock(position)
                 source.reply(
                     Component.text("The block at ${position.x} ${position.y} ${position.z} is ")
                         .append(Component.text(block.toString(), NamedTextColor.GREEN))

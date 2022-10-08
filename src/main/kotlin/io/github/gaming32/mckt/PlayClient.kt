@@ -305,10 +305,13 @@ class PlayClient(
                 client.options.displayedSkinParts,
                 client.options.mainHand
             ))
-            sendPacket(SetEquipmentPacket(
-                client.entityId,
-                client.data.getEquipment()
-            ))
+            val equipment = client.data.getEquipment()
+            if (equipment.isNotEmpty()) {
+                sendPacket(SetEquipmentPacket(
+                    client.entityId,
+                    client.data.getEquipment()
+                ))
+            }
         }
 
         loadChunksAroundPlayer(3).joinAll()
@@ -448,107 +451,118 @@ class PlayClient(
     suspend fun tick() {
         var handledPackets = 0
         while (handledPackets++ < 50 && packetQueue.isNotEmpty()) {
-            when (val packet = packetQueue.removeFirst()) {
-                is PlayCustomPacket -> {
-                    val handlers = server.getCustomPacketHandlers(packet.channel)
-                    if (handlers.isNotEmpty()) {
-                        handlers.forEach { handler ->
-                            handler(packet.channel, this@PlayClient, ByteArrayInputStream(packet.data))
-                        }
-                    } else {
-                        LOGGER.warn("Client $username sent unknown custom packet ${packet.channel}")
-                    }
-                }
-
-                is PlayerActionPacket -> when (packet.action) {
-                    PlayerActionPacket.Action.SWAP_OFFHAND -> {
-                        val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
-                        val newOffhand = data.inventory[data.selectedInventorySlot]
-                        data.inventory[data.selectedInventorySlot] = newMainhand
-                        data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                        sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
-                        sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
-                        server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
-                            entityId,
-                            EquipmentSlot.MAIN_HAND to newMainhand,
-                            EquipmentSlot.OFFHAND to newOffhand
-                        ))
-                    }
-
-                    PlayerActionPacket.Action.START_DIGGING,
-                    PlayerActionPacket.Action.CANCEL_DIGGING,
-                    PlayerActionPacket.Action.FINISH_DIGGING -> {
-                        sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                        val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
-                            PlayerActionPacket.Action.START_DIGGING
+            try {
+                when (val packet = packetQueue.removeFirst()) {
+                    is PlayCustomPacket -> {
+                        val handlers = server.getCustomPacketHandlers(packet.channel)
+                        if (handlers.isNotEmpty()) {
+                            handlers.forEach { handler ->
+                                handler(packet.channel, this@PlayClient, ByteArrayInputStream(packet.data))
+                            }
                         } else {
-                            PlayerActionPacket.Action.FINISH_DIGGING
+                            LOGGER.warn("Client $username sent unknown custom packet ${packet.channel}")
                         }
-                        if (packet.action == finishedAction) {
-                            if (!tryBreak(packet.location)) {
-                                sendPacket(SetBlockPacket(server.world, packet.location))
+                    }
+
+                    is PlayerActionPacket -> when (packet.action) {
+                        PlayerActionPacket.Action.SWAP_OFFHAND -> {
+                            val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                            val newOffhand = data.inventory[data.selectedInventorySlot]
+                            data.inventory[data.selectedInventorySlot] = newMainhand
+                            data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
+                            sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
+                            sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                            server.broadcastExcept(
+                                this@PlayClient, SetEquipmentPacket(
+                                    entityId,
+                                    EquipmentSlot.MAIN_HAND to newMainhand,
+                                    EquipmentSlot.OFFHAND to newOffhand
+                                )
+                            )
+                        }
+
+                        PlayerActionPacket.Action.START_DIGGING,
+                        PlayerActionPacket.Action.CANCEL_DIGGING,
+                        PlayerActionPacket.Action.FINISH_DIGGING -> {
+                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                            val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                                PlayerActionPacket.Action.START_DIGGING
+                            } else {
+                                PlayerActionPacket.Action.FINISH_DIGGING
+                            }
+                            if (packet.action == finishedAction) {
+                                if (!tryBreak(packet.location)) {
+                                    sendPacket(SetBlockPacket(server.world, packet.location))
+                                }
                             }
                         }
+
+                        else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
                     }
 
-                    else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
-                }
-
-                is UseItemOnBlockPacket -> {
-                    sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                    val item = data.getHeldItem(packet.hand)
-                    if (packet.hit.location.y < 2032) {
-                        val result = interactWithBlock(item, packet.hand, packet.hit)
-                        if (
-                            packet.hit.side == Direction.UP &&
-                            !result.isAccepted() &&
-                            packet.hit.location.y >= 2031 &&
-                            item.isNotEmpty() &&
-                            server.itemHandlers[item.itemId!!] is BlockItemHandler
-                        ) {
+                    is UseItemOnBlockPacket -> {
+                        sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                        val item = data.getHeldItem(packet.hand)
+                        if (packet.hit.location.y < 2032) {
+                            val result = interactWithBlock(item, packet.hand, packet.hit)
+                            if (
+                                packet.hit.side == Direction.UP &&
+                                !result.isAccepted() &&
+                                packet.hit.location.y >= 2031 &&
+                                item.isNotEmpty() &&
+                                server.itemHandlers[item.itemId!!] is BlockItemHandler
+                            ) {
+                                sendMessage(
+                                    Component.translatable("build.tooHigh", NamedTextColor.RED, Component.text(2031)),
+                                    MessageType.ACTION_BAR
+                                )
+                            } else if (result.shouldSwingHand()) {
+                                server.broadcast(
+                                    EntityAnimationPacket(
+                                        entityId,
+                                        if (packet.hand == Hand.MAINHAND) {
+                                            EntityAnimationPacket.SWING_MAINHAND
+                                        } else {
+                                            EntityAnimationPacket.SWING_OFFHAND
+                                        }
+                                    )
+                                )
+                            }
+                        } else {
                             sendMessage(
                                 Component.translatable("build.tooHigh", NamedTextColor.RED, Component.text(2031)),
                                 MessageType.ACTION_BAR
                             )
-                        } else if (result.shouldSwingHand()) {
-                            server.broadcast(EntityAnimationPacket(
-                                entityId,
-                                if (packet.hand == Hand.MAINHAND) {
-                                    EntityAnimationPacket.SWING_MAINHAND
-                                } else {
-                                    EntityAnimationPacket.SWING_OFFHAND
-                                }
-                            ))
                         }
-                    } else {
-                        sendMessage(
-                            Component.translatable("build.tooHigh", NamedTextColor.RED, Component.text(2031)),
-                            MessageType.ACTION_BAR
-                        )
+                        sendPacket(SetBlockPacket(server.world, packet.hit.location))
+                        sendPacket(SetBlockPacket(server.world, packet.hit.location + packet.hit.side.vector))
                     }
-                    sendPacket(SetBlockPacket(server.world, packet.hit.location))
-                    sendPacket(SetBlockPacket(server.world, packet.hit.location + packet.hit.side.vector))
-                }
 
-                is UseItemPacket -> {
-                    sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                    val item = data.getHeldItem(packet.hand)
-                    if (item.isNotEmpty()) {
-                        val result = interactWithItem(item, packet.hand)
-                        if (result.shouldSwingHand()) {
-                            server.broadcast(EntityAnimationPacket(
-                                entityId,
-                                if (packet.hand == Hand.MAINHAND) {
-                                    EntityAnimationPacket.SWING_MAINHAND
-                                } else {
-                                    EntityAnimationPacket.SWING_OFFHAND
-                                }
-                            ))
+                    is UseItemPacket -> {
+                        sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                        val item = data.getHeldItem(packet.hand)
+                        if (item.isNotEmpty()) {
+                            val result = interactWithItem(item, packet.hand)
+                            if (result.shouldSwingHand()) {
+                                server.broadcast(
+                                    EntityAnimationPacket(
+                                        entityId,
+                                        if (packet.hand == Hand.MAINHAND) {
+                                            EntityAnimationPacket.SWING_MAINHAND
+                                        } else {
+                                            EntityAnimationPacket.SWING_OFFHAND
+                                        }
+                                    )
+                                )
+                            }
                         }
                     }
-                }
 
-                else -> LOGGER.warn("Unhandled packet {}", packet)
+                    else -> LOGGER.warn("Unhandled packet {}", packet)
+                }
+            } catch (e: Exception) {
+                LOGGER.warn("Exception in packet handling", e)
+                sendMessage(Component.text(e.toString()).color(NamedTextColor.GOLD), MessageType.ACTION_BAR)
             }
         }
         if (packetQueue.isNotEmpty()) {

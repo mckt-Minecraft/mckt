@@ -6,7 +6,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
-import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.blocks.*
 import io.github.gaming32.mckt.commands.*
@@ -396,21 +395,18 @@ class MinecraftServer(
     fun getBlockHandler(block: Identifier?) = blockHandlers[block] ?: DefaultBlockHandler
 
     private fun registerBlockHandlers() {
-        DEFAULT_BLOCKSTATES.keys.forEach {
-            val properties = BLOCK_STATE_PROPERTIES[it]!!
-            if (properties.size == 1 && properties.keys.first() == "axis") {
-                registerBlockHandler(PillarBlockHandler, it)
-            } else if (it.value.endsWith("_sapling")) {
-                registerBlockHandler(SaplingBlockHandler, it)
-            } else if (it.value.endsWith("glass_pane")) {
-                registerBlockHandler(PaneBlockHandler, it)
-            } else if (it.value.endsWith("_door")) {
-                registerBlockHandler(DoorBlockHandler, it)
-            } else if (it.value.endsWith("_slab")) {
-                registerBlockHandler(SlabBlockHandler, it)
+        BLOCK_PROPERTIES.entries.forEach { (id, properties) ->
+            when (val type = properties.typeProperties) {
+                is BlockTypeProperties.DefaultBlockType -> {}
+                is BlockTypeProperties.DoorBlockType -> registerBlockHandler(DoorBlockHandler, id)
+                is BlockTypeProperties.PaneBlockType -> registerBlockHandler(PaneBlockHandler, id)
+                is BlockTypeProperties.PillarBlockType -> registerBlockHandler(PillarBlockHandler, id)
+                is BlockTypeProperties.SaplingBlockType -> registerBlockHandler(SaplingBlockHandler, id)
+                is BlockTypeProperties.SlabBlockType -> registerBlockHandler(SlabBlockHandler, id)
+                is BlockTypeProperties.StairsBlockType ->
+                    registerBlockHandler(StairsBlockHandler(id, type.baseBlockState), id)
             }
         }
-        registerBlockHandler(PaneBlockHandler, Identifier("iron_bars"))
     }
 
     fun registerItemHandler(handler: ItemHandler, vararg items: Identifier) {

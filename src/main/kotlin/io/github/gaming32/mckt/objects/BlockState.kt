@@ -12,9 +12,14 @@ import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.commands.wrap
 import io.github.gaming32.mckt.items.BlockItemHandler
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.kyori.adventure.text.Component
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -155,6 +160,14 @@ class BlockState internal constructor(
             }
             return DEFAULT_BLOCKSTATES[blockId]!!.with(properties)
         }
+    }
+
+    object CanonicalSerializer : KSerializer<BlockState> {
+        override val descriptor = PrimitiveSerialDescriptor("BlockState", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: BlockState) = encoder.encodeString(value.toString())
+
+        override fun deserialize(decoder: Decoder) = parse(decoder.decodeString())
     }
 
     @Transient

@@ -3,6 +3,7 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.data.toGson
+import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -55,12 +56,47 @@ data class BlockMaterial(
 )
 
 @Serializable
+sealed class BlockTypeProperties {
+    @Serializable
+    @SerialName("block")
+    object DefaultBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("pillar")
+    object PillarBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("sapling")
+    object SaplingBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("pane")
+    object PaneBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("door")
+    object DoorBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("slab")
+    object SlabBlockType : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("stairs")
+    data class StairsBlockType(
+        @Serializable(BlockState.CanonicalSerializer::class)
+        val baseBlockState: BlockState
+    ) : BlockTypeProperties()
+}
+
+@Serializable
 data class BlockProperties(
     val soundGroup: BlockSoundGroup,
     val material: BlockMaterial,
     val mapColor: Int,
     val blastResistance: Double,
-    val hardness: Double
+    val hardness: Double,
+    val typeProperties: BlockTypeProperties
 )
 
 val DEFAULT_TRANSLATIONS = (MinecraftServer::class.java.getResourceAsStream("/en_us.json")?.use {
@@ -112,7 +148,8 @@ val BLOCK_PROPERTIES = MinecraftServer::class.java.getResourceAsStream("/dataexp
             BLOCK_MATERIALS[material] ?: throw IllegalArgumentException("Unknown material: $material"),
             data["mapColor"].cast<JsonPrimitive>().int,
             data["blastResistance"].cast<JsonPrimitive>().double,
-            data["hardness"].cast<JsonPrimitive>().double
+            data["hardness"].cast<JsonPrimitive>().double,
+            Json.decodeFromJsonElement(data["typeProperties"].cast())
         )
     }
 } ?: mapOf()
