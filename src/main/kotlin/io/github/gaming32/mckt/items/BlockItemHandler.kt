@@ -17,12 +17,17 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         constructor(ctx: ItemUsageContext) : this(ctx.client, ctx.hand, ctx.hit, ctx.world, ctx.itemStack)
 
         val placementPos = hit.location + hit.side.vector
-        val replaceable = world.getBlockImmediate(hit.location).canReplace(this)
+        var replaceable = true
+            private set
 
-        override val location = if (replaceable) {
+        override val location get() = if (replaceable) {
             super.location
         } else {
             placementPos
+        }
+
+        init {
+            replaceable = world.getBlockImmediate(hit.location).canReplace(this)
         }
 
         fun canPlace() = replaceable || world.getBlockImmediate(location).canReplace(this)

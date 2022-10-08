@@ -153,7 +153,7 @@ fun InputStream.readItemStack(): ItemStack {
     return ItemStack(
         ITEM_PROTOCOL_TO_ID[intItemId] ?: throw IllegalArgumentException("Unknown item ID: $intItemId"),
         readUByte().toInt(),
-        readNbt()
+        try { readNbt() } catch (_: IllegalArgumentException) { null }
     )
 }
 

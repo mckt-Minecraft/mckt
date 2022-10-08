@@ -424,7 +424,6 @@ class PlayClient(
                 encodeData(chunk::networkEncode)
             }
             if (sendChannel.isClosedForWrite) return
-//            LOGGER.info("{}, {}, {}, {}, {}, {}", x, z, chunk.x, chunk.z, chunk.xInRegion, chunk.zInRegion)
             sendPacket(ChunkAndLightDataPacket(chunk.x, chunk.z, chunkData))
         }
     }
@@ -461,40 +460,38 @@ class PlayClient(
                     }
                 }
 
-                is PlayerActionPacket -> {
-                    when (packet.action) {
-                        PlayerActionPacket.Action.SWAP_OFFHAND -> {
-                            val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
-                            val newOffhand = data.inventory[data.selectedInventorySlot]
-                            data.inventory[data.selectedInventorySlot] = newMainhand
-                            data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
-                            sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
-                            sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
-                            server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
-                                entityId,
-                                EquipmentSlot.MAIN_HAND to newMainhand,
-                                EquipmentSlot.OFFHAND to newOffhand
-                            ))
-                        }
-
-                        PlayerActionPacket.Action.START_DIGGING,
-                        PlayerActionPacket.Action.CANCEL_DIGGING,
-                        PlayerActionPacket.Action.FINISH_DIGGING -> {
-                            sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
-                                PlayerActionPacket.Action.START_DIGGING
-                            } else {
-                                PlayerActionPacket.Action.FINISH_DIGGING
-                            }
-                            if (packet.action == finishedAction) {
-                                if (!tryBreak(packet.location)) {
-                                    sendPacket(SetBlockPacket(server.world, packet.location))
-                                }
-                            }
-                        }
-
-                        else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
+                is PlayerActionPacket -> when (packet.action) {
+                    PlayerActionPacket.Action.SWAP_OFFHAND -> {
+                        val newMainhand = data.inventory[EquipmentSlot.OFFHAND.rawSlot]
+                        val newOffhand = data.inventory[data.selectedInventorySlot]
+                        data.inventory[data.selectedInventorySlot] = newMainhand
+                        data.inventory[EquipmentSlot.OFFHAND.rawSlot] = newOffhand
+                        sendPacket(SetContainerSlotPacket(0, data.selectedInventorySlot, newMainhand))
+                        sendPacket(SetContainerSlotPacket(0, EquipmentSlot.OFFHAND.rawSlot, newOffhand))
+                        server.broadcastExcept(this@PlayClient, SetEquipmentPacket(
+                            entityId,
+                            EquipmentSlot.MAIN_HAND to newMainhand,
+                            EquipmentSlot.OFFHAND to newOffhand
+                        ))
                     }
+
+                    PlayerActionPacket.Action.START_DIGGING,
+                    PlayerActionPacket.Action.CANCEL_DIGGING,
+                    PlayerActionPacket.Action.FINISH_DIGGING -> {
+                        sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
+                        val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                            PlayerActionPacket.Action.START_DIGGING
+                        } else {
+                            PlayerActionPacket.Action.FINISH_DIGGING
+                        }
+                        if (packet.action == finishedAction) {
+                            if (!tryBreak(packet.location)) {
+                                sendPacket(SetBlockPacket(server.world, packet.location))
+                            }
+                        }
+                    }
+
+                    else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
                 }
 
                 is UseItemOnBlockPacket -> {

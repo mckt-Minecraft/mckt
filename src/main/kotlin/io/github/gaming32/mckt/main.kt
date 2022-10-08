@@ -279,13 +279,20 @@ class MinecraftServer(
         }
         registerCommand(Component.text("Debug tools"), literal<CommandSource>("debug")
             .requires { it.hasPermission(5) }
-            .then(literal<CommandSource>("reload-commands")
+            .then(literal<CommandSource>("reload-registrations")
                 .executesSuspend {
                     source.replyBroadcast(Component.text("Reloading commands..."))
                     commandDispatcher.root.children.clear()
                     registerCommands()
                     clients.values.forEach { it.sendCommandTree() }
-                    source.replyBroadcast(Component.text("Reloaded commands", NamedTextColor.GREEN))
+                    source.replyBroadcast(Component.text("Reloading handlers..."))
+                    customPacketHandlers.clear()
+                    registerCustomPacketHandlers()
+                    blockHandlers.clear()
+                    registerBlockHandlers()
+                    itemHandlers.clear()
+                    registerItemHandlers()
+                    source.replyBroadcast(Component.text("Reloaded", NamedTextColor.GREEN))
                     0
                 }
             )
@@ -399,6 +406,8 @@ class MinecraftServer(
                 registerBlockHandler(PaneBlockHandler, it)
             } else if (it.value.endsWith("_door")) {
                 registerBlockHandler(DoorBlockHandler, it)
+            } else if (it.value.endsWith("_slab")) {
+                registerBlockHandler(SlabBlockHandler, it)
             }
         }
         registerBlockHandler(PaneBlockHandler, Identifier("iron_bars"))

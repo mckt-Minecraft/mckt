@@ -4,7 +4,6 @@ import io.github.gaming32.mckt.*
 import io.github.gaming32.mckt.data.writeBlockPosition
 import io.github.gaming32.mckt.data.writeVarLong
 import io.github.gaming32.mckt.items.BlockItemHandler
-import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
@@ -52,7 +51,7 @@ abstract class BlockHandler {
         stack: ItemStack
     ) = Unit
 
-    open fun canReplace(state: BlockState, ctx: ItemHandler.ItemUsageContext) =
+    open fun canReplace(state: BlockState, ctx: BlockItemHandler.ItemPlacementContext) =
         BLOCK_PROPERTIES[state.blockId]?.material?.replaceable == true &&
             (ctx.itemStack.isEmpty() || ctx.itemStack.itemId != state.blockId)
 

@@ -11,7 +11,7 @@ import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.commands.wrap
-import io.github.gaming32.mckt.items.ItemHandler
+import io.github.gaming32.mckt.items.BlockItemHandler
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -174,8 +174,8 @@ class BlockState internal constructor(
 
         other as BlockState
 
-        // Canonical means interned. If this is interned, and it's not the same object as the other interned state, it's
-        // not the same state.
+        // Canonical means interned. If this is interned, and it's not the same object as the other interned state,
+        // it's not the same state.
         if (canonical && other.canonical) return false
 
         if (blockId != other.blockId) return false
@@ -237,7 +237,7 @@ class BlockState internal constructor(
     suspend fun onUse(world: World, client: PlayClient, hand: Hand, hit: BlockHitResult) =
         getHandler(world.server).onUse(this, world, hit.location, client, hand, hit)
 
-    fun canReplace(ctx: ItemHandler.ItemUsageContext) =
+    fun canReplace(ctx: BlockItemHandler.ItemPlacementContext) =
         getHandler(ctx.server).canReplace(this, ctx)
 
     suspend fun getStateForNeighborUpdate(
