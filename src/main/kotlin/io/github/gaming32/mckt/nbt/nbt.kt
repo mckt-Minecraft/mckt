@@ -95,8 +95,7 @@ value class NbtString(val value: String) : NbtElement<StringBinaryTag, NbtString
 
 typealias NbtListElement<T> = NbtElement<out BinaryTag, T>
 
-@JvmInline
-value class NbtList<T : NbtListElement<T>>(
+class NbtList<T : NbtListElement<T>>(
     val content: MutableList<T> = mutableListOf()
 ) : NbtElement<ListBinaryTag, NbtList<T>>, MutableList<T> by content {
     override val type: BinaryTagType<ListBinaryTag> get() = BinaryTagTypes.LIST
@@ -117,8 +116,7 @@ value class NbtList<T : NbtListElement<T>>(
     }
 }
 
-@JvmInline
-value class NbtCompound(
+class NbtCompound(
     val content: MutableMap<String, NbtElement<*, *>> = mutableMapOf()
 ) : NbtElement<CompoundBinaryTag, NbtCompound>, MutableMap<String, NbtElement<*, *>> by content {
     override val type: BinaryTagType<CompoundBinaryTag> get() = BinaryTagTypes.COMPOUND
@@ -144,6 +142,8 @@ value class NbtCompound(
 
     constructor(vararg content: Pair<String, NbtElement<*, *>>) : this(mutableMapOf(*content))
 
+    fun getBoolean(key: String) = content[key]?.castOrNull<NbtByte>()?.booleanValue ?: false
+
     fun getInt(key: String) = content[key]?.castOrNull<NbtInt>()?.value ?: 0
 
     fun getString(key: String) = content[key]?.castOrNull<NbtString>()?.value ?: ""
@@ -154,6 +154,14 @@ value class NbtCompound(
     fun getCompound(key: String) = content[key] as? NbtCompound ?: NbtCompound()
 
     fun getLongArray(key: String) = content[key]?.castOrNull<NbtLongArray>()?.content ?: LongArray(0)
+
+    fun putBoolean(key: String, value: Boolean) {
+        content[key] = NbtByte(value)
+    }
+
+    fun putInt(key: String, value: Int) {
+        content[key] = NbtInt(value)
+    }
 
     fun putString(key: String, value: String) {
         content[key] = NbtString(value)

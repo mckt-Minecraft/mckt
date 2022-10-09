@@ -31,6 +31,19 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
         }
 
         fun canPlace() = replaceable || world.getBlockImmediate(location).canReplace(this)
+
+        val placementDirections: Array<Direction> get() {
+            val directions = Direction.getEntityFacingOrder(client)
+            if (replaceable) return directions
+            val side = this.side
+            var i = 0
+            while (i < directions.size && directions[i] != side.opposite) i++
+            if (i > 0) {
+                directions.copyInto(directions, 1, 0, i - 1)
+                directions[0] = side.opposite
+            }
+            return directions
+        }
     }
 
     override suspend fun useOnBlock(ctx: ItemUsageContext) =

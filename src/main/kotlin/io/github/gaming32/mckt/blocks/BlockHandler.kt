@@ -104,4 +104,16 @@ abstract class BlockHandler {
             })
         }
     }
+
+    open fun onStateReplaced(
+        state: BlockState,
+        world: World,
+        pos: BlockPosition,
+        newState: BlockState,
+        moved: Boolean
+    ) {
+        if (state.hasBlockEntity(world.server) && state.blockId != newState.blockId) {
+            world.removeBlockEntity(pos)
+        }
+    }
 }

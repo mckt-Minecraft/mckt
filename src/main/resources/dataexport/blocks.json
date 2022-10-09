@@ -1717,7 +1717,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "oak"
     }
   },
   "minecraft:spruce_sign": {
@@ -1727,7 +1728,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "spruce"
     }
   },
   "minecraft:birch_sign": {
@@ -1737,7 +1739,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "birch"
     }
   },
   "minecraft:acacia_sign": {
@@ -1747,7 +1750,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "acacia"
     }
   },
   "minecraft:jungle_sign": {
@@ -1757,7 +1761,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "jungle"
     }
   },
   "minecraft:dark_oak_sign": {
@@ -1767,7 +1772,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "dark_oak"
     }
   },
   "minecraft:mangrove_sign": {
@@ -1777,7 +1783,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "mangrove"
     }
   },
   "minecraft:oak_door": {
@@ -1828,7 +1835,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "oak"
     }
   },
   "minecraft:spruce_wall_sign": {
@@ -1838,7 +1846,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "spruce"
     }
   },
   "minecraft:birch_wall_sign": {
@@ -1848,7 +1857,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "birch"
     }
   },
   "minecraft:acacia_wall_sign": {
@@ -1858,7 +1868,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "acacia"
     }
   },
   "minecraft:jungle_wall_sign": {
@@ -1868,7 +1879,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "jungle"
     }
   },
   "minecraft:dark_oak_wall_sign": {
@@ -1878,7 +1890,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "dark_oak"
     }
   },
   "minecraft:mangrove_wall_sign": {
@@ -1888,7 +1901,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "mangrove"
     }
   },
   "minecraft:lever": {
@@ -7651,7 +7665,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "crimson"
     }
   },
   "minecraft:warped_sign": {
@@ -7661,7 +7676,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "sign",
+      "signType": "warped"
     }
   },
   "minecraft:crimson_wall_sign": {
@@ -7671,7 +7687,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "crimson"
     }
   },
   "minecraft:warped_wall_sign": {
@@ -7681,7 +7698,8 @@
     "blastResistance": 1.0,
     "hardness": 1.0,
     "typeProperties": {
-      "type": "block"
+      "type": "wall_sign",
+      "signType": "warped"
     }
   },
   "minecraft:structure_block": {

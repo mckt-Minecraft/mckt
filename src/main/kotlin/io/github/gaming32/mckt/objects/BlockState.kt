@@ -10,6 +10,7 @@ import io.github.gaming32.mckt.GlobalPalette.BLOCKSTATE_TO_ID
 import io.github.gaming32.mckt.GlobalPalette.BLOCK_STATE_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
+import io.github.gaming32.mckt.blocks.BlockEntityProvider
 import io.github.gaming32.mckt.commands.wrap
 import io.github.gaming32.mckt.items.BlockItemHandler
 import kotlinx.serialization.KSerializer
@@ -179,6 +180,8 @@ class BlockState internal constructor(
 
     val propertyOptions by lazy { BLOCK_STATE_PROPERTIES[blockId]!! }
 
+    val blockProperties by lazy { BLOCK_PROPERTIES[blockId]!! }
+
     fun toMap() = properties + ("blockId" to blockId.toString())
 
     override fun equals(other: Any?): Boolean {
@@ -277,4 +280,13 @@ class BlockState internal constructor(
         fromPos: BlockPosition,
         notify: Boolean
     ) = getHandler(world.server).neighborUpdate(this, world, pos, block, fromPos, notify)
+
+    fun onStateReplaced(
+        world: World,
+        pos: BlockPosition,
+        newState: BlockState,
+        moved: Boolean
+    ) = getHandler(world.server).onStateReplaced(this, world, pos, newState, moved)
+
+    fun hasBlockEntity(server: MinecraftServer) = getHandler(server) is BlockEntityProvider<*>
 }

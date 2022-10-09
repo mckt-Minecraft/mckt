@@ -79,7 +79,6 @@ class MinecraftServer(
     private lateinit var acceptConnectionsJob: Job
 
     val configFile = File("config.json")
-    @OptIn(ExperimentalSerializationApi::class)
     var config = reloadConfig()
         private set
 
@@ -234,8 +233,13 @@ class MinecraftServer(
 
     private suspend fun syncDirtyBlocks() = coroutineScope {
         val sections = mutableMapOf<BlockPosition, MutableMap<BlockPosition, BlockState>>()
+        val blockEntityPackets = mutableListOf<Packet>()
         world.dirtyBlocks.forEach {
-            sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = world.getBlock(it)
+            val block = world.getBlock(it)
+            sections.computeIfAbsent(it shr 4) { mutableMapOf() }[it and 15] = block
+            if (block.hasBlockEntity(this@MinecraftServer)) {
+                blockEntityPackets += world.getBlockEntity(it)?.updateNetworkSerialize() ?: return@forEach
+            }
         }
         if (world.dirtyBlocks.size < 2 shl 16) {
             world.dirtyBlocks.clear()
@@ -252,6 +256,11 @@ class MinecraftServer(
                 SectionMultiSetBlockPacket(sectionLocation, section)
             }
             for (client in clients.values) {
+                jobs.add(launch { client.sendPacket(packet) })
+            }
+        }
+        for (client in clients.values) {
+            for (packet in blockEntityPackets) {
                 jobs.add(launch { client.sendPacket(packet) })
             }
         }
@@ -417,6 +426,8 @@ class MinecraftServer(
                 is BlockTypeProperties.StairsBlockType ->
                     registerBlockHandler(StairsBlockHandler(id, type.baseBlockState), id)
                 is BlockTypeProperties.TrapdoorBlockType -> registerBlockHandler(TrapdoorBlockHandler, id)
+                is BlockTypeProperties.SignBlockType -> registerBlockHandler(SignBlockHandler, id)
+                is BlockTypeProperties.WallSignBlockType -> registerBlockHandler(WallSignBlockHandler, id)
             }
         }
     }
@@ -429,10 +440,16 @@ class MinecraftServer(
 
     private fun registerItemHandlers() {
         ITEM_ID_TO_PROTOCOL.keys.forEach { itemId ->
-            if (itemId in DEFAULT_BLOCKSTATES) {
-                registerItemHandler(BlockItemHandler(itemId), itemId)
-            } else if (itemId.value.endsWith("_sword")) {
+            if (itemId.value.endsWith("_sword")) {
                 registerItemHandler(SwordItemHandler, itemId)
+            } else if (itemId.value.endsWith("_sign")) {
+                val handler = SignItemHandler(itemId, Identifier(
+                    itemId.namespace,
+                    itemId.value.substring(0, itemId.value.length - 5) + "_wall_sign"
+                ))
+                registerItemHandler(handler, itemId)
+            } else if (itemId in DEFAULT_BLOCKSTATES) {
+                registerItemHandler(BlockItemHandler(itemId), itemId)
             }
         }
         registerItemHandler(BoneMealItemHandler, Identifier("bone_meal"))

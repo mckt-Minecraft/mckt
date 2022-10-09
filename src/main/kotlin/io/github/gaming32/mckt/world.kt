@@ -3,6 +3,9 @@
 package io.github.gaming32.mckt
 
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
+import io.github.gaming32.mckt.blocks.BlockEntityProvider
+import io.github.gaming32.mckt.blocks.entities.BlockEntities
+import io.github.gaming32.mckt.blocks.entities.BlockEntity
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
@@ -391,6 +394,8 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
     suspend fun getChunk(x: Int, z: Int): WorldChunk? =
         getRegion(x shr 5, z shr 5).getChunk(x and 31, z and 31)
 
+    fun getLoadedChunk(x: Int, z: Int) = openRegions[x shr 5, z shr 5]?.getChunk(x and 31, z and 31)
+
     suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (GeneratorArgs) -> Unit = {}) =
         getRegion(x shr 5, z shr 5).getChunkOrElse(x and 31, z and 31, generate)
 
@@ -478,6 +483,17 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
     override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState) =
         setBlockImmediate(x, y, z, block, SetBlockFlags.DEFAULT_FLAGS)
 
+    fun addBlockEntity(entity: BlockEntity<*>) {
+        getLoadedChunk(entity.pos.x shr 4, entity.pos.z shr 4)?.addBlockEntity(entity)
+    }
+
+    fun getBlockEntity(pos: BlockPosition) =
+        getLoadedChunk(pos.x shr 4, pos.z shr 4)?.getBlockEntity(BlockPosition(pos.x and 15, pos.y, pos.z and 15))
+
+    fun removeBlockEntity(pos: BlockPosition) {
+        getLoadedChunk(pos.x shr 4, pos.z shr 4)?.removeBlockEntity(BlockPosition(pos.x and 15, pos.y, pos.z and 15))
+    }
+
     suspend fun findSpawnPoint(): BlockPosition {
         if (meta.spawnPos != BlockPosition.ZERO) {
             return meta.spawnPos
@@ -537,12 +553,6 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
 
 class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, BlockAccess {
     val regionFile = File(world.regionsDir, "region_${x}_${z}.nbt")
-
-    @Serializable
-    internal class RegionData(
-        @SerialName("ChunksPresent") val chunksPresent: BitSet,
-        @SerialName("Chunks")        val chunks: Array<WorldChunk.ChunkData>
-    )
 
     internal var loadJob: Job? = null
 
@@ -628,13 +638,8 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     val x get() = (region.x shl 5) + xInRegion
     val z get() = (region.z shl 5) + zInRegion
 
-    @Serializable
-    internal class ChunkData(
-        @SerialName("SectionsPresent") val sectionsPresent: BitSet,
-        @SerialName("Sections")        val sections: Array<ChunkSection.SectionData>
-    )
-
     private val sections = arrayOfNulls<ChunkSection>(254)
+    internal val blockEntities = mutableMapOf<BlockPosition, BlockEntity<*>>()
     internal var ready = false
 
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
@@ -647,6 +652,7 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
 
     override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState): Boolean {
         if (y < -2032 || y > 2031) return false
+        val old: BlockState
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
             if (section == null) {
@@ -654,15 +660,42 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 section = ChunkSection(this, y shr 4)
                 sections[(y shr 4) + 127] = section
             }
-            section.setBlock(x, y and 15, z, block)
+            old = section.setBlock(x, y and 15, z, block)
             if (section.blockCount == 0) { // The section is now empty
                 sections[(y shr 4) + 127] = null
             }
         }
+        val pos = BlockPosition((this.x shl 4) + x, y, (this.z shl 4) + z)
+        if (old != block) {
+            old.onStateReplaced(world, pos, block, false)
+            if (block.hasBlockEntity(world.server)) {
+                val relPos = BlockPosition(x, y, z)
+                val entity = getBlockEntity(relPos)
+                if (entity == null) {
+                    addBlockEntity(
+                        block.getHandler(world.server)
+                            .cast<BlockEntityProvider<*>>()
+                            .createBlockEntity(pos, block)
+                    )
+                } else {
+                    entity.cachedState = block
+                }
+            }
+        }
         if (ready) {
-            world.dirtyBlocks.add(BlockPosition((this.x shl 4) + x, y, (this.z shl 4) + z))
+            world.dirtyBlocks.add(pos)
         }
         return true
+    }
+
+    fun addBlockEntity(entity: BlockEntity<*>) {
+        blockEntities[entity.pos - BlockPosition(x shl 4, 0, z shl 4)] = entity
+    }
+
+    fun getBlockEntity(pos: BlockPosition) = blockEntities[pos]
+
+    fun removeBlockEntity(pos: BlockPosition) {
+        blockEntities.remove(pos)
     }
 
     internal fun toNbt() = synchronized(this) {
@@ -677,6 +710,9 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 }
             }
             put("SectionsPresent", sectionsPresent.toLongArray())
+            putNbtList<NbtCompound>("BlockEntities") {
+                blockEntities.values.forEach { add(it.toIdentifiedLocatedNbt()) }
+            }
         }
     }
 
@@ -689,6 +725,18 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
                 sections[i] = ChunkSection(this, i - 127).also { it.fromNbt(sectionsNbt[dataIndex++]) }
             } else {
                 sections[i] = null
+            }
+        }
+        blockEntities.clear()
+        val chunkOrigin = BlockPosition(x shl 4, 0, z shl 4)
+        nbt.getList<NbtCompound>("BlockEntities").forEach {
+            val location = BlockEntities.blockPositionFromNbt(it)
+            val relativeLocation = location - chunkOrigin
+            val entity = BlockEntities.createFromNbt(location, getBlockImmediate(relativeLocation), it)
+            if (entity == null) {
+                LOGGER.warn("Skipped block entity at $location")
+            } else {
+                blockEntities[relativeLocation] = entity
             }
         }
         ready = true
@@ -722,13 +770,6 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
     val xInRegion get() = chunk.xInRegion
     val zInRegion get() = chunk.zInRegion
 
-    @Serializable
-    internal class SectionData(
-        @SerialName("BlockCount") val blockCount: Int,
-        @SerialName("Palette")    val palette: List<Map<String, String>>,
-        @SerialName("Blocks")     val blocks: SimpleBitStorage
-    )
-
     internal val data = PalettedStorage(4096, Blocks.AIR) { writeVarInt(it.globalId) }
 
     var blockCount = 0
@@ -740,7 +781,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 
     fun getBlock(pos: BlockPosition) = getBlock(pos.x, pos.y, pos.z)
 
-    internal fun setBlock(x: Int, y: Int, z: Int, block: BlockState) {
+    internal fun setBlock(x: Int, y: Int, z: Int, block: BlockState): BlockState {
         val index = getBlockIndex(x, y, z)
         val old = data[index]
         data[index] = block
@@ -751,6 +792,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
         } else if (old == Blocks.AIR) {
             blockCount++
         }
+        return old
     }
 
     internal fun toNbt() = buildNbtCompound {

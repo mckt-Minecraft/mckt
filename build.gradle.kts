@@ -55,6 +55,8 @@ dependencies {
 
     implementation("it.unimi.dsi:fastutil-core:8.5.9")
 
+    implementation("io.michaelrocks.bimap:bimap:1.1.0")
+
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 

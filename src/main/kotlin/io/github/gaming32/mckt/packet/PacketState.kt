@@ -46,6 +46,7 @@ enum class PacketState(private val packets: Map<Int, (InputStream) -> Packet>) {
         /* 0x20 */ PlayPingPacket.C2S_TYPE to ::PlayPingPacket,
         /* 0x20 */ ServerboundSetHeldItemPacket.TYPE to ::ServerboundSetHeldItemPacket,
         /* 0x2B */ SetCreativeInventorySlotPacket.TYPE to ::SetCreativeInventorySlotPacket,
+        /* 0x2E */ UpdateSignPacket.TYPE to ::UpdateSignPacket,
         /* 0x2F */ SwingArmPacket.TYPE to ::SwingArmPacket,
         /* 0x31 */ UseItemOnBlockPacket.TYPE to ::UseItemOnBlockPacket,
         /* 0x32 */ UseItemPacket.TYPE to ::UseItemPacket,

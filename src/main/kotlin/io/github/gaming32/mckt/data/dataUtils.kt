@@ -7,6 +7,7 @@ import io.github.gaming32.mckt.ITEM_PROTOCOL_TO_ID
 import io.github.gaming32.mckt.nbt.NbtCompound
 import io.github.gaming32.mckt.objects.*
 import io.ktor.utils.io.*
+import net.kyori.adventure.nbt.BinaryTagTypes
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.io.*
@@ -315,16 +316,18 @@ fun OutputStream.writeItemStack(item: ItemStack) {
     if (item.isNotEmpty()) {
         writeVarInt(ITEM_ID_TO_PROTOCOL[item.itemId] ?: throw IllegalArgumentException("Unknown item ID: ${item.itemId}"))
         writeVarInt(item.count)
-        val nbt = item.extraNbt
-        if (nbt.isNullOrEmpty()) {
-            write(0) // TAG_End
-        } else {
-            writeNbt(nbt)
-        }
+        writeNullableNbt(item.extraNbt)
     }
 }
 
 fun OutputStream.writeItemStackArray(items: Array<out ItemStack>) = writeArray(items) { writeItemStack(it) }
+
+fun OutputStream.writeNullableNbt(nbt: NbtCompound?) =
+    if (nbt.isNullOrEmpty()) {
+        writeByte(BinaryTagTypes.END.id().toInt())
+    } else {
+        writeNbt(nbt)
+    }
 
 fun OutputStream.writeNbt(nbt: NbtCompound) = io.github.gaming32.mckt.nbt.writeNbt(nbt, this)
 

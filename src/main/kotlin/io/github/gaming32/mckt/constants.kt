@@ -91,6 +91,18 @@ sealed class BlockTypeProperties {
     @Serializable
     @SerialName("trapdoor")
     object TrapdoorBlockType : BlockTypeProperties()
+
+    sealed interface SignBlockTypeLike {
+        val signType: String
+    }
+
+    @Serializable
+    @SerialName("sign")
+    data class SignBlockType(override val signType: String) : BlockTypeProperties(), SignBlockTypeLike
+
+    @Serializable
+    @SerialName("wall_sign")
+    data class WallSignBlockType(override val signType: String) : BlockTypeProperties(), SignBlockTypeLike
 }
 
 @Serializable

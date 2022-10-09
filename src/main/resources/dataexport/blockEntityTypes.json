@@ -1,0 +1,312 @@
+{
+  "minecraft:furnace": {
+    "blocks": [
+      "minecraft:furnace"
+    ],
+    "networkId": 0
+  },
+  "minecraft:chest": {
+    "blocks": [
+      "minecraft:chest"
+    ],
+    "networkId": 1
+  },
+  "minecraft:trapped_chest": {
+    "blocks": [
+      "minecraft:trapped_chest"
+    ],
+    "networkId": 2
+  },
+  "minecraft:ender_chest": {
+    "blocks": [
+      "minecraft:ender_chest"
+    ],
+    "networkId": 3
+  },
+  "minecraft:jukebox": {
+    "blocks": [
+      "minecraft:jukebox"
+    ],
+    "networkId": 4
+  },
+  "minecraft:dispenser": {
+    "blocks": [
+      "minecraft:dispenser"
+    ],
+    "networkId": 5
+  },
+  "minecraft:dropper": {
+    "blocks": [
+      "minecraft:dropper"
+    ],
+    "networkId": 6
+  },
+  "minecraft:sign": {
+    "blocks": [
+      "minecraft:oak_sign",
+      "minecraft:spruce_sign",
+      "minecraft:birch_sign",
+      "minecraft:acacia_sign",
+      "minecraft:jungle_sign",
+      "minecraft:dark_oak_sign",
+      "minecraft:oak_wall_sign",
+      "minecraft:spruce_wall_sign",
+      "minecraft:birch_wall_sign",
+      "minecraft:acacia_wall_sign",
+      "minecraft:jungle_wall_sign",
+      "minecraft:dark_oak_wall_sign",
+      "minecraft:crimson_sign",
+      "minecraft:crimson_wall_sign",
+      "minecraft:warped_sign",
+      "minecraft:warped_wall_sign",
+      "minecraft:mangrove_sign",
+      "minecraft:mangrove_wall_sign"
+    ],
+    "networkId": 7
+  },
+  "minecraft:mob_spawner": {
+    "blocks": [
+      "minecraft:spawner"
+    ],
+    "networkId": 8
+  },
+  "minecraft:piston": {
+    "blocks": [
+      "minecraft:moving_piston"
+    ],
+    "networkId": 9
+  },
+  "minecraft:brewing_stand": {
+    "blocks": [
+      "minecraft:brewing_stand"
+    ],
+    "networkId": 10
+  },
+  "minecraft:enchanting_table": {
+    "blocks": [
+      "minecraft:enchanting_table"
+    ],
+    "networkId": 11
+  },
+  "minecraft:end_portal": {
+    "blocks": [
+      "minecraft:end_portal"
+    ],
+    "networkId": 12
+  },
+  "minecraft:beacon": {
+    "blocks": [
+      "minecraft:beacon"
+    ],
+    "networkId": 13
+  },
+  "minecraft:skull": {
+    "blocks": [
+      "minecraft:skeleton_skull",
+      "minecraft:skeleton_wall_skull",
+      "minecraft:creeper_head",
+      "minecraft:creeper_wall_head",
+      "minecraft:dragon_head",
+      "minecraft:dragon_wall_head",
+      "minecraft:zombie_head",
+      "minecraft:zombie_wall_head",
+      "minecraft:wither_skeleton_skull",
+      "minecraft:wither_skeleton_wall_skull",
+      "minecraft:player_head",
+      "minecraft:player_wall_head"
+    ],
+    "networkId": 14
+  },
+  "minecraft:daylight_detector": {
+    "blocks": [
+      "minecraft:daylight_detector"
+    ],
+    "networkId": 15
+  },
+  "minecraft:hopper": {
+    "blocks": [
+      "minecraft:hopper"
+    ],
+    "networkId": 16
+  },
+  "minecraft:comparator": {
+    "blocks": [
+      "minecraft:comparator"
+    ],
+    "networkId": 17
+  },
+  "minecraft:banner": {
+    "blocks": [
+      "minecraft:white_banner",
+      "minecraft:orange_banner",
+      "minecraft:magenta_banner",
+      "minecraft:light_blue_banner",
+      "minecraft:yellow_banner",
+      "minecraft:lime_banner",
+      "minecraft:pink_banner",
+      "minecraft:gray_banner",
+      "minecraft:light_gray_banner",
+      "minecraft:cyan_banner",
+      "minecraft:purple_banner",
+      "minecraft:blue_banner",
+      "minecraft:brown_banner",
+      "minecraft:green_banner",
+      "minecraft:red_banner",
+      "minecraft:black_banner",
+      "minecraft:white_wall_banner",
+      "minecraft:orange_wall_banner",
+      "minecraft:magenta_wall_banner",
+      "minecraft:light_blue_wall_banner",
+      "minecraft:yellow_wall_banner",
+      "minecraft:lime_wall_banner",
+      "minecraft:pink_wall_banner",
+      "minecraft:gray_wall_banner",
+      "minecraft:light_gray_wall_banner",
+      "minecraft:cyan_wall_banner",
+      "minecraft:purple_wall_banner",
+      "minecraft:blue_wall_banner",
+      "minecraft:brown_wall_banner",
+      "minecraft:green_wall_banner",
+      "minecraft:red_wall_banner",
+      "minecraft:black_wall_banner"
+    ],
+    "networkId": 18
+  },
+  "minecraft:structure_block": {
+    "blocks": [
+      "minecraft:structure_block"
+    ],
+    "networkId": 19
+  },
+  "minecraft:end_gateway": {
+    "blocks": [
+      "minecraft:end_gateway"
+    ],
+    "networkId": 20
+  },
+  "minecraft:command_block": {
+    "blocks": [
+      "minecraft:command_block",
+      "minecraft:chain_command_block",
+      "minecraft:repeating_command_block"
+    ],
+    "networkId": 21
+  },
+  "minecraft:shulker_box": {
+    "blocks": [
+      "minecraft:shulker_box",
+      "minecraft:black_shulker_box",
+      "minecraft:blue_shulker_box",
+      "minecraft:brown_shulker_box",
+      "minecraft:cyan_shulker_box",
+      "minecraft:gray_shulker_box",
+      "minecraft:green_shulker_box",
+      "minecraft:light_blue_shulker_box",
+      "minecraft:light_gray_shulker_box",
+      "minecraft:lime_shulker_box",
+      "minecraft:magenta_shulker_box",
+      "minecraft:orange_shulker_box",
+      "minecraft:pink_shulker_box",
+      "minecraft:purple_shulker_box",
+      "minecraft:red_shulker_box",
+      "minecraft:white_shulker_box",
+      "minecraft:yellow_shulker_box"
+    ],
+    "networkId": 22
+  },
+  "minecraft:bed": {
+    "blocks": [
+      "minecraft:red_bed",
+      "minecraft:black_bed",
+      "minecraft:blue_bed",
+      "minecraft:brown_bed",
+      "minecraft:cyan_bed",
+      "minecraft:gray_bed",
+      "minecraft:green_bed",
+      "minecraft:light_blue_bed",
+      "minecraft:light_gray_bed",
+      "minecraft:lime_bed",
+      "minecraft:magenta_bed",
+      "minecraft:orange_bed",
+      "minecraft:pink_bed",
+      "minecraft:purple_bed",
+      "minecraft:white_bed",
+      "minecraft:yellow_bed"
+    ],
+    "networkId": 23
+  },
+  "minecraft:conduit": {
+    "blocks": [
+      "minecraft:conduit"
+    ],
+    "networkId": 24
+  },
+  "minecraft:barrel": {
+    "blocks": [
+      "minecraft:barrel"
+    ],
+    "networkId": 25
+  },
+  "minecraft:smoker": {
+    "blocks": [
+      "minecraft:smoker"
+    ],
+    "networkId": 26
+  },
+  "minecraft:blast_furnace": {
+    "blocks": [
+      "minecraft:blast_furnace"
+    ],
+    "networkId": 27
+  },
+  "minecraft:lectern": {
+    "blocks": [
+      "minecraft:lectern"
+    ],
+    "networkId": 28
+  },
+  "minecraft:bell": {
+    "blocks": [
+      "minecraft:bell"
+    ],
+    "networkId": 29
+  },
+  "minecraft:jigsaw": {
+    "blocks": [
+      "minecraft:jigsaw"
+    ],
+    "networkId": 30
+  },
+  "minecraft:campfire": {
+    "blocks": [
+      "minecraft:campfire",
+      "minecraft:soul_campfire"
+    ],
+    "networkId": 31
+  },
+  "minecraft:beehive": {
+    "blocks": [
+      "minecraft:bee_nest",
+      "minecraft:beehive"
+    ],
+    "networkId": 32
+  },
+  "minecraft:sculk_sensor": {
+    "blocks": [
+      "minecraft:sculk_sensor"
+    ],
+    "networkId": 33
+  },
+  "minecraft:sculk_catalyst": {
+    "blocks": [
+      "minecraft:sculk_catalyst"
+    ],
+    "networkId": 34
+  },
+  "minecraft:sculk_shrieker": {
+    "blocks": [
+      "minecraft:sculk_shrieker"
+    ],
+    "networkId": 35
+  }
+}

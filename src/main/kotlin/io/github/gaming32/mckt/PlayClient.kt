@@ -6,6 +6,7 @@ import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.builder.RequiredArgumentBuilder
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.RootCommandNode
+import io.github.gaming32.mckt.blocks.entities.SignBlockEntity
 import io.github.gaming32.mckt.commands.ClientCommandSource
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
@@ -427,7 +428,7 @@ class PlayClient(
                 encodeData(chunk::networkEncode)
             }
             if (sendChannel.isClosedForWrite) return
-            sendPacket(ChunkAndLightDataPacket(chunk.x, chunk.z, chunkData))
+            sendPacket(ChunkAndLightDataPacket(chunk.x, chunk.z, chunk.blockEntities, chunkData))
         }
     }
 
@@ -498,6 +499,15 @@ class PlayClient(
                         }
 
                         else -> throw IllegalArgumentException("Unimplemented player action: ${packet.action}")
+                    }
+
+                    is UpdateSignPacket -> {
+                        val entity = server.world.getBlockEntity(packet.location) as? SignBlockEntity
+                        if (entity == null) {
+                            LOGGER.warn("$username tried to update sign at ${packet.location}, where no sign exists.")
+                        } else {
+                            repeat(4) { i -> entity.lines[i] = Component.text(packet.lines[i]) }
+                        }
                     }
 
                     is UseItemOnBlockPacket -> {

@@ -1,7 +1,10 @@
 package io.github.gaming32.mckt.objects
 
+import io.github.gaming32.mckt.PlayClient
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.sin
 
 enum class Direction(
     val axis: Axis,
@@ -20,6 +23,49 @@ enum class Direction(
         fun fromHorizontal(id: Int) = HORIZONTAL[abs(id % HORIZONTAL.size)]
 
         fun fromYaw(yaw: Float) = fromHorizontal(floor(yaw / 90f + 0.5f).toInt() and 3)
+
+        fun getEntityFacingOrder(client: PlayClient): Array<Direction> {
+            val f = client.data.pitch * (Math.PI / 180.0).toFloat()
+            val g = -client.data.yaw * (Math.PI / 180.0).toFloat()
+            val h = sin(f)
+            val i = cos(f)
+            val j = sin(g)
+            val k = cos(g)
+            val bl = j > 0.0f
+            val bl2 = h < 0.0f
+            val bl3 = k > 0.0f
+            val l = if (bl) j else -j
+            val m = if (bl2) -h else h
+            val n = if (bl3) k else -k
+            val o = l * i
+            val p = n * i
+            val direction = if (bl) EAST else WEST
+            val direction2 = if (bl2) UP else DOWN
+            val direction3 = if (bl3) SOUTH else NORTH
+            return if (l > n) {
+                if (m > o) {
+                    listClosest(direction2, direction, direction3)
+                } else {
+                    if (p > m) listClosest(direction, direction3, direction2) else listClosest(
+                        direction,
+                        direction2,
+                        direction3
+                    )
+                }
+            } else if (m > p) {
+                listClosest(direction2, direction3, direction)
+            } else {
+                if (o > m) listClosest(direction3, direction, direction2) else listClosest(
+                    direction3,
+                    direction2,
+                    direction
+                )
+            }
+        }
+
+        private fun listClosest(first: Direction, second: Direction, third: Direction): Array<Direction> {
+            return arrayOf(first, second, third, third.opposite, second.opposite, first.opposite)
+        }
     }
 
     val vector get() = axis.direction(direction)

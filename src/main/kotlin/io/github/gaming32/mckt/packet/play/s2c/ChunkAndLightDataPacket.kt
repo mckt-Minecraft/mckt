@@ -1,14 +1,18 @@
 package io.github.gaming32.mckt.packet.play.s2c
 
+import io.github.gaming32.mckt.blocks.entities.BlockEntities.getMetadata
+import io.github.gaming32.mckt.blocks.entities.BlockEntity
 import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.nbt.buildNbtCompound
 import io.github.gaming32.mckt.nbt.put
+import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.packet.Packet
 import java.io.OutputStream
 import java.util.*
 
 data class ChunkAndLightDataPacket(
     val x: Int, val z: Int,
+    val blockEntities: Map<BlockPosition, BlockEntity<*>>,
     val chunk: ByteArray
 ) : Packet(TYPE) {
     companion object {
@@ -26,7 +30,13 @@ data class ChunkAndLightDataPacket(
         })
         out.writeVarInt(chunk.size)
         out.write(chunk)
-        out.writeVarInt(0) // Number of block entities
+        out.writeArray(blockEntities) { pos, entity ->
+            writeByte(pos.x shl 4 or pos.z)
+            writeShort(pos.y)
+            writeVarInt(entity.type.getMetadata()?.networkId
+                ?: throw IllegalStateException("Unknown block entity ${entity.javaClass.simpleName}"))
+            writeNbt(entity.initialNetworkSerialize())
+        }
         out.writeBoolean(true) // Lighting: Trust edges
         out.writeBitSet(EMPTY_BIT_SET) // Skylight mask
         out.writeBitSet(EMPTY_BIT_SET) // Block light mask
