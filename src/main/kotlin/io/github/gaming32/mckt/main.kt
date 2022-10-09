@@ -57,6 +57,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.DurationUnit
 
 private val LOGGER = getLogger()
 private val STYLES = listOf(
@@ -79,16 +80,8 @@ class MinecraftServer(
 
     val configFile = File("config.json")
     @OptIn(ExperimentalSerializationApi::class)
-    val config = try {
-        configFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
-    } catch (e: Exception) {
-        if (e !is FileNotFoundException) {
-            LOGGER.warn("Couldn't read server config, creating anew", e)
-        }
-        ServerConfig()
-    }.also { config ->
-        configFile.outputStream().use { PRETTY_JSON.encodeToStream(config, it) }
-    }
+    var config = reloadConfig()
+        private set
 
     lateinit var world: World
         private set
@@ -125,6 +118,9 @@ class MinecraftServer(
     private var mainCoroutineScopeInternal: CoroutineScope? = null
     val mainCoroutineScope get() =
         mainCoroutineScopeInternal ?: throw IllegalStateException("MinecraftServer not running!")
+
+    var targetTps = 20
+    val targetMspt get() = 1000.0 / targetTps
 
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
@@ -182,20 +178,20 @@ class MinecraftServer(
             }
             syncDirtyBlocks()
             val endTime = System.nanoTime()
-            val tickTime = (endTime - startTime).nanoseconds.inWholeMilliseconds
-            if (tickTime >= 1050) {
+            val tickTime = (endTime - startTime).nanoseconds.toDouble(DurationUnit.MILLISECONDS)
+            if (tickTime >= targetMspt * 21) {
                 LOGGER.warn(
                     "Is the server overloaded? Running {} seconds ({} ticks) behind.",
-                    (tickTime - 50) / 1000.0, (tickTime - 50) / 50.0
+                    (tickTime - targetMspt) / 1000.0, (tickTime - targetMspt) / targetMspt
                 )
                 broadcast(KeepAlivePacket(System.currentTimeMillis()))
             }
             startTime = System.nanoTime()
-            val sleepTime = 50 - tickTime
+            val sleepTime = targetMspt - tickTime
             if (sleepTime <= 0) {
                 yield()
             } else {
-                delay(sleepTime)
+                delay(sleepTime.toLong())
                 startTime += sleepTime.milliseconds.inWholeNanoseconds
             }
         }
@@ -219,6 +215,21 @@ class MinecraftServer(
 
         mainCoroutineScopeInternal = null
         LOGGER.info("Server stopped")
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun reloadConfig(): ServerConfig {
+        config = try {
+            configFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
+        } catch (e: Exception) {
+            if (e !is FileNotFoundException) {
+                LOGGER.warn("Couldn't read server config, creating anew", e)
+            }
+            ServerConfig()
+        }.also { config ->
+            configFile.outputStream().use { PRETTY_JSON.encodeToStream(config, it) }
+        }
+        return config
     }
 
     private suspend fun syncDirtyBlocks() = coroutineScope {

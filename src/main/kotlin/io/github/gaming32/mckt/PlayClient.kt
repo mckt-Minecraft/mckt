@@ -583,6 +583,7 @@ class PlayClient(
     }
 
     suspend fun handlePackets() = coroutineScope {
+        var sinceYield = 0
         while (server.running && !ended) {
             val packet = try {
                 readPacket()
@@ -591,6 +592,11 @@ class PlayClient(
                 sendMessage(Component.text(e.toString()).color(NamedTextColor.GOLD), MessageType.ACTION_BAR)
                 LOGGER.error("Client connection had error", e)
                 continue
+            }
+            if (++sinceYield > 50) {
+                // Prevent packet spam from lagging the server oo much
+                sinceYield = 0
+                yield()
             }
             try {
                 when (packet) {

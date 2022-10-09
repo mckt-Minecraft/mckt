@@ -878,7 +878,6 @@ class PlayerData(
             }
         }
     fun getEquipment(): Map<EquipmentSlot, ItemStack> {
-
         val result = enumMapOf<EquipmentSlot, ItemStack>()
         for (slot in EquipmentSlot.values()) {
             val rawSlot = if (slot.rawSlot == -1) selectedInventorySlot else slot.rawSlot

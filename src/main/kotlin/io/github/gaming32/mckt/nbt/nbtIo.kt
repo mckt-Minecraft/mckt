@@ -13,7 +13,7 @@ fun writeNbt(nbt: NbtCompound, out: OutputStream) {
     val dos = if (out is DataOutputStream) out else DataOutputStream(out)
     dos.writeByte(BinaryTagTypes.COMPOUND.id().toInt())
     dos.writeUTF("")
-    nbt.encode(out)
+    nbt.encode(dos)
 }
 
 fun writeNbtCompressed(nbt: NbtCompound, out: OutputStream) =
