@@ -6,7 +6,9 @@ import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponse
 import io.github.gaming32.mckt.packet.status.s2c.StatusResponsePacket
 import io.ktor.network.sockets.*
+import io.ktor.util.*
 import io.ktor.utils.io.*
+import java.io.File
 
 class StatusClient(
     server: MinecraftServer,
@@ -14,10 +16,17 @@ class StatusClient(
     receiveChannel: ByteReadChannel,
     sendChannel: ByteWriteChannel
 ) : Client(server, socket, receiveChannel, sendChannel) {
+    companion object {
+        private val FAVICON_FILE = File("icon.png")
+    }
+
     override val primaryState = PacketState.STATUS
 
     suspend fun handle() = socket.use {
         readPacket<StatusRequestPacket>() ?: return
+        val favicon = if (FAVICON_FILE.isFile) {
+            "data:image/png;base64," + FAVICON_FILE.readBytes().encodeBase64()
+        } else null
         sendPacket(StatusResponsePacket(
             StatusResponse(
                 version = StatusResponse.Version(
@@ -34,6 +43,7 @@ class StatusClient(
                         .toList()
                 ),
                 description = server.config.motd,
+                favicon = favicon,
                 previewsChat = false,
                 enforcesSecureChat = false
             )

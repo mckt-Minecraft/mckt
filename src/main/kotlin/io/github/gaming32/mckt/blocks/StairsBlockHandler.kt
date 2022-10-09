@@ -2,15 +2,25 @@ package io.github.gaming32.mckt.blocks
 
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.MinecraftServer
+import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.items.BlockItemHandler
-import io.github.gaming32.mckt.objects.BlockPosition
-import io.github.gaming32.mckt.objects.BlockState
-import io.github.gaming32.mckt.objects.Direction
-import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.objects.*
 
 class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockState) : BlockHandler() {
     private val defaultState = DEFAULT_BLOCKSTATES[id]!!
+
+    override suspend fun onBroken(world: World, location: BlockPosition, state: BlockState) =
+        world.server.getBlockHandler(id).onBroken(world, location, state)
+
+    override suspend fun onUse(
+        state: BlockState,
+        world: World,
+        pos: BlockPosition,
+        client: PlayClient,
+        hand: Hand,
+        hit: BlockHitResult
+    ) = baseBlockState.onUse(world, client, hand, hit)
 
     override suspend fun getPlacementState(block: Identifier, ctx: BlockItemHandler.ItemPlacementContext): BlockState {
         val side = ctx.side

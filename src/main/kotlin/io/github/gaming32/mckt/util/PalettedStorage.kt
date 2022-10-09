@@ -3,6 +3,7 @@ package io.github.gaming32.mckt.util
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeLong
 import io.github.gaming32.mckt.data.writeVarInt
+import io.github.gaming32.mckt.getLogger
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap
@@ -14,6 +15,10 @@ class PalettedStorage<V>(
     private val defaultValue: V,
     private val encoder: OutputStream.(V) -> Unit
 ) {
+    companion object {
+        private val LOGGER = getLogger()
+    }
+
     private var palette = Int2ObjectBiMap<V>(::Int2ObjectArrayMap, ::Object2IntArrayMap).apply {
         valueToKeyDefaultReturnValue = -1
     }
@@ -24,7 +29,13 @@ class PalettedStorage<V>(
         palette[0] = defaultValue
     }
 
-    operator fun get(index: Int) = palette.getValue(storage[index]) ?: defaultValue
+    operator fun get(index: Int) = palette.getValue(storage[index]) ?: run {
+        LOGGER.warn(
+            "Paletted item at index {} is not in the palette. The paletted ID at this index is {}.",
+            index, storage[index]
+        )
+        defaultValue
+    }
     operator fun set(index: Int, value: V) {
         var paletteIndex = palette.getKey(value)
         if (paletteIndex != -1) {
