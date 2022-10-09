@@ -430,7 +430,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
                 val neighborPos = pos + direction.vector
                 val oldNeighborState = getBlock(neighborPos)
                 val newState = oldNeighborState.getStateForNeighborUpdate(
-                    direction.opposite, block, this, pos, neighborPos
+                    direction.opposite, block, this, neighborPos, pos
                 )
                 if (newState != oldNeighborState) {
                     if (newState == Blocks.AIR) {

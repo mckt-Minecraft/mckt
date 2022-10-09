@@ -12,7 +12,7 @@ import io.github.gaming32.mckt.objects.Identifier
 class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockState) : BlockHandler() {
     private val defaultState = DEFAULT_BLOCKSTATES[id]!!
 
-    override suspend fun getPlacementState(block: Identifier, ctx: BlockItemHandler.ItemPlacementContext): BlockState? {
+    override suspend fun getPlacementState(block: Identifier, ctx: BlockItemHandler.ItemPlacementContext): BlockState {
         val side = ctx.side
         val pos = ctx.location
         val state = defaultState.with(mapOf(
@@ -39,10 +39,10 @@ class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockSt
         state
     }
 
-    private suspend fun getStairShape(state: BlockState, world: World, pos: BlockPosition): String {
+    private fun getStairShape(state: BlockState, world: World, pos: BlockPosition): String {
         val facing = Direction.valueOf(state["facing"].uppercase())
 
-        var sideState = world.getBlock(pos + facing.vector)
+        var sideState = world.getBlockImmediate(pos + facing.vector)
         if (sideState.isStairs(world.server) && state["half"] == sideState["half"]) {
             val sideFacing = Direction.valueOf(sideState["facing"].uppercase())
             if (sideFacing.axis != facing.axis && isDifferentOrientation(state, world, pos, sideFacing.opposite)) {
@@ -53,7 +53,7 @@ class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockSt
             }
         }
 
-        sideState = world.getBlock(pos + facing.opposite.vector)
+        sideState = world.getBlockImmediate(pos + facing.opposite.vector)
         if (sideState.isStairs(world.server) && state["half"] == sideState["half"]) {
             val sideFacing = Direction.valueOf(sideState["facing"].uppercase())
             if (sideFacing.axis != facing.axis && isDifferentOrientation(state, world, pos, sideFacing)) {
@@ -67,13 +67,13 @@ class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockSt
         return "straight"
     }
 
-    private suspend fun isDifferentOrientation(
+    private fun isDifferentOrientation(
         state: BlockState,
         world: World,
         pos: BlockPosition,
         direction: Direction
     ): Boolean {
-        val sideState = world.getBlock(pos + direction.vector)
+        val sideState = world.getBlockImmediate(pos + direction.vector)
         return !sideState.isStairs(world.server) ||
             sideState["facing"] != state["facing"] ||
             sideState["half"] != state["half"]
