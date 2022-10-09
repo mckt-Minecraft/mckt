@@ -2428,7 +2428,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:spruce_trapdoor": {
@@ -2438,7 +2438,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:birch_trapdoor": {
@@ -2448,7 +2448,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:jungle_trapdoor": {
@@ -2458,7 +2458,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:acacia_trapdoor": {
@@ -2468,7 +2468,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:dark_oak_trapdoor": {
@@ -2478,7 +2478,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:mangrove_trapdoor": {
@@ -2488,7 +2488,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:stone_bricks": {
@@ -4140,7 +4140,7 @@
     "blastResistance": 5.0,
     "hardness": 5.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:prismarine": {
@@ -7549,7 +7549,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:warped_trapdoor": {
@@ -7559,7 +7559,7 @@
     "blastResistance": 3.0,
     "hardness": 3.0,
     "typeProperties": {
-      "type": "block"
+      "type": "trapdoor"
     }
   },
   "minecraft:crimson_fence_gate": {

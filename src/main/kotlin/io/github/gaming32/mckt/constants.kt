@@ -87,6 +87,10 @@ sealed class BlockTypeProperties {
         @Serializable(BlockState.CanonicalSerializer::class)
         val baseBlockState: BlockState
     ) : BlockTypeProperties()
+
+    @Serializable
+    @SerialName("trapdoor")
+    object TrapdoorBlockType : BlockTypeProperties()
 }
 
 @Serializable

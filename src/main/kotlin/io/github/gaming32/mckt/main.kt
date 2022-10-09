@@ -416,6 +416,7 @@ class MinecraftServer(
                 is BlockTypeProperties.SlabBlockType -> registerBlockHandler(SlabBlockHandler, id)
                 is BlockTypeProperties.StairsBlockType ->
                     registerBlockHandler(StairsBlockHandler(id, type.baseBlockState), id)
+                is BlockTypeProperties.TrapdoorBlockType -> registerBlockHandler(TrapdoorBlockHandler, id)
             }
         }
     }
@@ -652,7 +653,7 @@ class MinecraftServer(
         }.joinAll()
     }
 
-    suspend fun broadcastExcept(client: PlayClient, packet: Packet) = broadcast(packet) { it !== client }
+    suspend fun broadcastExcept(client: PlayClient?, packet: Packet) = broadcast(packet) { it !== client }
 }
 
 fun main(vararg args: String) {

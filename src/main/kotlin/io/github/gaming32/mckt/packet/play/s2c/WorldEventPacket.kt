@@ -18,8 +18,12 @@ class WorldEventPacket(
 
         const val CLOSE_METAL_DOOR = 1005
         const val CLOSE_DOOR = 1006
+        const val OPEN_TRAPDOOR = 1007
         const val OPEN_METAL_DOOR = 1011
         const val OPEN_DOOR = 1012
+        const val CLOSE_TRAPDOOR = 1013
+        const val CLOSE_METAL_TRAPDOOR = 1036
+        const val OPEN_METAL_TRAPDOOR = 1037
         const val USE_BONEMEAL = 1505
         const val BREAK_BLOCK = 2001
     }
