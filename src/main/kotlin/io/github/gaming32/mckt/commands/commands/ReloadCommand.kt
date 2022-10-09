@@ -12,7 +12,7 @@ object ReloadCommand : BuiltinCommand {
         .requires { it.hasPermission(4) }
         .executesSuspend {
             source.server.reloadConfig()
-            source.reply(Component.text("Reloaded server config"))
+            source.replyBroadcast(Component.text("Reloaded server config"))
             0
         }!!
 }

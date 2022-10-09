@@ -695,9 +695,6 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     }
 
     fun networkEncode(out: OutputStream) {
-        if (x == -15 && z == -11) {
-            println("hi")
-        }
         for (section in sections) {
             if (section == null) {
                 out.writeShort(0) // Block count

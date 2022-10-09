@@ -24,7 +24,7 @@ object TpsCommand : BuiltinCommand {
             .executesSuspend {
                 val target = getInt("tps")
                 source.server.targetTps = target
-                source.reply(Component.text(
+                source.replyBroadcast(Component.text(
                     "The server's target TPS is now $target. Ticks should take ${source.server.targetMspt}ms."
                 ))
                 0
