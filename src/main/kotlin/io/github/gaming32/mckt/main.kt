@@ -12,6 +12,7 @@ import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.commands.BuiltinCommand
 import io.github.gaming32.mckt.config.ConfigErrorException
+import io.github.gaming32.mckt.config.MotdCreationContext
 import io.github.gaming32.mckt.config.ServerConfig
 import io.github.gaming32.mckt.config.evalConfigFile
 import io.github.gaming32.mckt.data.*
@@ -36,6 +37,7 @@ import io.ktor.network.sockets.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.collections.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.kyori.adventure.text.Component
@@ -54,6 +56,8 @@ import kotlin.collections.set
 import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
+import kotlin.io.use
+import kotlin.text.toByteArray
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -78,7 +82,7 @@ class MinecraftServer(
     private lateinit var acceptConnectionsJob: Job
 
     val configFile = File("config.mckt.kts")
-    var config = reloadConfig()
+    var config: ServerConfig = ServerConfig.PreConfig
         private set
 
     lateinit var world: World
@@ -124,6 +128,8 @@ class MinecraftServer(
         LOGGER.info("Starting server...")
 
         mainCoroutineScopeInternal = this
+
+        config = reloadConfig()
 
         registerCommands()
         registerCustomPacketHandlers()
@@ -219,7 +225,7 @@ class MinecraftServer(
         LOGGER.info("Server stopped")
     }
 
-    fun reloadConfig(printError: Boolean = true): ServerConfig {
+    suspend fun reloadConfig(printError: Boolean = true): ServerConfig {
         if (!configFile.isFile) {
             javaClass.getResourceAsStream("/config.mckt.kts")?.use { inp ->
                 configFile.outputStream().use { out ->
@@ -552,13 +558,29 @@ class MinecraftServer(
                     try {
                         val packetLength = receiveChannel.readVarInt(specialFe = true)
                         if (packetLength == 0xFE) {
+                            val motd = config.motdGenerator(MotdCreationContext(
+                                this@MinecraftServer,
+                                if (receiveChannel.availableForRead > 1) {
+                                    receiveChannel.discard(27)
+                                    PingInfo(
+                                        receiveChannel.readByte().toUByte().toInt(),
+                                        receiveChannel.readRemaining(
+                                            receiveChannel.readShort().toLong()
+                                        ).readText(Charsets.UTF_16BE),
+                                        receiveChannel.readInt(),
+                                        socket.remoteAddress
+                                    )
+                                } else {
+                                    PingInfo(0, "", 0, socket.remoteAddress)
+                                }
+                            ))
                             val encoded = if (receiveChannel.availableForRead == 0) {
                                 // Pre-1.4
-                                "${config.motd.plainText()}\u00a7${clients.size}\u00a7${config.maxPlayers}"
+                                "${motd.plainText()}\u00a7${clients.size}\u00a7${config.maxPlayers}"
                             } else {
                                 // 1.4 through 1.6
                                 "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
-                                    "\u0000${LegacyComponentSerializer.legacySection().serialize(config.motd)}" +
+                                    "\u0000${LegacyComponentSerializer.legacySection().serialize(motd)}" +
                                     "\u0000${clients.size}\u0000${config.maxPlayers}"
                             }.toByteArray(Charsets.UTF_16BE)
                             sendChannel.writeByte(0xff)

@@ -1,5 +1,6 @@
 package io.github.gaming32.mckt
 
+import io.github.gaming32.mckt.config.MotdCreationContext
 import io.github.gaming32.mckt.packet.PacketState
 import io.github.gaming32.mckt.packet.status.StatusPingPacket
 import io.github.gaming32.mckt.packet.status.c2s.StatusRequestPacket
@@ -43,7 +44,7 @@ class StatusClient(
                         .map(StatusResponse.Players::Sample)
                         .toList()
                 ),
-                description = server.config.createMotd(server, pingInfo),
+                description = server.config.motdGenerator(MotdCreationContext(server, pingInfo)),
                 favicon = getFavicon(),
                 previewsChat = server.config.enableChatPreview,
                 enforcesSecureChat = false

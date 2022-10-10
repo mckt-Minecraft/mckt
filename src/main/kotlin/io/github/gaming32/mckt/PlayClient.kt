@@ -11,6 +11,8 @@ import io.github.gaming32.mckt.commands.ClientCommandSource
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
+import io.github.gaming32.mckt.config.ChatFormatContext
+import io.github.gaming32.mckt.config.MotdCreationContext
 import io.github.gaming32.mckt.data.encodeData
 import io.github.gaming32.mckt.data.readIdentifierArray
 import io.github.gaming32.mckt.data.writeIdentifierArray
@@ -226,7 +228,7 @@ class PlayClient(
         ))
         sendPacket(SyncTagsPacket(DEFAULT_TAGS))
         sendPacket(ServerDataPacket(
-            server.config.createMotd(server, pingInfo),
+            server.config.motdGenerator(MotdCreationContext(server, pingInfo)),
             StatusClient.getFavicon(),
             server.config.enableChatPreview,
             true // Workaround to shut up that stupid toast
@@ -628,14 +630,14 @@ class PlayClient(
                             Component.translatable(
                                 "chat.type.text",
                                 Component.text(username),
-                                server.config.formatChat(this@PlayClient, packet.message)
+                                server.config.chatFormatter(ChatFormatContext(this@PlayClient, packet.message))
                             )
                         )) { it.options.chatMode == 0 }
                     }
 
                     is ServerboundChatPreviewPacket -> sendPacket(ClientboundChatPreviewPacket(
                         packet.query,
-                        server.config.formatChat(this@PlayClient, packet.message)
+                        server.config.chatFormatter(ChatFormatContext(this@PlayClient, packet.message))
                     ))
 
                     is ClientOptionsPacket -> {

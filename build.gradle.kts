@@ -60,7 +60,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.7.20")
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:1.7.20")
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host:1.7.20")
-    implementation("org.jetbrains.kotlin:kotlin-scripting-intellij:1.7.20")
 
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")

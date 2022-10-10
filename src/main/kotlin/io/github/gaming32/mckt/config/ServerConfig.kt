@@ -1,11 +1,12 @@
 package io.github.gaming32.mckt.config
 
-import io.github.gaming32.mckt.MinecraftServer
-import io.github.gaming32.mckt.PingInfo
-import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.WorldGenerator
 import net.kyori.adventure.text.Component
 import kotlin.script.experimental.annotations.KotlinScript
+
+typealias MotdCreator = suspend MotdCreationContext.() -> Component
+
+typealias ChatFormatter = suspend ChatFormatContext.() -> Component
 
 @KotlinScript(
     fileExtension = "mckt.kts",
@@ -13,6 +14,8 @@ import kotlin.script.experimental.annotations.KotlinScript
     evaluationConfiguration = ConfigEvaluationConfiguration::class
 )
 abstract class ServerConfig {
+    internal object PreConfig : ServerConfig()
+
     var viewDistance: Int = 10
         protected set
 
@@ -23,9 +26,6 @@ abstract class ServerConfig {
         protected set
 
     var seed: Long? = null
-        protected set
-
-    var motd: Component = Component.text("My mckt server")
         protected set
 
     var defaultWorldGenerator: WorldGenerator = WorldGenerator.NORMAL
@@ -41,8 +41,29 @@ abstract class ServerConfig {
         protected set
 
     var enableChatPreview: Boolean = false
+        protected set
 
-    open fun createMotd(server: MinecraftServer, pingInfo: PingInfo): Component = motd
+    private var explicitMotd: Component? = Component.text("My mckt server")
 
-    open fun formatChat(sender: PlayClient, message: String): Component = Component.text(message)
+    protected var motd
+        get() = explicitMotd ?: throw IllegalStateException("Cannot get explicit motd after setting motd generator")
+        set(motd) {
+            explicitMotd = motd
+            motdGenerator = { explicitMotd!! }
+        }
+
+    var motdGenerator: MotdCreator = { explicitMotd!! }
+        private set
+
+    protected fun motd(generator: MotdCreator) {
+        explicitMotd = null
+        motdGenerator = generator
+    }
+
+    var chatFormatter: ChatFormatter = { Component.text(message) }
+        private set
+
+    protected fun formatChat(formatter: ChatFormatter) {
+        chatFormatter = formatter
+    }
 }

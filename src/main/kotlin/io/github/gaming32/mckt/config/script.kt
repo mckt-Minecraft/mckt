@@ -14,8 +14,11 @@ object ConfigCompilationConfiguration : ScriptCompilationConfiguration({
             "io.github.gaming32.mckt.*",
             "net.kyori.adventure.extra.kotlin.*",
             "net.kyori.adventure.util.*",
-            "net.kyori.adventure.text.format.*",
+            "net.kyori.adventure.util.HSVLike.hsvLike",
             "net.kyori.adventure.text.*",
+            "net.kyori.adventure.text.Component.*",
+            "net.kyori.adventure.text.format.*",
+            "net.kyori.adventure.text.format.TextColor.color",
         )
         dependenciesFromCurrentContext(wholeClasspath = true)
     }
@@ -28,8 +31,15 @@ object ConfigEvaluationConfiguration : ScriptEvaluationConfiguration({
     compilationConfiguration(ConfigCompilationConfiguration)
 })
 
-fun evalConfigFile(configFile: File) = BasicJvmScriptingHost()
-    .eval(configFile.toScriptSource(), ConfigCompilationConfiguration, ConfigEvaluationConfiguration)
+object ConfigScriptingHost : BasicJvmScriptingHost() {
+    suspend fun evalSuspend(script: SourceCode) =
+        compiler(script, ConfigCompilationConfiguration).onSuccess {
+            evaluator(it, ConfigEvaluationConfiguration)
+        }
+}
+
+suspend fun evalConfigFile(configFile: File) = ConfigScriptingHost
+    .evalSuspend(configFile.toScriptSource())
     .valueOr { failure ->
         throw ConfigErrorException(failure.reports
             .filter(ScriptDiagnostic::isError)
