@@ -1,0 +1,9 @@
+viewDistance = 10
+simulationDistance = 10
+maxPlayers = 20
+seed = null
+motd = Component.text("My mckt server")
+defaultWorldGenerator = WorldGenerator.NORMAL
+networkCompressionThreshold = 256
+autosavePeriod = 5 * 60 * 20
+enableVanillaClientSpoofAlerts = true

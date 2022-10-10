@@ -22,7 +22,7 @@ class StatusClient(
 
     override val primaryState = PacketState.STATUS
 
-    suspend fun handle() = socket.use {
+    suspend fun handle(pingInfo: PingInfo) = socket.use {
         readPacket<StatusRequestPacket>() ?: return
         val favicon = if (FAVICON_FILE.isFile) {
             "data:image/png;base64," + FAVICON_FILE.readBytes().encodeBase64()
@@ -42,7 +42,7 @@ class StatusClient(
                         .map(StatusResponse.Players::Sample)
                         .toList()
                 ),
-                description = server.config.motd,
+                description = server.config.createMotd(server, pingInfo),
                 favicon = favicon,
                 previewsChat = false,
                 enforcesSecureChat = false

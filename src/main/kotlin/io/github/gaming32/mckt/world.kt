@@ -7,6 +7,7 @@ import io.github.gaming32.mckt.blocks.BlockEntityProvider
 import io.github.gaming32.mckt.blocks.entities.BlockEntities
 import io.github.gaming32.mckt.blocks.entities.BlockEntity
 import io.github.gaming32.mckt.commands.CommandSource
+import io.github.gaming32.mckt.config.ServerConfig
 import io.github.gaming32.mckt.data.writeByte
 import io.github.gaming32.mckt.data.writeShort
 import io.github.gaming32.mckt.data.writeVarInt

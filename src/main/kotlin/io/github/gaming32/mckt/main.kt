@@ -11,6 +11,9 @@ import io.github.gaming32.mckt.blocks.*
 import io.github.gaming32.mckt.commands.*
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.commands.BuiltinCommand
+import io.github.gaming32.mckt.config.ConfigErrorException
+import io.github.gaming32.mckt.config.ServerConfig
+import io.github.gaming32.mckt.config.evalConfigFile
 import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.items.*
 import io.github.gaming32.mckt.objects.BlockPosition
@@ -35,9 +38,6 @@ import io.ktor.util.collections.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -47,7 +47,6 @@ import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.InputStream
 import java.util.*
 import java.util.regex.Pattern
@@ -78,7 +77,7 @@ class MinecraftServer(
     private lateinit var handleCommandsJob: Job
     private lateinit var acceptConnectionsJob: Job
 
-    val configFile = File("config.json")
+    val configFile = File("config.mckt.kts")
     var config = reloadConfig()
         private set
 
@@ -216,17 +215,21 @@ class MinecraftServer(
         LOGGER.info("Server stopped")
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
-    fun reloadConfig(): ServerConfig {
-        config = try {
-            configFile.inputStream().use { PRETTY_JSON.decodeFromStream(it) }
-        } catch (e: Exception) {
-            if (e !is FileNotFoundException) {
-                LOGGER.warn("Couldn't read server config, creating anew", e)
+    fun reloadConfig(printError: Boolean = true): ServerConfig {
+        if (!configFile.isFile) {
+            javaClass.getResourceAsStream("/config.mckt.kts")?.use { inp ->
+                configFile.outputStream().use { out ->
+                    inp.copyTo(out)
+                }
             }
-            ServerConfig()
-        }.also { config ->
-            configFile.outputStream().use { PRETTY_JSON.encodeToStream(config, it) }
+        }
+        try {
+            config = evalConfigFile(configFile)
+        } catch (e: ConfigErrorException) {
+            if (printError) {
+                LOGGER.error("Failed to read config:\n" + e.message)
+            }
+            throw e
         }
         return config
     }
@@ -572,8 +575,8 @@ class MinecraftServer(
                         receiveChannel.readFully(packet, 0, packet.size)
                         val packetInput = ByteArrayInputStream(packet)
                         val protocolVersion = packetInput.readVarInt()
-                        packetInput.readString(255) // Server address
-                        packetInput.readShort() // Server port
+                        val serverIp = packetInput.readString(255) // Server address
+                        val serverPort = packetInput.readShort() // Server port
                         val nextStateInt = packetInput.readVarInt()
                         val nextState = try {
                             PacketState.values()[nextStateInt]
@@ -585,7 +588,13 @@ class MinecraftServer(
                         when (nextState) {
                             PacketState.STATUS -> handshakeJobs.add(launch {
                                 try {
-                                    StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle()
+                                    StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle(
+                                        PingInfo(
+                                            protocolVersion,
+                                            serverIp, serverPort.toUShort().toInt(),
+                                            socket.remoteAddress
+                                        )
+                                    )
                                 } catch (e: Exception) {
                                     if (e !is ClosedReceiveChannelException) {
                                         LOGGER.error("Error sharing status with client", e)
@@ -679,5 +688,8 @@ fun main(vararg args: String) {
             Thread.sleep(Long.MAX_VALUE)
         }
     }
-    runBlocking { MinecraftServer(useJline = "--no-jline" !in args).run() }
+    try {
+        runBlocking { MinecraftServer(useJline = "--no-jline" !in args).run() }
+    } catch (_: ConfigErrorException) {
+    }
 }
