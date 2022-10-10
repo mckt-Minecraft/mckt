@@ -37,6 +37,7 @@ import io.ktor.network.sockets.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.collections.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.bits.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -558,29 +559,33 @@ class MinecraftServer(
                     try {
                         val packetLength = receiveChannel.readVarInt(specialFe = true)
                         if (packetLength == 0xFE) {
+                            val isPre14 = receiveChannel.availableForRead == 0
                             val motd = config.motdGenerator(MotdCreationContext(
                                 this@MinecraftServer,
                                 if (receiveChannel.availableForRead > 1) {
-                                    receiveChannel.discard(27)
+                                    // 1.6
+                                    receiveChannel.discard(28)
                                     PingInfo(
                                         receiveChannel.readByte().toUByte().toInt(),
-                                        receiveChannel.readRemaining(
-                                            receiveChannel.readShort().toLong()
+                                        receiveChannel.readPacket(
+                                            receiveChannel.readShort().toInt() * 2
                                         ).readText(Charsets.UTF_16BE),
                                         receiveChannel.readInt(),
                                         socket.remoteAddress
                                     )
                                 } else {
+                                    // Pre-1.6
                                     PingInfo(0, "", 0, socket.remoteAddress)
                                 }
                             ))
-                            val encoded = if (receiveChannel.availableForRead == 0) {
+                            val encoded = if (isPre14) {
                                 // Pre-1.4
-                                "${motd.plainText()}\u00a7${clients.size}\u00a7${config.maxPlayers}"
+                                "${motd.plainText().substringBefore('\n')}\u00a7${clients.size}" +
+                                    "\u00a7${config.maxPlayers}"
                             } else {
                                 // 1.4 through 1.6
-                                "\u00a71\u0000127\u0000$MINECRAFT_VERSION" +
-                                    "\u0000${LegacyComponentSerializer.legacySection().serialize(motd)}" +
+                                "\u00a71\u0000127\u0000$MINECRAFT_VERSION\u0000" +
+                                    LegacyComponentSerializer.legacySection().serialize(motd).substringBefore('\n') +
                                     "\u0000${clients.size}\u0000${config.maxPlayers}"
                             }.toByteArray(Charsets.UTF_16BE)
                             sendChannel.writeByte(0xff)
