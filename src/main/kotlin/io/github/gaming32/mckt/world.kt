@@ -533,7 +533,11 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
         isSaving = true
         commandSource.replyBroadcast(Component.translatable("commands.save.saving", Component.text(name)))
         val start = System.nanoTime()
-        metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
+        try {
+            metaFile.outputStream().use { PRETTY_JSON.encodeToStream(meta, it) }
+        } catch (e: Exception) {
+            LOGGER.error("Failed to save world metadata", e)
+        }
         openRegions.values.map { region ->
             launch(saveLoadPool) { region.save() }
         }.joinAll()
@@ -624,11 +628,15 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
     }
 
     fun save() {
-        val tempFile = File.createTempFile("mckt-save", ".nbt")
-        tempFile.outputStream().use { out ->
-            writeNbtCompressed(toNbt(), out)
+        try {
+            val tempFile = File.createTempFile("mckt-save", ".nbt")
+            tempFile.outputStream().use { out ->
+                writeNbtCompressed(toNbt(), out)
+            }
+            tempFile.toPath().moveTo(regionFile.toPath(), true)
+        } catch (e: Exception) {
+            LOGGER.error("Failed to save region $x, $z", e)
         }
-        tempFile.toPath().moveTo(regionFile.toPath(), true)
     }
 
     override fun close() = save()

@@ -12,8 +12,6 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 object FireworkRocketHandler : ItemHandler() {
-    const val DURATION = 1 // Hardcoded Duration 1 firework rockets for now
-
     override suspend fun use(
         world: World,
         client: PlayClient,
@@ -27,7 +25,8 @@ object FireworkRocketHandler : ItemHandler() {
             client.position,
             3f, 1f
         ))
-        val lifetime = 10 * DURATION * Random.nextInt(6) + Random.nextInt(7)
+        val duration = 1 + stack.getOrCreateSubNbt("Fireworks").getByte("Flight")
+        val lifetime = 10 * duration * Random.nextInt(6) + Random.nextInt(7)
         client.server.mainCoroutineScope.launch {
             val server = client.server
             var velocity = Vector3d.ZERO
@@ -47,7 +46,7 @@ object FireworkRocketHandler : ItemHandler() {
                     (-velocity.y * 0.5).toFloat(),
                     (GaussianGenerator.next() * 0.05).toFloat()
                 ))
-                client.sendPacket(SetEntityVelocityPacket(client.entityId, velocity.x, velocity.y, velocity.z))
+                client.sendPacket(SetEntityVelocityPacket(client.entityId, velocity))
                 server.waitTicks()
             }
         }

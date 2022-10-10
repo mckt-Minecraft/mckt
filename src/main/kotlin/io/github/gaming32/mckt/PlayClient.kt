@@ -87,24 +87,24 @@ class PlayClient(
 
     override val primaryState = PacketState.PLAY
 
-    lateinit var username: String
+    var username = "-Player"
         private set
-    lateinit var uuid: UUID
+    var uuid = UUID(0, 0)
         private set
     val entityId = server.nextEntityId++
 
-    internal lateinit var handlePacketsJob: Job
+    internal var handlePacketsJob: Job? = null
     private var nextTeleportId = 0
 
     internal var nextPingId = 0
     internal var pingId = -1
     internal var pingStart = 0L
 
-    lateinit var dataFile: File
+    var dataFile = File("")
         private set
-    lateinit var data: PlayerData
+    var data = PlayerData(0.0, 0.0, 0.0)
         private set
-    lateinit var commandSource: CommandSource
+    var commandSource: CommandSource = server.serverCommandSender
         private set
     internal val loadedChunks = mutableSetOf<Pair<Int, Int>>()
     private var ignoreMovementPackets = true
@@ -115,8 +115,10 @@ class PlayClient(
     internal var ended = false
     var properties = mapOf<String, Pair<String, String?>>()
         private set
+    var abilities = Gamemode.ADVENTURE.defaultAbilities // Most restricted gamemode used until real gamemode is known
+        private set
 
-    internal val packetQueue = ArrayDeque<Packet>()
+    private val packetQueue = ArrayDeque<Packet>()
 
     var lastEquipment = mapOf<EquipmentSlot, ItemStack>()
 
@@ -127,6 +129,7 @@ class PlayClient(
     private val markers = mutableMapOf<Identifier, WritableBlockMarker>()
 
     val horizontalFacing get() = Direction.fromYaw(data.yaw)
+    val creativeMode get() = abilities.creativeMode
 
     suspend fun handshake() {
         try {
@@ -235,9 +238,7 @@ class PlayClient(
 
         commandSource = ClientCommandSource(this@PlayClient)
 
-        sendPacket(ClientboundPlayerAbilitiesPacket(
-            data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying)
-        ))
+        setAbilities(data.gamemode.defaultAbilities.copyCurrentlyFlying(data.flying))
         syncOpLevel()
         syncPosition(false)
 
@@ -492,7 +493,7 @@ class PlayClient(
                         PlayerActionPacket.Action.CANCEL_DIGGING,
                         PlayerActionPacket.Action.FINISH_DIGGING -> {
                             sendPacket(AcknowledgeBlockChangePacket(packet.sequence))
-                            val finishedAction = if (data.gamemode.defaultAbilities.creativeMode) {
+                            val finishedAction = if (creativeMode) {
                                 PlayerActionPacket.Action.START_DIGGING
                             } else {
                                 PlayerActionPacket.Action.FINISH_DIGGING
@@ -749,6 +750,7 @@ class PlayClient(
                     }
 
                     is ServerboundPlayerAbilitiesPacket -> {
+                        abilities = abilities.copyCurrentlyFlying(packet.flying)
                         data.flying = packet.flying
                         data.isFallFlying = false
                         data.pose = EntityPose.STANDING
@@ -865,7 +867,7 @@ class PlayClient(
         }
         if (item.isNotEmpty()) {
             val ctx = ItemHandler.ItemUsageContext(this, hand, hit)
-            val result = if (data.gamemode.defaultAbilities.creativeMode) {
+            val result = if (creativeMode) {
                 val oldCount = item.count
                 val result = item.useOnBlock(ctx)
                 item.count = oldCount
@@ -891,7 +893,7 @@ class PlayClient(
         if (newStack !== item) {
             data.setHeldItem(hand, newStack)
         }
-        if (data.gamemode.defaultAbilities.creativeMode) {
+        if (creativeMode) {
             newStack.count = count
         }
         if (newStack.isEmpty()) {
@@ -912,7 +914,7 @@ class PlayClient(
         handler.onBreak(server.world, location, oldBlock, this)
         server.world.setBlock(location, Blocks.AIR, SetBlockFlags.PERFORM_NEIGHBOR_UPDATE)
         handler.onBroken(server.world, location, oldBlock)
-        if (data.gamemode.defaultAbilities.creativeMode) {
+        if (creativeMode) {
             return true
         }
         val item = data.mainHand
@@ -986,7 +988,7 @@ class PlayClient(
             ))
         }
         if (toOthers) {
-            server.broadcastExcept(this@PlayClient, EntityTeleportPacket(
+            server.broadcastExcept(this, EntityTeleportPacket(
                 entityId,
                 data.x,
                 data.y,
@@ -1007,9 +1009,7 @@ class PlayClient(
         if (new == data.gamemode) return
         data.gamemode = new
         sendPacket(GameEventPacket(GameEventPacket.SET_GAMEMODE, new.ordinal.toFloat()))
-        sendPacket(ClientboundPlayerAbilitiesPacket(
-            new.defaultAbilities.copyCurrentlyFlying(data.flying)
-        ))
+        setAbilities(new.defaultAbilities.copyCurrentlyFlying(data.flying))
         server.broadcast(PlayerListUpdatePacket(
             PlayerListUpdatePacket.UpdateGamemode(uuid, new)
         ))
@@ -1019,6 +1019,11 @@ class PlayClient(
             data.flags = data.flags and EntityFlags.INVISIBLE.inv()
         }
         server.broadcast(SyncTrackedDataPacket(entityId, data.flags))
+    }
+
+    suspend fun setAbilities(abilities: PlayerAbilities) {
+        this.abilities = abilities
+        sendPacket(ClientboundPlayerAbilitiesPacket(abilities))
     }
 
     suspend fun sendMessage(message: Component, type: MessageType = MessageType.SYSTEM) {
@@ -1058,7 +1063,11 @@ class PlayClient(
 
     @OptIn(ExperimentalSerializationApi::class)
     fun save() {
-        dataFile.outputStream().use { PRETTY_JSON.encodeToStream(data, it) }
+        try {
+            dataFile.outputStream().use { PRETTY_JSON.encodeToStream(data, it) }
+        } catch (e: Exception) {
+            LOGGER.error("Failed to save $dataFile", e)
+        }
     }
 
     fun close() = save()

@@ -1,8 +1,10 @@
 package io.github.gaming32.mckt.objects
 
+import kotlinx.serialization.Serializable
 import kotlin.math.floor
 import kotlin.math.sqrt
 
+@Serializable(Vector3dSerializer::class)
 data class Vector3d(val x: Double, val y: Double, val z: Double) {
     companion object Consts {
         val ZERO = Vector3d(0.0, 0.0, 0.0)

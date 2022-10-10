@@ -75,3 +75,18 @@ object BlockPositionSerializer : KSerializer<BlockPosition> {
         return BlockPosition(value[0], value[1], value[2])
     }
 }
+
+object Vector3dSerializer : KSerializer<Vector3d> {
+    private val delegateSerializer = serializer<DoubleArray>()
+    override val descriptor = SerialDescriptor("Vector3d", delegateSerializer.descriptor)
+
+    override fun serialize(encoder: Encoder, value: Vector3d) = encoder.encodeSerializableValue(
+        delegateSerializer,
+        doubleArrayOf(value.x, value.y, value.z)
+    )
+
+    override fun deserialize(decoder: Decoder): Vector3d {
+        val value = decoder.decodeSerializableValue(delegateSerializer)
+        return Vector3d(value[0], value[1], value[2])
+    }
+}

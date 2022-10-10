@@ -147,8 +147,12 @@ class MinecraftServer(
                 clients.values.forEach(PlayClient::save)
             }
             for (client in clients.values.toList()) {
-                if (client.ended || client.receiveChannel.isClosedForRead || client.handlePacketsJob.isCompleted) {
-                    client.handlePacketsJob.cancelAndJoin()
+                if (
+                    client.ended ||
+                    client.receiveChannel.isClosedForRead ||
+                    client.handlePacketsJob?.isCompleted == true
+                ) {
+                    client.handlePacketsJob?.cancelAndJoin()
                     LOGGER.info("{} left the game.", client.username)
                     clients.remove(client.username)
                     client.close()

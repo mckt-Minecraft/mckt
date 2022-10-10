@@ -78,7 +78,7 @@ open class BlockItemHandler(val block: Identifier) : ItemHandler() {
                 (soundGroup.pitch * 0.8f)
             ))
         }
-        if (!client.data.gamemode.defaultAbilities.creativeMode) {
+        if (!client.creativeMode) {
             stack.decrement()
         }
         return ActionResult.success(false)

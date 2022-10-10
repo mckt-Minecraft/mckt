@@ -12,7 +12,7 @@ object SwordItemHandler : ItemHandler() {
         location: BlockPosition,
         client: PlayClient
     ): Boolean {
-        if (client.data.gamemode.defaultAbilities.creativeMode) {
+        if (client.creativeMode) {
             return false
         }
         return super.canMine(state, world, location, client)

@@ -42,7 +42,7 @@ object DoorBlockHandler : BlockHandler() {
         state: BlockState,
         client: PlayClient
     ) {
-        if (client.data.gamemode.defaultAbilities.creativeMode) {
+        if (client.creativeMode) {
             TallPlantBlockHandler.onBreakInCreative(world, pos, state, client)
         }
         super.onBreak(world, pos, state, client)

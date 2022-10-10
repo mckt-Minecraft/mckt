@@ -144,6 +144,8 @@ class NbtCompound(
 
     fun getBoolean(key: String) = content[key]?.castOrNull<NbtByte>()?.booleanValue ?: false
 
+    fun getByte(key: String) = content[key]?.castOrNull<NbtByte>()?.value ?: 0
+
     fun getInt(key: String) = content[key]?.castOrNull<NbtInt>()?.value ?: 0
 
     fun getString(key: String) = content[key]?.castOrNull<NbtString>()?.value ?: ""
