@@ -13,8 +13,9 @@ object ConfigCompilationConfiguration : ScriptCompilationConfiguration({
         defaultImports(
             "io.github.gaming32.mckt.*",
             "net.kyori.adventure.extra.kotlin.*",
-            "net.kyori.adventure.text.*",
+            "net.kyori.adventure.util.*",
             "net.kyori.adventure.text.format.*",
+            "net.kyori.adventure.text.*",
         )
         dependenciesFromCurrentContext(wholeClasspath = true)
     }

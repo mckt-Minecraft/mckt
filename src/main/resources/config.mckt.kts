@@ -7,3 +7,4 @@ defaultWorldGenerator = WorldGenerator.NORMAL
 networkCompressionThreshold = 256
 autosavePeriod = 5 * 60 * 20
 enableVanillaClientSpoofAlerts = true
+enableChatPreview = false

@@ -2,6 +2,7 @@ package io.github.gaming32.mckt.config
 
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PingInfo
+import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.WorldGenerator
 import net.kyori.adventure.text.Component
 import kotlin.script.experimental.annotations.KotlinScript
@@ -33,11 +34,15 @@ abstract class ServerConfig {
     var networkCompressionThreshold: Int = 256
         protected set
 
-    var autosavePeriod: Int = 6000
+    var autosavePeriod: Int = 5 * 60 * 20
         protected set
 
     var enableVanillaClientSpoofAlerts: Boolean = true
         protected set
 
+    var enableChatPreview: Boolean = false
+
     open fun createMotd(server: MinecraftServer, pingInfo: PingInfo): Component = motd
+
+    open fun formatChat(sender: PlayClient, message: String): Component = Component.text(message)
 }

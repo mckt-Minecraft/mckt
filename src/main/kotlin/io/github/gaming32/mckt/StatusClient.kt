@@ -18,15 +18,16 @@ class StatusClient(
 ) : Client(server, socket, receiveChannel, sendChannel) {
     companion object {
         private val FAVICON_FILE = File("icon.png")
+
+        fun getFavicon() = if (FAVICON_FILE.isFile) {
+            "data:image/png;base64," + FAVICON_FILE.readBytes().encodeBase64()
+        } else null
     }
 
     override val primaryState = PacketState.STATUS
 
     suspend fun handle(pingInfo: PingInfo) = socket.use {
         readPacket<StatusRequestPacket>() ?: return
-        val favicon = if (FAVICON_FILE.isFile) {
-            "data:image/png;base64," + FAVICON_FILE.readBytes().encodeBase64()
-        } else null
         sendPacket(StatusResponsePacket(
             StatusResponse(
                 version = StatusResponse.Version(
@@ -43,8 +44,8 @@ class StatusClient(
                         .toList()
                 ),
                 description = server.config.createMotd(server, pingInfo),
-                favicon = favicon,
-                previewsChat = false,
+                favicon = getFavicon(),
+                previewsChat = server.config.enableChatPreview,
                 enforcesSecureChat = false
             )
         ))

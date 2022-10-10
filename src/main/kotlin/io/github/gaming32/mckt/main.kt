@@ -585,16 +585,17 @@ class MinecraftServer(
                             socket.dispose()
                             return@initialConnection
                         }
+                        val pingInfo = PingInfo(
+                            protocolVersion,
+                            serverIp, serverPort.toUShort().toInt(),
+                            socket.remoteAddress
+                        )
                         when (nextState) {
                             PacketState.STATUS -> handshakeJobs.add(launch {
                                 try {
-                                    StatusClient(this@MinecraftServer, socket, receiveChannel, sendChannel).handle(
-                                        PingInfo(
-                                            protocolVersion,
-                                            serverIp, serverPort.toUShort().toInt(),
-                                            socket.remoteAddress
-                                        )
-                                    )
+                                    StatusClient(
+                                        this@MinecraftServer, socket, receiveChannel, sendChannel
+                                    ).handle(pingInfo)
                                 } catch (e: Exception) {
                                     if (e !is ClosedReceiveChannelException) {
                                         LOGGER.error("Error sharing status with client", e)
@@ -645,7 +646,7 @@ class MinecraftServer(
                                         NamedTextColor.YELLOW,
                                         Component.text(client.username)
                                     ))
-                                    client.postHandshake()
+                                    client.postHandshake(pingInfo)
                                 }
                             })
                             else -> {

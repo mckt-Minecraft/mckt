@@ -5,6 +5,7 @@ import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.ConsoleCommandSource
 import io.github.gaming32.mckt.commands.executesSuspend
 import io.github.gaming32.mckt.config.ConfigErrorException
+import io.github.gaming32.mckt.packet.play.s2c.ToggleChatPreviewPacket
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
@@ -20,6 +21,7 @@ object ReloadCommand : BuiltinCommand {
                 source.reply(Component.text("Failed to reload config:\n" + e.message, NamedTextColor.RED))
                 return@executesSuspend 1
             }
+            source.server.broadcast(ToggleChatPreviewPacket(source.server.config.enableChatPreview))
             source.replyBroadcast(Component.text("Reloaded server config"))
             0
         }!!

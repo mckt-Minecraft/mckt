@@ -201,7 +201,7 @@ class PlayClient(
         }
     }
 
-    suspend fun postHandshake() = coroutineScope {
+    suspend fun postHandshake(pingInfo: PingInfo) = coroutineScope {
         sendPacket(PlayLoginPacket(
             entityId = entityId,
             hardcore = false,
@@ -221,10 +221,16 @@ class PlayClient(
             isFlat = server.world.meta.worldGenerator == WorldGenerator.FLAT,
             deathLocation = null
         ))
+        sendPacket(SyncTagsPacket(DEFAULT_TAGS))
+        sendPacket(ServerDataPacket(
+            server.config.createMotd(server, pingInfo),
+            StatusClient.getFavicon(),
+            server.config.enableChatPreview,
+            true // Workaround to shut up that stupid toast
+        ))
         sendPacket(PlayCustomPacket(Identifier("brand")) {
             writeString("mckt")
         })
-        sendPacket(SyncTagsPacket(DEFAULT_TAGS))
         sendPacket(SetWorldSpawnPacket(server.world.findSpawnPoint(), 0f))
 
         commandSource = ClientCommandSource(this@PlayClient)
@@ -621,10 +627,15 @@ class PlayClient(
                             Component.translatable(
                                 "chat.type.text",
                                 Component.text(username),
-                                Component.text(packet.message)
+                                server.config.formatChat(this@PlayClient, packet.message)
                             )
                         )) { it.options.chatMode == 0 }
                     }
+
+                    is ServerboundChatPreviewPacket -> sendPacket(ClientboundChatPreviewPacket(
+                        packet.query,
+                        server.config.formatChat(this@PlayClient, packet.message)
+                    ))
 
                     is ClientOptionsPacket -> {
                         val newOptions = packet.options

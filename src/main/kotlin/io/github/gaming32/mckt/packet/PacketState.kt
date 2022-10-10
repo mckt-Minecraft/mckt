@@ -32,6 +32,7 @@ enum class PacketState(private val packets: Map<Int, (InputStream) -> Packet>) {
         /* 0x00 */ ConfirmTeleportationPacket.TYPE to ::ConfirmTeleportationPacket,
         /* 0x04 */ CommandPacket.TYPE to ::CommandPacket,
         /* 0x05 */ ServerboundChatPacket.TYPE to ::ServerboundChatPacket,
+        /* 0x05 */ ServerboundChatPreviewPacket.TYPE to ::ServerboundChatPreviewPacket,
         /* 0x08 */ ClientOptionsPacket.TYPE to ::ClientOptionsPacket,
         /* 0x09 */ CommandCompletionsRequestPacket.TYPE to ::CommandCompletionsRequestPacket,
         /* 0x0D */ PlayCustomPacket.C2S_TYPE to ::PlayCustomPacket,
