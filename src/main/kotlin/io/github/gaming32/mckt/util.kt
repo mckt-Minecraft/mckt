@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.helpers.Util
 import java.io.OutputStream
 import java.math.BigInteger
+import java.security.MessageDigest
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.max
@@ -259,4 +260,11 @@ class NonCloseableOutputStream(private val inner: OutputStream) : OutputStream()
     override fun write(b: ByteArray) = inner.write(b)
 
     override fun write(b: ByteArray, off: Int, len: Int) = inner.write(b, off, len)
+}
+
+private val SHA1 = MessageDigest.getInstance("SHA-1")
+
+fun ByteArray.sha1(): ByteArray {
+    SHA1.reset()
+    return SHA1.digest(this)
 }

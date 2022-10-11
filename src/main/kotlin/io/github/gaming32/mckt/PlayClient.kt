@@ -201,7 +201,7 @@ class PlayClient(
             if (e !is FileNotFoundException) {
                 LOGGER.warn("Couldn't read player data, creating anew", e)
             }
-            val spawnPoint = server.world.findSpawnPoint()
+            val spawnPoint = server.world.getSpawnPoint()
             PlayerData(spawnPoint.x + 0.5, spawnPoint.y.toDouble(), spawnPoint.z + 0.5)
         }
     }
@@ -236,7 +236,7 @@ class PlayClient(
         sendPacket(PlayCustomPacket(Identifier("brand")) {
             writeString("mckt")
         })
-        sendPacket(SetWorldSpawnPacket(server.world.findSpawnPoint(), 0f))
+        sendPacket(SetWorldSpawnPacket(server.world.getSpawnPoint(), 0f))
 
         commandSource = ClientCommandSource(this@PlayClient)
 

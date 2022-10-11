@@ -130,17 +130,20 @@ class MinecraftServer(
 
         mainCoroutineScopeInternal = this
 
-        config = reloadConfig()
+        val loadConfigJob = launch { reloadConfig() }
 
         registerCommands()
         registerCustomPacketHandlers()
         registerBlockHandlers()
         registerItemHandlers()
+        LOGGER.info("Prepared builtin event handlers")
+
+        loadConfigJob.join()
 
         world = World(this@MinecraftServer, "world")
 
         LOGGER.info("Searching for spawn point...")
-        world.findSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
+        world.getSpawnPoint().let { LOGGER.info("Found spawn point {}", it) }
 
         handleCommandsJob = launch { handleCommands() }
         acceptConnectionsJob = launch { acceptConnections() }
@@ -226,7 +229,7 @@ class MinecraftServer(
         LOGGER.info("Server stopped")
     }
 
-    suspend fun reloadConfig(printError: Boolean = true): ServerConfig {
+    suspend fun reloadConfig(printError: Boolean = true) {
         if (!configFile.isFile) {
             javaClass.getResourceAsStream("/config.mckt.kts")?.use { inp ->
                 configFile.outputStream().use { out ->
@@ -242,7 +245,7 @@ class MinecraftServer(
             }
             throw e
         }
-        return config
+        LOGGER.info("Loaded config")
     }
 
     private suspend fun syncDirtyBlocks() = coroutineScope {

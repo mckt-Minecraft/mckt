@@ -1,7 +1,8 @@
-.gradle/
-.idea/
-build/
-worlds/
-config.json
-config.mckt.kts
-icon.png
+/.gradle/
+/.idea/
+/build/
+/cache/
+/worlds/
+/config.json
+/config.mckt.kts
+/icon.png

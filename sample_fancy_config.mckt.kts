@@ -10,9 +10,9 @@ enableChatPreview = true
 
 motd {
     text {
-        append(text("My mckt server", TextColor.fromHexString("#36523d")))
-        append(text("\nMy address is ", TextColor.fromCSSHexString("#999")))
-        append(text(pingInfo.serverIp, NamedTextColor.GREEN))
+        append(text("My mckt server", color("#36523d")))
+        append(text("\nMy address is ", color("#999")))
+        append(text(pingInfo.serverIp, color("green")))
     }
 }
 
@@ -21,7 +21,7 @@ formatChat {
         val shiftAmount = 1f / message.length
         var hue = 0f
         for (c in message) {
-            append(text(c, color(hsvLike(hue, 1f, 1f))))
+            append(text(c, hsv(hue, 1f, 1f)))
             hue += shiftAmount
         }
     }

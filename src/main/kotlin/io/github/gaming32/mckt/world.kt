@@ -495,9 +495,9 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
         getLoadedChunk(pos.x shr 4, pos.z shr 4)?.removeBlockEntity(BlockPosition(pos.x and 15, pos.y, pos.z and 15))
     }
 
-    suspend fun findSpawnPoint(): BlockPosition {
-        if (meta.spawnPos != BlockPosition.ZERO) {
-            return meta.spawnPos
+    suspend fun getSpawnPoint(): BlockPosition {
+        if (meta.spawnPos != null) {
+            return meta.spawnPos!!
         }
         val rand = Random(meta.seed)
         val x = rand.nextInt(-256, 257)
@@ -838,7 +838,7 @@ class ChunkSection(val chunk: WorldChunk, val y: Int) {
 class WorldMeta() {
     var time = 0L
     var seed = 0L
-    var spawnPos = BlockPosition.ZERO
+    var spawnPos: BlockPosition? = null
     var worldGenerator = WorldGenerator.NORMAL
     var autosave = true
 

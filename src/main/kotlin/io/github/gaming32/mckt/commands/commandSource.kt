@@ -24,7 +24,7 @@ abstract class CommandSource(val server: MinecraftServer) {
     abstract val displayName: Component
     abstract val operator: Int
 
-    open val position get() = server.world.meta.spawnPos.toVector3d()
+    open val position get() = server.world.meta.spawnPos!!.toVector3d()
     open val rotation get() = Vector2f.ZERO
 
     open val entity: PlayClient get() = throw REQUIRES_ENTITY_EXCEPTION.create()
