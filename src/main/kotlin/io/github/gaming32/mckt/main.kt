@@ -125,6 +125,8 @@ class MinecraftServer(
     var targetTps = 20
     val targetMspt get() = 1000.0 / targetTps
 
+    private var manualCrash = false
+
     suspend fun run() = coroutineScope {
         LOGGER.info("Starting server...")
 
@@ -151,68 +153,47 @@ class MinecraftServer(
         LOGGER.info("Server started")
         var startTime = System.nanoTime()
         while (running) {
-            world.meta.time++
-            if (world.meta.autosave && world.meta.time % config.autosavePeriod == 0L) {
-                launch { world.saveAndLog() }
-                clients.values.forEach(PlayClient::save)
-            }
-            for (client in clients.values.toList()) {
-                if (
-                    client.ended ||
-                    client.receiveChannel.isClosedForRead ||
-                    client.handlePacketsJob?.isCompleted == true
-                ) {
-                    client.handlePacketsJob?.cancelAndJoin()
-                    LOGGER.info("{} left the game.", client.username)
-                    clients.remove(client.username)
-                    client.close()
-                    broadcastChat(Component.translatable(
-                        "multiplayer.player.left",
-                        NamedTextColor.YELLOW,
-                        Component.text(client.username)
-                    ))
-                    broadcast(PlayerListUpdatePacket(
-                        PlayerListUpdatePacket.RemovePlayer(client.uuid)
-                    ))
-                    broadcast(RemoveEntitiesPacket(client.entityId))
-                    continue
+            try {
+                tick()
+                val endTime = System.nanoTime()
+                val tickTime = (endTime - startTime).nanoseconds.toDouble(DurationUnit.MILLISECONDS)
+                if (tickTime >= targetMspt * 21) {
+                    LOGGER.warn(
+                        "Is the server overloaded? Running {} seconds ({} ticks) behind.",
+                        (tickTime - targetMspt) / 1000.0, (tickTime - targetMspt) / targetMspt
+                    )
+                    broadcast(KeepAlivePacket(System.currentTimeMillis()))
                 }
-                client.tick()
-                if (world.meta.time % 20 == 0L) {
-                    client.sendPacket(UpdateTimePacket(world.meta.time))
-                    client.syncPosition(toOthers = true, toSelf = false)
-                    if (client.pingId == -1) {
-                        client.pingId = client.nextPingId++
-                        client.sendPacket(PlayPingPacket(client.pingId))
-                        client.pingStart = System.nanoTime()
+                startTime = System.nanoTime()
+                val sleepTime = targetMspt - tickTime
+                if (sleepTime <= 0) {
+                    yield()
+                } else {
+                    delay(sleepTime.toLong())
+                    startTime += sleepTime.milliseconds.inWholeNanoseconds
+                }
+            } catch (e: Exception) {
+                running = false
+                LOGGER.error("FATAL Exception in ticking", e)
+                try {
+                    for (client in clients.values) {
+                        client.kick(Component.text(e.toString(), NamedTextColor.RED))
+                        client.close()
                     }
+                } catch (_: Exception) {
                 }
-            }
-            syncDirtyBlocks()
-            val endTime = System.nanoTime()
-            val tickTime = (endTime - startTime).nanoseconds.toDouble(DurationUnit.MILLISECONDS)
-            if (tickTime >= targetMspt * 21) {
-                LOGGER.warn(
-                    "Is the server overloaded? Running {} seconds ({} ticks) behind.",
-                    (tickTime - targetMspt) / 1000.0, (tickTime - targetMspt) / targetMspt
-                )
-                broadcast(KeepAlivePacket(System.currentTimeMillis()))
-            }
-            startTime = System.nanoTime()
-            val sleepTime = targetMspt - tickTime
-            if (sleepTime <= 0) {
-                yield()
-            } else {
-                delay(sleepTime.toLong())
-                startTime += sleepTime.milliseconds.inWholeNanoseconds
+                break
             }
         }
         LOGGER.info("Stopping server...")
         handleCommandsJob.cancel()
         acceptConnectionsJob.cancel()
-        for (client in clients.values) {
-            client.kick(Component.translatable("multiplayer.disconnect.server_shutdown"))
-            client.close()
+        try {
+            for (client in clients.values) {
+                client.kick(Component.translatable("multiplayer.disconnect.server_shutdown"))
+                client.close()
+            }
+        } catch (_: Exception) {
         }
         clients.clear()
         handshakeJobs.forEach { it.cancel() }
@@ -246,6 +227,50 @@ class MinecraftServer(
             throw e
         }
         LOGGER.info("Loaded config")
+    }
+
+    private suspend fun tick() {
+        world.meta.time++
+        if (world.meta.autosave && world.meta.time % config.autosavePeriod == 0L) {
+            mainCoroutineScopeInternal!!.launch { world.saveAndLog() }
+            clients.values.forEach(PlayClient::save)
+        }
+        for (client in clients.values.toList()) {
+            if (
+                client.ended ||
+                client.receiveChannel.isClosedForRead ||
+                client.handlePacketsJob?.isCompleted == true
+            ) {
+                client.handlePacketsJob?.cancelAndJoin()
+                LOGGER.info("{} left the game.", client.username)
+                clients.remove(client.username)
+                client.close()
+                broadcastChat(Component.translatable(
+                    "multiplayer.player.left",
+                    NamedTextColor.YELLOW,
+                    Component.text(client.username)
+                ))
+                broadcast(PlayerListUpdatePacket(
+                    PlayerListUpdatePacket.RemovePlayer(client.uuid)
+                ))
+                broadcast(RemoveEntitiesPacket(client.entityId))
+                continue
+            }
+            client.tick()
+            if (world.meta.time % 20 == 0L) {
+                client.sendPacket(UpdateTimePacket(world.meta.time))
+                client.syncPosition(toOthers = true, toSelf = false)
+                if (client.pingId == -1) {
+                    client.pingId = client.nextPingId++
+                    client.sendPacket(PlayPingPacket(client.pingId))
+                    client.pingStart = System.nanoTime()
+                }
+            }
+        }
+        syncDirtyBlocks()
+        if (manualCrash) {
+            throw Exception("Manual server crash")
+        }
     }
 
     private suspend fun syncDirtyBlocks() = coroutineScope {
@@ -373,6 +398,12 @@ class MinecraftServer(
                         palette.size
                     }
                 )
+            )
+            .then(literal<CommandSource>("crash")
+                .executesSuspend {
+                    manualCrash = true
+                    0
+                }
             )
         )
     }
