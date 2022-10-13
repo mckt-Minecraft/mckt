@@ -11,66 +11,55 @@ import kotlin.random.Random
 class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
         private const val REQUIREMENT = 0.2
-        private const val REQUIREMENT_2 = 0.4
-        private const val REQUIREMENT_3 = 0.6
+        private const val REQUIREMENT_SCALE = 0.5 / 6
         private const val FLIP_CONSTANT = 4009383296558120008L
         private const val SCALE = 200.0
-        private const val MAX_TRIES = 40
+        private const val TREE_COUNT = 6
+        private const val LOCATION_SEED = 7110284434172948318L
+        private const val TREE_SEED = 2631182125980046953L
     }
 
     private val perlin = PerlinNoise(generator.seed xor FLIP_CONSTANT)
 
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    private fun getTreeGenerations(chunkX: Int, chunkZ: Int): List<TreeGeneration> {
+        val rand = generator.getRandom(chunkX, chunkZ, LOCATION_SEED)
         val cx = chunkX shl 4
         val cz = chunkZ shl 4
         val noise = perlin.noise2d(cx / SCALE, cz / SCALE)
-        if (noise < REQUIREMENT) return
-        val offsetX = rand.nextInt(12)
-        val offsetZ = rand.nextInt(12)
-        generateTree(
-            chunk, rand,
-            offsetX,
-            generator.groundPhase.getHeight(cx + offsetX + 2, cz + offsetZ + 2) + 1,
-            offsetZ
-        )
-        if (noise < REQUIREMENT_2) return
-        var offsetX2: Int
-        var i = 0
-        do {
-            offsetX2 = rand.nextInt(12)
-            if (i++ > MAX_TRIES) return
-        } while (offsetX2 in offsetX - 4..offsetX + 4)
-        var offsetZ2: Int
-        i = 0
-        do {
-            offsetZ2 = rand.nextInt(12)
-            if (i++ > MAX_TRIES) return
-        } while (offsetZ2 in offsetZ - 4..offsetZ + 4)
-        generateTree(
-            chunk, rand,
-            offsetX2,
-            generator.groundPhase.getHeight(cx + offsetX2 + 2, cz + offsetZ2 + 2) + 1,
-            offsetZ2
-        )
-        if (noise < REQUIREMENT_3) return
-        var offsetX3: Int
-        i = 0
-        do {
-            offsetX3 = rand.nextInt(12)
-            if (i++ > MAX_TRIES) return
-        } while (offsetX3 in offsetX - 4..offsetX + 4 || offsetX3 in offsetX2 - 4..offsetX2 + 4)
-        var offsetZ3: Int
-        i = 0
-        do {
-            offsetZ3 = rand.nextInt(12)
-            if (i++ > MAX_TRIES) return
-        } while (offsetZ3 in offsetZ - 4..offsetZ + 4 || offsetZ3 in offsetZ2 - 4..offsetZ2 + 4)
-        generateTree(
-            chunk, rand,
-            offsetX3,
-            generator.groundPhase.getHeight(cx + offsetX3 + 2, cz + offsetZ3 + 2) + 1,
-            offsetZ3
-        )
+        if (noise < REQUIREMENT) return emptyList()
+        val gens = mutableListOf<TreeGeneration>()
+        repeat(TREE_COUNT) { i ->
+            if (noise < REQUIREMENT + REQUIREMENT_SCALE * i) return gens
+            val offsetX = rand.nextInt(16)
+            val offsetZ = rand.nextInt(16)
+            gens.add(TreeGeneration.random(
+                offsetX,
+                generator.groundPhase.getHeight(cx + offsetX + 2, cz + offsetZ + 2) + 1,
+                offsetZ,
+                rand
+            ))
+        }
+        return gens
+    }
+
+    fun getTreeCount(chunkX: Int, chunkZ: Int): Int {
+        val cx = chunkX shl 4
+        val cz = chunkZ shl 4
+        val noise = perlin.noise2d(cx / SCALE, cz / SCALE)
+        repeat(TREE_COUNT) { i ->
+            if (noise < REQUIREMENT + REQUIREMENT_SCALE * i) return i
+        }
+        return TREE_COUNT
+    }
+
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
+        for (offsetX in -1..1) {
+            for (offsetZ in -1..1) {
+                val gens = getTreeGenerations(chunkX + offsetX, chunkZ + offsetZ)
+                val rand = generator.getRandom(chunkX + offsetX, chunkZ + offsetZ, TREE_SEED)
+                gens.forEach { generateTree(chunk, rand, it.offsetPos(offsetX * 16, 0, offsetZ * 16)) }
+            }
+        }
     }
 
     private fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int) {
@@ -83,8 +72,36 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
     }
 }
 
-fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int, trunk: BlockState, leaves: BlockState) {
-    val endY = rand.nextInt(y + 3, y + 7)
+data class TreeGeneration(
+    val x: Int, val y: Int, val z: Int,
+    val trunk: BlockState, val leaves: BlockState,
+    val height: Int? = null
+) {
+    companion object {
+        fun random(x: Int, y: Int, z: Int, rand: Random): TreeGeneration {
+            val birch = rand.nextInt(15) == 0
+            return TreeGeneration(
+                x, y, z,
+                if (birch) Blocks.BIRCH_LOG else Blocks.OAK_LOG,
+                if (birch) Blocks.BIRCH_LEAVES else Blocks.OAK_LEAVES,
+                rand.nextInt(3, 7)
+            )
+        }
+    }
+
+    fun offsetPos(x: Int, y: Int, z: Int) = TreeGeneration(this.x + x, this.y + y, this.z + z, trunk, leaves, height)
+}
+
+fun generateTree(into: BlockAccess, rand: Random, x: Int, y: Int, z: Int, trunk: BlockState, leaves: BlockState) =
+    generateTree(into, rand, TreeGeneration(x, y, z, trunk, leaves))
+
+fun generateTree(into: BlockAccess, rand: Random, gen: TreeGeneration) {
+    val x = gen.x
+    val y = gen.y
+    val z = gen.z
+    val trunk = gen.trunk
+    val leaves = gen.leaves
+    val endY = y + (gen.height ?: rand.nextInt(3, 7))
     for (oy in y..endY) {
         into.setBlockImmediate(x + 2, oy, z + 2, trunk)
     }

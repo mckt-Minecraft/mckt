@@ -71,14 +71,14 @@ class WorldeditSession(val client: PlayClient) {
             useMarkers = true
             return
         }
-        client.sendCustomPacket(CUI_CHANNEL) {
+        client.forceSendCustomPacket(CUI_CHANNEL) {
             write("s|cuboid".toByteArray())
         }
     }
 
     private suspend fun syncCui(pos: BlockPosition?, index: Int) {
         if (pos == null) return
-        client.sendCustomPacket(CUI_CHANNEL) {
+        client.forceSendCustomPacket(CUI_CHANNEL) {
             write("p|$index|${pos.x}|${pos.y}|${pos.z}|${selection?.volume ?: -1}".toByteArray())
         }
     }

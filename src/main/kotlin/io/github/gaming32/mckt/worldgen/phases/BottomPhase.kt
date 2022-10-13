@@ -4,10 +4,14 @@ import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
-import kotlin.random.Random
 
 class BottomPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    companion object {
+        private const val PHASE_SEED = 9195089414756219909L
+    }
+
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
+        val rand = generator.getRandom(chunkX, chunkZ, PHASE_SEED)
         repeat(16) { x ->
             repeat(16) { z ->
                 chunk.setBlockImmediate(x, -2032, z, Blocks.BEDROCK)

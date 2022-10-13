@@ -18,6 +18,8 @@ import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
+import io.github.gaming32.mckt.worldgen.GeneratorArgs
+import io.github.gaming32.mckt.worldgen.WorldGenerators
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -283,37 +285,6 @@ object Materials {
     val METAL = getMaterial("metal")
 }
 
-data class GeneratorArgs(
-    val chunk: BlockAccess,
-    val world: World,
-    val chunkX: Int,
-    val chunkZ: Int
-) {
-    constructor(chunk: WorldChunk) : this(chunk, chunk.world, chunk.x, chunk.z)
-}
-
-@Serializable
-enum class WorldGenerator(val createGenerator: (seed: Long) -> suspend (GeneratorArgs) -> Unit) {
-    @SerialName("flat") FLAT({
-        { args ->
-            val chunk = args.chunk
-            repeat(16) { x ->
-                repeat(16) { z ->
-                    chunk.setBlock(x, 0, z, Blocks.BEDROCK)
-                    chunk.setBlock(x, 1, z, Blocks.DIRT)
-                    chunk.setBlock(x, 2, z, Blocks.DIRT)
-                    chunk.setBlock(x, 3, z, Blocks.GRASS_BLOCK)
-                }
-            }
-        }
-    }),
-    @SerialName("normal") NORMAL({ seed -> DefaultWorldGenerator(seed).let { generator -> { args ->
-        coroutineScope { launch(args.world.worldgenPool) {
-            generator.generateChunk(args.chunk, args.chunkX, args.chunkZ)
-        } }
-    } } })
-}
-
 interface SuspendingBlockAccess {
     suspend fun getBlock(x: Int, y: Int, z: Int): BlockState = getBlock(BlockPosition(x, y, z))
 
@@ -375,7 +346,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
         WorldMeta(server.config)
     }
 
-    val worldGenerator = meta.worldGenerator.createGenerator(meta.seed)
+    val worldGenerator = WorldGenerators.getGenerator(meta.worldGenerator)(meta.seed)
 
     suspend fun getRegion(x: Int, z: Int) = coroutineScope {
         var region = openRegions[x, z]
@@ -400,7 +371,7 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
     suspend fun getChunkOrElse(x: Int, z: Int, generate: suspend (GeneratorArgs) -> Unit = {}) =
         getRegion(x shr 5, z shr 5).getChunkOrElse(x and 31, z and 31, generate)
 
-    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator)
+    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, worldGenerator::generateChunkThreaded)
 
     override suspend fun getBlock(x: Int, y: Int, z: Int) =
         getRegion(x shr 9, z shr 9).getBlockImmediate(x and 511, y, z and 511)
@@ -585,7 +556,7 @@ class WorldRegion(val world: World, val x: Int, val z: Int) : AutoCloseable, Blo
         return chunk
     }
 
-    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator)
+    suspend fun getChunkOrGenerate(x: Int, z: Int) = getChunkOrElse(x, z, world.worldGenerator::generateChunkThreaded)
 
     override fun getBlockImmediate(x: Int, y: Int, z: Int) =
         chunks[(x shr 4 shl 5) + (z shr 4)]?.getBlockImmediate(x and 15, y, z and 15) ?: Blocks.AIR
@@ -654,13 +625,13 @@ class WorldChunk(val region: WorldRegion, val xInRegion: Int, val zInRegion: Int
     fun getSection(y: Int): ChunkSection? = sections[y + 127]
 
     override fun getBlockImmediate(x: Int, y: Int, z: Int): BlockState {
-        if (y < -2032 || y > 2031) return Blocks.AIR
+        if (y < -2032 || y > 2031 || x !in 0..15 || z !in 0..15) return Blocks.AIR
         val section = sections[(y shr 4) + 127] ?: return Blocks.AIR
         return section.getBlock(x, y and 15, z)
     }
 
     override fun setBlockImmediate(x: Int, y: Int, z: Int, block: BlockState): Boolean {
-        if (y < -2032 || y > 2031) return false
+        if (y !in -2032..2031 || x !in 0..15 || z !in 0..15) return false
         val old: BlockState
         synchronized(this) {
             var section = sections[(y shr 4) + 127]
@@ -839,7 +810,7 @@ class WorldMeta() {
     var time = 0L
     var seed = 0L
     var spawnPos: BlockPosition? = null
-    var worldGenerator = WorldGenerator.NORMAL
+    var worldGenerator = Identifier("mckt", "default")
     var autosave = true
 
     constructor(config: ServerConfig) : this() {

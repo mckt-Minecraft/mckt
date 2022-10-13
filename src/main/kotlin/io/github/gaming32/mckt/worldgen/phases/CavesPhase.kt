@@ -5,7 +5,6 @@ import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.OpenSimplex
-import kotlin.random.Random
 
 class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     companion object {
@@ -28,7 +27,7 @@ class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
         return result
     }
 
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
         val cx = chunkX shl 4
         val cz = chunkZ shl 4
         repeat(16) { x ->

@@ -1,6 +1,6 @@
 package io.github.gaming32.mckt.config
 
-import io.github.gaming32.mckt.WorldGenerator
+import io.github.gaming32.mckt.objects.Identifier
 import net.kyori.adventure.text.Component
 import kotlin.script.experimental.annotations.KotlinScript
 
@@ -28,7 +28,7 @@ abstract class ServerConfig {
     var seed: Long? = null
         protected set
 
-    var defaultWorldGenerator: WorldGenerator = WorldGenerator.NORMAL
+    var defaultWorldGenerator: Identifier = Identifier("mckt", "default")
         protected set
 
     var networkCompressionThreshold: Int = 256

@@ -20,7 +20,7 @@ class GroundPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {
     internal fun getHeight(x: Int, z: Int) =
         (perlin.fbm2d(x / X_SCALE, z / X_SCALE, OCTAVES) * Y_SCALE).toInt() + Y_OFFSET
 
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
         val cx = chunkX shl 4
         val cz = chunkZ shl 4
         repeat(16) { x ->

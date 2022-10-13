@@ -26,7 +26,7 @@ class SkyIslandsPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generato
     private fun getSurfaceHeight(x: Int, z: Int) =
         (perlin.noise2d(x / X_SCALE_SURFACE, z / X_SCALE_SURFACE) * Y_SCALE_SURFACE).toInt() + Y_OFFSET_SURFACE
 
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
         val cx = chunkX shl 4
         val cz = chunkZ shl 4
         repeat(16) { x ->

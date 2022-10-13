@@ -22,7 +22,7 @@ class StonePatchesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(genera
         }
     }
 
-    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int, rand: Random) {
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
         repeat(16) { x ->
             val absX = (chunkX shl 4) + x
             repeat(16) { z ->

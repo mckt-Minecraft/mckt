@@ -13,10 +13,7 @@ import io.github.gaming32.mckt.commands.SuggestionProviders.localProvider
 import io.github.gaming32.mckt.commands.runCommand
 import io.github.gaming32.mckt.config.ChatFormatContext
 import io.github.gaming32.mckt.config.MotdCreationContext
-import io.github.gaming32.mckt.data.encodeData
-import io.github.gaming32.mckt.data.readIdentifierArray
-import io.github.gaming32.mckt.data.writeIdentifierArray
-import io.github.gaming32.mckt.data.writeString
+import io.github.gaming32.mckt.data.*
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.objects.*
@@ -33,6 +30,7 @@ import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
+import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.network.sockets.*
@@ -46,6 +44,9 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.*
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.*
 import kotlin.time.Duration.Companion.nanoseconds
 import org.slf4j.helpers.Util as Slf4jUtil
@@ -109,6 +110,7 @@ class PlayClient(
     var commandSource: CommandSource = server.serverCommandSender
         private set
     internal val loadedChunks = mutableSetOf<Pair<Int, Int>>()
+    private val sentTreeCountChunks = mutableSetOf<Pair<Int, Int>>()
     private var ignoreMovementPackets = true
 
     var options = ClientOptions(this)
@@ -223,7 +225,7 @@ class PlayClient(
             reducedDebugInfo = false,
             enableRespawnScreen = false,
             isDebug = false,
-            isFlat = server.world.meta.worldGenerator == WorldGenerator.FLAT,
+            isFlat = server.world.meta.worldGenerator == Identifier("mckt", "flat"),
             deathLocation = null
         ))
         sendPacket(SyncTagsPacket(DEFAULT_TAGS))
@@ -369,8 +371,23 @@ class PlayClient(
         }
     }
 
-    suspend inline fun sendCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit = {}) =
+    @OptIn(ExperimentalContracts::class)
+    suspend inline fun sendCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit = {}) {
+        contract {
+            callsInPlace(builder, InvocationKind.AT_MOST_ONCE)
+        }
+        if (channel.namespace == "minecraft" || channel in supportedChannels) {
+            forceSendCustomPacket(channel, builder)
+        }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    suspend inline fun forceSendCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit = {}) {
+        contract {
+            callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
+        }
         sendPacket(PlayCustomPacket(channel, builder))
+    }
 
     suspend fun setOperatorLevel(level: Int) {
         data.operatorLevel = level
@@ -388,6 +405,14 @@ class PlayClient(
             entityId,
             (EntityEvent.PlayerEvent.SET_OP_LEVEL_0 + min(data.operatorLevel.toUInt(), 4u)).toUByte()
         ))
+        sendCustomPacket(DebugConsts.DEBUG_HAS_PERMS_CHANNEL) {
+            writeBoolean(data.operatorLevel >= 5)
+        }
+        if (data.operatorLevel >= 5) {
+            sendCustomPacket(DebugConsts.DEBUG_SEED_CHANNEL) {
+                writeLong(server.world.meta.seed)
+            }
+        }
         sendCommandTree()
     }
 
@@ -431,6 +456,18 @@ class PlayClient(
     }
 
     private suspend fun loadChunk(x: Int, z: Int) {
+        if (sentTreeCountChunks.add(x to z)) {
+            sendCustomPacket(DebugConsts.DEBUG_TREE_COUNT_CHANNEL) {
+                writeInt(x)
+                writeInt(z)
+                writeVarInt(
+                    server.world.worldGenerator
+                        .castOrNull<DefaultWorldGenerator>()
+                        ?.treePhase
+                        ?.getTreeCount(x, z) ?: 0
+                )
+            }
+        }
         if (loadedChunks.add(x to z)) {
             val chunk = server.world.getChunkOrGenerate(x, z)
             val chunkData = withContext(chunk.world.networkSerializationPool) {
@@ -447,7 +484,11 @@ class PlayClient(
         sendPacket(SetCenterChunkPacket(playerX, playerZ))
         val jobs = mutableListOf<Job>()
         spiralLoop(range, range) { x, z ->
-            jobs.add(launch { loadChunk(playerX + x, playerZ + z) })
+            jobs.add(launch {
+                val absX = playerX + x
+                val absZ = playerZ + z
+                loadChunk(absX, absZ)
+            })
         }
         return jobs
     }
@@ -719,15 +760,17 @@ class PlayClient(
                             }
                         }
                         if (packet.x != null) {
+                            val lastX = data.x
+                            val lastZ = data.z
+                            data.x = packet.x
+                            data.y = packet.y!!
+                            data.z = packet.z!!
                             if (
-                                data.z.roundToInt() / 16 != packet.z!!.roundToInt() / 16 ||
-                                data.x.roundToInt() / 16 != packet.x.roundToInt() / 16
+                                lastX.roundToInt() / 16 != packet.x.roundToInt() / 16 ||
+                                lastZ.roundToInt() / 16 != packet.z.roundToInt() / 16
                             ) {
                                 loadChunksAroundPlayer()
                             }
-                            data.x = packet.x
-                            data.y = packet.y!!
-                            data.z = packet.z
                         }
                         if (packet.yaw != null) {
                             data.yaw = packet.yaw

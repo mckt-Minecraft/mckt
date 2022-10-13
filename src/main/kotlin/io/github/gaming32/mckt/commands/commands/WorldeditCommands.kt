@@ -15,6 +15,10 @@ import io.github.gaming32.mckt.nbt.buildNbtCompound
 import io.github.gaming32.mckt.nbt.put
 import io.github.gaming32.mckt.nbt.putNbtCompound
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.worldgen.GeneratorArgs
+import io.github.gaming32.mckt.worldgen.WorldGenerator
+import io.github.gaming32.mckt.worldgen.WorldGenerators
+import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worledit.WorldeditClipboard
 import io.github.gaming32.mckt.worledit.worldeditSession
 import kotlinx.coroutines.*
@@ -209,13 +213,11 @@ object WorldeditCommands {
             .then(argument<CommandSource, Long>("seed", longArg())
                 .executesSuspend {
                     val world = source.server.world
-                    generate(world, world.meta.worldGenerator.createGenerator(getLong("seed")))
+                    generate(world, WorldGenerators.getGenerator(world.meta.worldGenerator)(getLong("seed")))
                 }
             )!!
 
-        private suspend fun CommandContext<CommandSource>.generate(
-            world: World, generator: suspend (GeneratorArgs) -> Unit
-        ): Int {
+        private suspend fun CommandContext<CommandSource>.generate(world: World, generator: WorldGenerator): Int {
             val region = source.selection
             runTask {
                 for (chunkX in (region.minX shr 4)..(region.maxX shr 4)) {
@@ -235,7 +237,7 @@ object WorldeditCommands {
                                 chunk.setBlockImmediate(x, y, z, Blocks.AIR)
                             }
                         }
-                        generator(GeneratorArgs(object : BlockAccess {
+                        generator.generateChunkThreaded(GeneratorArgs(object : BlockAccess {
                             override fun getBlockImmediate(pos: BlockPosition) = chunk.getBlockImmediate(pos)
                             override fun getBlockImmediate(x: Int, y: Int, z: Int) = chunk.getBlockImmediate(x, y, z)
 

@@ -339,7 +339,7 @@ class MinecraftServer(
             }
         }
         registerCommand(Component.text("Debug tools"), literal<CommandSource>("debug")
-            .requires { it.hasPermission(5) }
+            .requires { it.hasPermission(DebugConsts.DEBUG_OP_LEVEL) }
             .then(literal<CommandSource>("reload-registrations")
                 .executesSuspend {
                     source.replyBroadcast(Component.text("Reloading commands..."))

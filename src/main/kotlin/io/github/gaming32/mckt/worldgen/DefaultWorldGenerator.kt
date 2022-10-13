@@ -4,23 +4,23 @@ import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.worldgen.phases.*
 import kotlin.random.Random
 
-class DefaultWorldGenerator(val seed: Long) {
-    companion object {
-        private const val RAND_FLIP = 3402855461729105818L
-    }
-
+class DefaultWorldGenerator(seed: Long) : WorldGenerator(seed) {
     val groundPhase = GroundPhase(this)
+    val treePhase = TreeDecorationPhase(this)
+
     val phases = listOf(
         groundPhase,
         CavesPhase(this),
         SkyIslandsPhase(this),
         StonePatchesPhase(this),
-        TreeDecorationPhase(this),
+        treePhase,
         BottomPhase(this)
     )
 
-    fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
-        val rand = Random(seed xor (chunkX.toLong() shl 32) xor chunkZ.toLong() xor RAND_FLIP)
-        phases.forEach { it.generateChunk(chunk, chunkX, chunkZ, rand) }
+    override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
+        phases.forEach { it.generateChunk(chunk, chunkX, chunkZ) }
     }
+
+    fun getRandom(chunkX: Int, chunkZ: Int, phaseSeed: Long) =
+        Random(seed xor (chunkX.toLong() shl 32) xor chunkZ.toLong() xor phaseSeed)
 }

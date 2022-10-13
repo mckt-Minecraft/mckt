@@ -396,5 +396,10 @@ suspend fun ByteReadChannel.readVarInt(specialFe: Boolean = false): Int {
 }
 //endregion
 
-inline fun encodeData(builder: OutputStream.() -> Unit): ByteArray =
-    ByteArrayOutputStream().also { it.builder() }.toByteArray()
+@OptIn(ExperimentalContracts::class)
+inline fun encodeData(builder: OutputStream.() -> Unit): ByteArray {
+    contract {
+        callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
+    }
+    return ByteArrayOutputStream().also { it.builder() }.toByteArray()
+}

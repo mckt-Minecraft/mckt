@@ -7,6 +7,9 @@ import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.packet.Packet
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class PlayCustomPacket(val channel: Identifier, val data: ByteArray) : Packet(S2C_TYPE) {
     companion object {
@@ -27,5 +30,10 @@ class PlayCustomPacket(val channel: Identifier, val data: ByteArray) : Packet(S2
     override fun toString() = "PlayPluginPacket(channel=$channel, data=...)"
 }
 
-inline fun PlayCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit) =
-    PlayCustomPacket(channel, encodeData(builder))
+@OptIn(ExperimentalContracts::class)
+inline fun PlayCustomPacket(channel: Identifier, builder: OutputStream.() -> Unit): PlayCustomPacket {
+    contract {
+        callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
+    }
+    return PlayCustomPacket(channel, encodeData(builder))
+}
