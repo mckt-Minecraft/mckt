@@ -2,7 +2,14 @@ viewDistance = 10
 simulationDistance = 10
 maxPlayers = 20
 seed = null
-defaultWorldGenerator = id("mckt:default")
+defaultWorldGenerator = flatGenerator {
+    minY = -1234
+    layers {
+        repeat(123) {
+            add(state("slime_block"))
+        }
+    }
+}
 networkCompressionThreshold = 256
 autosavePeriod = 5 * 60 * 20
 enableVanillaClientSpoofAlerts = true

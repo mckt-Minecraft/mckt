@@ -24,7 +24,9 @@ object BlockEntities {
     } ?: mapOf()
 
     fun register(id: Identifier, type: BlockEntity.BlockEntityType<*>) {
-        TYPES[id] = type
+        TYPES.put(id, type)?.let {
+            throw IllegalArgumentException("A block entity already exists with the ID $id")
+        }
     }
 
     fun getType(id: Identifier) = TYPES[id]

@@ -62,4 +62,7 @@ suspend fun evalConfigFile(configFile: File) = ConfigScriptingHost
         )
     }
     .returnValue
-    .scriptInstance as ServerConfig
+    .scriptInstance as? ServerConfig
+        ?: throw ConfigErrorException(
+            "An unknown error occurred loading the config file. Try deleting the \"cache\" folder."
+        )

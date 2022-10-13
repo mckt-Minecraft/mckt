@@ -1,4 +1,4 @@
-package io.github.gaming32.mckt.worldgen
+package io.github.gaming32.mckt.worldgen.defaultgen
 
 import io.github.gaming32.mckt.BlockAccess
 

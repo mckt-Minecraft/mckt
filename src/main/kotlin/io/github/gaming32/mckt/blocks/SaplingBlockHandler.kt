@@ -6,7 +6,7 @@ import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.objects.Identifier
-import io.github.gaming32.mckt.worldgen.phases.generateTree
+import io.github.gaming32.mckt.worldgen.defaultgen.phases.generateTree
 import kotlin.random.Random
 
 object SaplingBlockHandler : BlockHandler(), Fertilizable {

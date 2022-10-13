@@ -58,6 +58,7 @@ import kotlin.concurrent.thread
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.forEachDirectoryEntry
 import kotlin.io.use
+import kotlin.system.exitProcess
 import kotlin.text.toByteArray
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
@@ -757,5 +758,6 @@ fun main(vararg args: String) {
     try {
         runBlocking { MinecraftServer(useJline = "--no-jline" !in args).run() }
     } catch (_: ConfigErrorException) {
+        exitProcess(1)
     }
 }

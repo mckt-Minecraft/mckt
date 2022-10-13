@@ -1,9 +1,9 @@
-package io.github.gaming32.mckt.worldgen.phases
+package io.github.gaming32.mckt.worldgen.defaultgen.phases
 
 import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
-import io.github.gaming32.mckt.worldgen.WorldgenPhase
+import io.github.gaming32.mckt.worldgen.defaultgen.DefaultWorldGenerator
+import io.github.gaming32.mckt.worldgen.defaultgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.OpenSimplex
 
 class CavesPhase(generator: DefaultWorldGenerator) : WorldgenPhase(generator) {

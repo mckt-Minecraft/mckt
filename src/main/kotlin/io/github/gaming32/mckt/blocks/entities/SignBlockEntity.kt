@@ -33,7 +33,7 @@ class SignBlockEntity(
     var glowingText = false
 
     override fun writeNbt(nbt: NbtCompound) {
-        repeat(4) { i ->
+        repeat(LINES) { i ->
             nbt.putString(TEXT_KEYS[i], GsonComponentSerializer.gson().serialize(lines[i]))
         }
         nbt.putString("Color", color.toString())
@@ -43,7 +43,7 @@ class SignBlockEntity(
     override fun readNbt(nbt: NbtCompound) {
         editable = false
         color = NamedTextColor.NAMES.value(nbt.getString("Color")) ?: NamedTextColor.BLACK
-        repeat(4) { i ->
+        repeat(LINES) { i ->
             lines[i] = GsonComponentSerializer.gson().deserialize(nbt.getString(TEXT_KEYS[i]))
         }
         glowingText = nbt.getBoolean("GlowingText")

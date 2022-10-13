@@ -30,7 +30,7 @@ import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.PlayPingPacket
 import io.github.gaming32.mckt.packet.play.c2s.*
 import io.github.gaming32.mckt.packet.play.s2c.*
-import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
+import io.github.gaming32.mckt.worldgen.defaultgen.DefaultWorldGenerator
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.network.sockets.*

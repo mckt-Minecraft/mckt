@@ -17,13 +17,11 @@ import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
 import io.github.gaming32.mckt.util.IntIntPair2ObjectMap
 import io.github.gaming32.mckt.util.PalettedStorage
 import io.github.gaming32.mckt.util.SimpleBitStorage
-import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
 import io.github.gaming32.mckt.worldgen.GeneratorArgs
 import io.github.gaming32.mckt.worldgen.WorldGenerators
 import io.ktor.util.collections.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.decodeFromStream
@@ -344,9 +342,16 @@ class World(val server: MinecraftServer, val name: String) : BlockAccess {
             LOGGER.warn("Couldn't read world meta, creating anew", e)
         }
         WorldMeta(server.config)
+    }.also { meta ->
+        if (meta.worldGenerator == Identifier("normal")) {
+            meta.worldGenerator = Identifier("mckt", "default")
+        }
     }
 
-    val worldGenerator = WorldGenerators.getGenerator(meta.worldGenerator)(meta.seed)
+    val worldGenerator = WorldGenerators
+        .getGenerator(meta.worldGenerator).let { type ->
+            type.createGenerator(meta.seed, type.deserializeConfig(meta.generatorConfig))
+        }
 
     suspend fun getRegion(x: Int, z: Int) = coroutineScope {
         var region = openRegions[x, z]
@@ -810,12 +815,15 @@ class WorldMeta() {
     var time = 0L
     var seed = 0L
     var spawnPos: BlockPosition? = null
-    var worldGenerator = Identifier("mckt", "default")
+    var worldGenerator: Identifier = Identifier("mckt", "default")
+    var generatorConfig: String = ""
     var autosave = true
 
     constructor(config: ServerConfig) : this() {
         seed = config.seed ?: Random.nextLong()
-        worldGenerator = config.defaultWorldGenerator
+        val gen = config.defaultWorldGenerator
+        worldGenerator = WorldGenerators.getId(gen.generator)
+        generatorConfig = gen.config.serializeToString()
     }
 }
 

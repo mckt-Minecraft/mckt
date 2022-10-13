@@ -5,7 +5,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.BlockAccess
+import io.github.gaming32.mckt.Blocks
+import io.github.gaming32.mckt.World
+import io.github.gaming32.mckt.coerceToInt
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
 import io.github.gaming32.mckt.commands.executesSuspend
@@ -18,7 +21,6 @@ import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.worldgen.GeneratorArgs
 import io.github.gaming32.mckt.worldgen.WorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldGenerators
-import io.github.gaming32.mckt.worldgen.WorldgenPhase
 import io.github.gaming32.mckt.worledit.WorldeditClipboard
 import io.github.gaming32.mckt.worledit.worldeditSession
 import kotlinx.coroutines.*
@@ -213,11 +215,15 @@ object WorldeditCommands {
             .then(argument<CommandSource, Long>("seed", longArg())
                 .executesSuspend {
                     val world = source.server.world
-                    generate(world, WorldGenerators.getGenerator(world.meta.worldGenerator)(getLong("seed")))
+                    generate(world, WorldGenerators
+                        .getGenerator(world.meta.worldGenerator)
+                        .run {
+                            createGenerator(getLong("seed"), deserializeConfig(world.meta.generatorConfig))
+                        })
                 }
             )!!
 
-        private suspend fun CommandContext<CommandSource>.generate(world: World, generator: WorldGenerator): Int {
+        private suspend fun CommandContext<CommandSource>.generate(world: World, generator: WorldGenerator<*, *>): Int {
             val region = source.selection
             runTask {
                 for (chunkX in (region.minX shr 4)..(region.maxX shr 4)) {

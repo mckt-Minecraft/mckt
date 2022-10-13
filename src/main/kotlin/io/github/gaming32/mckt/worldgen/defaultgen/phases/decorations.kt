@@ -1,10 +1,10 @@
-package io.github.gaming32.mckt.worldgen.phases
+package io.github.gaming32.mckt.worldgen.defaultgen.phases
 
 import io.github.gaming32.mckt.BlockAccess
 import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.objects.BlockState
-import io.github.gaming32.mckt.worldgen.DefaultWorldGenerator
-import io.github.gaming32.mckt.worldgen.WorldgenPhase
+import io.github.gaming32.mckt.worldgen.defaultgen.DefaultWorldGenerator
+import io.github.gaming32.mckt.worldgen.defaultgen.WorldgenPhase
 import io.github.gaming32.mckt.worldgen.noise.PerlinNoise
 import kotlin.random.Random
 
@@ -32,12 +32,14 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
             if (noise < REQUIREMENT + REQUIREMENT_SCALE * i) return gens
             val offsetX = rand.nextInt(16)
             val offsetZ = rand.nextInt(16)
-            gens.add(TreeGeneration.random(
-                offsetX,
-                generator.groundPhase.getHeight(cx + offsetX + 2, cz + offsetZ + 2) + 1,
-                offsetZ,
-                rand
-            ))
+            gens.add(
+                TreeGeneration.random(
+                    offsetX,
+                    generator.groundPhase.getHeight(cx + offsetX + 2, cz + offsetZ + 2) + 1,
+                    offsetZ,
+                    rand
+                )
+            )
         }
         return gens
     }
