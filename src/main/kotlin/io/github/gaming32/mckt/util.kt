@@ -21,6 +21,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.*
 import kotlin.collections.ArrayDeque
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -268,3 +269,5 @@ fun ByteArray.sha1(): ByteArray {
     SHA1.reset()
     return SHA1.digest(this)
 }
+
+fun Double.floorToInt() = floor(this).toInt()

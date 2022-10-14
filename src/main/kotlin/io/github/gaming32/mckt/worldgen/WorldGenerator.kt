@@ -5,6 +5,7 @@ import io.github.gaming32.mckt.util.StringSerializable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlin.coroutines.EmptyCoroutineContext
 
 abstract class WorldGenerator<T : WorldGenerator<T, C>, C : StringSerializable>(
     val type: WorldGeneratorType<T, C>,
@@ -24,18 +25,12 @@ abstract class WorldGenerator<T : WorldGenerator<T, C>, C : StringSerializable>(
         abstract fun deserializeConfig(serialized: String): C
     }
 
-    open val threaded: Boolean = true
+    open val threaded = true
 
     abstract fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int)
 
-    suspend fun generateChunkThreaded(args: GeneratorArgs) {
-        if (threaded) {
-            coroutineScope {
-                launch(args.world.worldgenPool) {
-                    generateChunk(args.chunk, args.chunkX, args.chunkZ)
-                }
-            }
-        } else {
+    suspend fun generateChunkThreaded(args: GeneratorArgs) = coroutineScope {
+        launch(if (threaded) args.world.worldgenPool else EmptyCoroutineContext) {
             generateChunk(args.chunk, args.chunkX, args.chunkZ)
         }
     }

@@ -57,6 +57,7 @@ suspend fun evalConfigFile(configFile: File) = ConfigScriptingHost
     .evalSuspend(configFile.toScriptSource())
     .valueOr { failure ->
         throw ConfigErrorException(failure.reports
+            .asSequence()
             .filter(ScriptDiagnostic::isError)
             .joinToString("\n") { it.render().replace("\n", "\n    ") }
         )

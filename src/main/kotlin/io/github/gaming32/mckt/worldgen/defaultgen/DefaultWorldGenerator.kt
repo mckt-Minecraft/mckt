@@ -1,7 +1,6 @@
 package io.github.gaming32.mckt.worldgen.defaultgen
 
 import io.github.gaming32.mckt.BlockAccess
-import io.github.gaming32.mckt.util.StringSerializable
 import io.github.gaming32.mckt.util.StringSerializable.EmptySerializable
 import io.github.gaming32.mckt.worldgen.WorldGenerator
 import io.github.gaming32.mckt.worldgen.defaultgen.phases.*
@@ -15,7 +14,7 @@ class DefaultWorldGenerator(
 
         override fun createGenerator(seed: Long, config: EmptySerializable) = DefaultWorldGenerator(seed)
 
-        override fun deserializeConfig(serialized: String) = StringSerializable.EmptySerializable
+        override fun deserializeConfig(serialized: String) = EmptySerializable
     }
 
     val groundPhase = GroundPhase(this)

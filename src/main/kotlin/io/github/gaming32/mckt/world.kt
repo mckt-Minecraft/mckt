@@ -274,6 +274,10 @@ object Blocks {
     val FIRE = getBlock("fire")
     val BIRCH_LOG = getBlock("birch_log")
     val BIRCH_LEAVES = getBlock("birch_leaves")
+    val SAND = getBlock("sand")
+    val ICE = getBlock("ice")
+    val GRAVEL = getBlock("gravel")
+    val WATER = getBlock("water")
 }
 
 object Materials {

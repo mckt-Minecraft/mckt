@@ -45,8 +45,6 @@ class FlatWorldGenerator(
         }
     }
 
-    override val threaded = false
-
     override fun generateChunk(chunk: BlockAccess, chunkX: Int, chunkZ: Int) {
         var y = config.minY
         for (block in config.layers) {

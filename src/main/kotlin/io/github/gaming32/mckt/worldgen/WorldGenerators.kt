@@ -1,6 +1,7 @@
 package io.github.gaming32.mckt.worldgen
 
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.worldgen.classic.ClassicWorldGenerator
 import io.github.gaming32.mckt.worldgen.defaultgen.DefaultWorldGenerator
 import io.michaelrocks.bimap.HashBiMap
 import kotlinx.serialization.KSerializer
@@ -37,5 +38,6 @@ object WorldGenerators {
     init {
         register(Identifier("mckt", "flat"), FlatWorldGenerator)
         register(Identifier("mckt", "default"), DefaultWorldGenerator)
+        register(Identifier("mckt", "classic"), ClassicWorldGenerator)
     }
 }

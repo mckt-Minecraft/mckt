@@ -14,7 +14,7 @@ class TreeDecorationPhase(generator: DefaultWorldGenerator) : WorldgenPhase(gene
         private const val REQUIREMENT_SCALE = 0.5 / 6
         private const val FLIP_CONSTANT = 4009383296558120008L
         private const val SCALE = 200.0
-        private const val TREE_COUNT = 6
+        private const val TREE_COUNT = 5
         private const val LOCATION_SEED = 7110284434172948318L
         private const val TREE_SEED = 2631182125980046953L
     }
