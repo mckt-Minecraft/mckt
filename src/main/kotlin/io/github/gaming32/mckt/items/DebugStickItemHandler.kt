@@ -2,8 +2,8 @@ package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.GlobalPalette
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.world.World
 import net.kyori.adventure.text.Component
 
 object DebugStickItemHandler : ItemHandler() {

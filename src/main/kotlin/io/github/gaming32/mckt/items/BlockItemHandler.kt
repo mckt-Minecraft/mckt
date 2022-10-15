@@ -1,10 +1,16 @@
 package io.github.gaming32.mckt.items
 
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.BLOCK_PROPERTIES
+import io.github.gaming32.mckt.PlayClient
+import io.github.gaming32.mckt.cast
 import io.github.gaming32.mckt.nbt.NbtString
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.PlaySoundPacket
 import io.github.gaming32.mckt.packet.play.s2c.SoundCategory
+import io.github.gaming32.mckt.world.SetBlockFlags
+import io.github.gaming32.mckt.world.World
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 open class BlockItemHandler(val block: Identifier) : ItemHandler() {
     class ItemPlacementContext(

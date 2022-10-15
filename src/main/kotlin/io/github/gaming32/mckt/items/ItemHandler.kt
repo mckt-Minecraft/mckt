@@ -1,8 +1,8 @@
 package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.world.World
 
 abstract class ItemHandler {
     open class ItemUsageContext protected constructor(

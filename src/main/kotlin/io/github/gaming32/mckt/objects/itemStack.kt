@@ -1,11 +1,11 @@
 package io.github.gaming32.mckt.objects
 
-import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.items.ItemHandler
 import io.github.gaming32.mckt.nbt.NbtCompound
+import io.github.gaming32.mckt.world.Blocks
+import io.github.gaming32.mckt.world.World
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName

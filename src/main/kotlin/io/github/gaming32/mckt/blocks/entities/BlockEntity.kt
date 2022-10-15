@@ -1,11 +1,11 @@
 package io.github.gaming32.mckt.blocks.entities
 
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.blocks.entities.BlockEntities.getId
 import io.github.gaming32.mckt.nbt.NbtCompound
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.packet.Packet
+import io.github.gaming32.mckt.world.World
 
 abstract class BlockEntity<T : BlockEntity<T>>(
     val type: BlockEntityType<T>,

@@ -1,11 +1,11 @@
 package io.github.gaming32.mckt.items
 
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.blocks.Fertilizable
 import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.ItemStack
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
+import io.github.gaming32.mckt.world.World
 import kotlin.random.Random
 
 object BoneMealItemHandler : ItemHandler() {

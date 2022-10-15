@@ -1,10 +1,15 @@
 package io.github.gaming32.mckt.blocks
 
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.BLOCK_PROPERTIES
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
+import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
+import io.github.gaming32.mckt.world.Blocks
+import io.github.gaming32.mckt.world.Materials
+import io.github.gaming32.mckt.world.SetBlockFlags
+import io.github.gaming32.mckt.world.World
 
 object DoorBlockHandler : BlockHandler() {
     override suspend fun getStateForNeighborUpdate(

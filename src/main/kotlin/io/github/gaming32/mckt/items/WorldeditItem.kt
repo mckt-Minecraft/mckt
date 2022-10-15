@@ -1,10 +1,10 @@
 package io.github.gaming32.mckt.items
 
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.castOrNull
 import io.github.gaming32.mckt.nbt.NbtInt
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.world.World
 import io.github.gaming32.mckt.worledit.worldeditSession
 
 object WorldeditItem : ItemHandler() {

@@ -13,6 +13,7 @@ import io.github.gaming32.mckt.GlobalPalette.ID_TO_BLOCKSTATE
 import io.github.gaming32.mckt.blocks.BlockEntityProvider
 import io.github.gaming32.mckt.commands.wrap
 import io.github.gaming32.mckt.items.BlockItemHandler
+import io.github.gaming32.mckt.world.World
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

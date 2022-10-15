@@ -5,9 +5,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
-import io.github.gaming32.mckt.BlockAccess
-import io.github.gaming32.mckt.Blocks
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.coerceToInt
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.arguments.*
@@ -18,6 +15,9 @@ import io.github.gaming32.mckt.nbt.buildNbtCompound
 import io.github.gaming32.mckt.nbt.put
 import io.github.gaming32.mckt.nbt.putNbtCompound
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.world.BlockAccess
+import io.github.gaming32.mckt.world.Blocks
+import io.github.gaming32.mckt.world.World
 import io.github.gaming32.mckt.worldgen.GeneratorArgs
 import io.github.gaming32.mckt.worldgen.WorldGenerator
 import io.github.gaming32.mckt.worldgen.WorldGenerators

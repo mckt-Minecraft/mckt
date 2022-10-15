@@ -2,10 +2,9 @@ package io.github.gaming32.mckt.config.frontendapi
 
 import io.github.gaming32.mckt.objects.Identifier
 import io.github.gaming32.mckt.util.StringSerializable
-import io.github.gaming32.mckt.worldgen.FlatWorldGenerator
-import io.github.gaming32.mckt.worldgen.WorldGenerator
-import io.github.gaming32.mckt.worldgen.WorldGenerators
-import io.github.gaming32.mckt.worldgen.defaultgen.DefaultWorldGenerator
+import io.github.gaming32.mckt.world.gen.WorldGenerator
+import io.github.gaming32.mckt.world.gen.WorldGenerators
+import io.github.gaming32.mckt.world.gen.defaultgen.DefaultWorldGenerator
 
 data class WorldGeneratorConfig<T : WorldGenerator<T, C>, C : StringSerializable>(
     val generator: WorldGenerator.WorldGeneratorType<T, C>,
@@ -14,7 +13,7 @@ data class WorldGeneratorConfig<T : WorldGenerator<T, C>, C : StringSerializable
 
 val defaultGenerator = WorldGeneratorConfig(DefaultWorldGenerator)
 
-val flatGenerator = WorldGeneratorConfig(FlatWorldGenerator)
+val flatGenerator = WorldGeneratorConfig(io.github.gaming32.mckt.world.gen.FlatWorldGenerator)
 
 inline fun <T : WorldGenerator<T, C>, C : StringSerializable> generator(
     generator: WorldGenerator.WorldGeneratorType<T, C>,
@@ -23,9 +22,9 @@ inline fun <T : WorldGenerator<T, C>, C : StringSerializable> generator(
 
 fun generator(id: Identifier) = WorldGeneratorConfig(WorldGenerators.getGenerator(id))
 
-inline fun flatGenerator(builder: FlatWorldGenerator.FlatConfig.Builder.() -> Unit) =
-    generator(FlatWorldGenerator) {
-        val result = FlatWorldGenerator.FlatConfig.Builder()
+inline fun flatGenerator(builder: io.github.gaming32.mckt.world.gen.FlatWorldGenerator.FlatConfig.Builder.() -> Unit) =
+    generator(io.github.gaming32.mckt.world.gen.FlatWorldGenerator) {
+        val result = io.github.gaming32.mckt.world.gen.FlatWorldGenerator.FlatConfig.Builder()
         result.builder()
         return@generator result.build()
     }

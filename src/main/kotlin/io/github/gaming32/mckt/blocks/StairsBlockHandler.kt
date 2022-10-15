@@ -3,9 +3,9 @@ package io.github.gaming32.mckt.blocks
 import io.github.gaming32.mckt.GlobalPalette.DEFAULT_BLOCKSTATES
 import io.github.gaming32.mckt.MinecraftServer
 import io.github.gaming32.mckt.PlayClient
-import io.github.gaming32.mckt.World
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.objects.*
+import io.github.gaming32.mckt.world.World
 
 class StairsBlockHandler(val id: Identifier, private val baseBlockState: BlockState) : BlockHandler() {
     private val defaultState = DEFAULT_BLOCKSTATES[id]!!

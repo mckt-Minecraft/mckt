@@ -1,9 +1,9 @@
 package io.github.gaming32.mckt.items
 
-import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.objects.ActionResult
 import io.github.gaming32.mckt.objects.Direction
 import io.github.gaming32.mckt.objects.Identifier
+import io.github.gaming32.mckt.world.Blocks
 
 object FlintAndSteelHandler : ItemHandler() {
     private val burnChancesInternal = mutableMapOf<Identifier, Int>()

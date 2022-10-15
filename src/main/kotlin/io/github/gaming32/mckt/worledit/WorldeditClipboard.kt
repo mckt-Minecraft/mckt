@@ -1,11 +1,11 @@
 package io.github.gaming32.mckt.worledit
 
-import io.github.gaming32.mckt.BlockAccess
-import io.github.gaming32.mckt.Blocks
 import io.github.gaming32.mckt.data.writeVarInt
 import io.github.gaming32.mckt.objects.BlockPosition
 import io.github.gaming32.mckt.objects.BlockState
 import io.github.gaming32.mckt.util.PalettedStorage
+import io.github.gaming32.mckt.world.BlockAccess
+import io.github.gaming32.mckt.world.Blocks
 
 data class WorldeditClipboard(
     val size: BlockPosition,

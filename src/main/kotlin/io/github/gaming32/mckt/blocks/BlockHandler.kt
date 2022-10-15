@@ -1,12 +1,16 @@
 package io.github.gaming32.mckt.blocks
 
-import io.github.gaming32.mckt.*
+import io.github.gaming32.mckt.BLOCK_PROPERTIES
+import io.github.gaming32.mckt.DEBUG
+import io.github.gaming32.mckt.GlobalPalette
+import io.github.gaming32.mckt.PlayClient
 import io.github.gaming32.mckt.data.writeBlockPosition
 import io.github.gaming32.mckt.data.writeVarLong
 import io.github.gaming32.mckt.items.BlockItemHandler
 import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.packet.play.PlayCustomPacket
 import io.github.gaming32.mckt.packet.play.s2c.WorldEventPacket
+import io.github.gaming32.mckt.world.World
 
 abstract class BlockHandler {
     open val requiresOperator get() = 0

@@ -7,10 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import io.github.gaming32.mckt.commands.CommandSource
 import io.github.gaming32.mckt.commands.wrap
-import io.github.gaming32.mckt.isInBuildLimit
-import io.github.gaming32.mckt.isValidForWorld
 import io.github.gaming32.mckt.objects.Vector2f
 import io.github.gaming32.mckt.objects.Vector3d
+import io.github.gaming32.mckt.world.isInBuildLimit
+import io.github.gaming32.mckt.world.isValidForWorld
 import net.kyori.adventure.text.Component
 import kotlin.math.PI
 import kotlin.math.cos
