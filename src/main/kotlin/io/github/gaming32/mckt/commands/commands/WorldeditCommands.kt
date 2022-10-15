@@ -18,9 +18,9 @@ import io.github.gaming32.mckt.objects.*
 import io.github.gaming32.mckt.world.BlockAccess
 import io.github.gaming32.mckt.world.Blocks
 import io.github.gaming32.mckt.world.World
-import io.github.gaming32.mckt.worldgen.GeneratorArgs
-import io.github.gaming32.mckt.worldgen.WorldGenerator
-import io.github.gaming32.mckt.worldgen.WorldGenerators
+import io.github.gaming32.mckt.world.gen.GeneratorArgs
+import io.github.gaming32.mckt.world.gen.WorldGenerator
+import io.github.gaming32.mckt.world.gen.WorldGenerators
 import io.github.gaming32.mckt.worledit.WorldeditClipboard
 import io.github.gaming32.mckt.worledit.worldeditSession
 import kotlinx.coroutines.*
